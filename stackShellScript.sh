@@ -40,7 +40,11 @@ getConnectionThreads(){
   do
     threadId=$(echo $val | awk '{print $2}')                    # $2 is for taking 2nd number (threadId)
     threadIds+=($threadId)
-    threadNames[$threadId]=$(echo $val | awk '{print $5}')      # %5 is for taking 5th number (threadName)
+    threadName="$(echo $val | awk '{print $5}')"
+    threadNames[$threadId]="${threadName}"      # %5 is for taking 5th number (threadName)
+    threadRemote="$(sudo jq --arg threadName "$threadName" '. | select(.ctx==$threadName and .c=="NETWORK" and .msg=="client metadata" and .attr.remote)' /var/log/mongodb/mongod.log | grep 'remote": "127' | tail -n 1 | awk '{print $2}' | grep -oP '(?<=").*?(?=")')" 
+    echo "$threadRemote"
+    threadRemotes[$threadId]=$threadRemote
   done
 }
 
@@ -96,11 +100,13 @@ echo
 # Get Connnection Thread details
 threadIds=()
 declare -A threadNames
+declare -A threadRemotes
 getConnectionThreads
 
 echo "Connection Clients found are: "
 echo ${threadIds[@]}
 echo ${threadNames[@]}
+echo ${threadRemotes[@]}
 echo 
 
 # # Get Entire Stack Trace according to input arguments
