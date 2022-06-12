@@ -15,8 +15,16 @@ fi
 NUMCALLS=$1
 INTERVAL=$2
 
-# --------------Globals--------------
+# --------------Global Constants--------------
 IDLE_STACK_FORMAT="$(<"IDLE_STACK_FORMAT")"
+
+# --------------Global Variables used--------------
+# threadIds -> stores useful threads at any time
+# threadNames -> map using key as threadId and value as Name (context) of client connection
+# threadRemotes -> map using key as threadId and value as IP address of client
+# timeStamps -> contains timestamps at which stack was taken, hence used for retrieving the stacks from saved files
+# pid -> pid of mongod process
+
 
 # --------------Function Definitions--------------
 
@@ -32,6 +40,8 @@ takeStackTrace(){
   wait
 }
 
+# ----
+
 # Abhi uses global variable threadIds and threadNames, have to convert into parameters for multithreading
 getConnectionThreads(){                  
   readarray -t conn_array < <(ps -T -p $pid | grep "conn")      # grep is for pattern matching
@@ -42,11 +52,12 @@ getConnectionThreads(){
     threadIds+=($threadId)
     threadName="$(echo $val | awk '{print $5}')"
     threadNames[$threadId]="${threadName}"      # %5 is for taking 5th number (threadName)
-    threadRemote="$(sudo jq --arg threadName "$threadName" '. | select(.ctx==$threadName and .c=="NETWORK" and .msg=="client metadata" and .attr.remote)' /var/log/mongodb/mongod.log | grep 'remote": "127' | tail -n 1 | awk '{print $2}' | grep -oP '(?<=").*?(?=")')" 
-    echo "$threadRemote"
+    threadRemote="$(sudo jq --arg threadName "$threadName" '. | select(.ctx==$threadName and .c=="NETWORK" and .msg=="client metadata" and .attr.remote)' /var/log/mongodb/mongod.log | grep 'remote' | tail -n 1 | awk '{print $2}' | grep -oP '(?<=").*?(?=")')" 
     threadRemotes[$threadId]=$threadRemote
   done
 }
+
+# ----
 
 # Compares the various stacks of a given thread (parameter) with the IDLE_STACK_FORMAT.
 # IDLE_STACK_FORMAT is stripped off the hexadecimal addresses, and hence same has been applied for the stack of each thread before comparing.
@@ -55,7 +66,7 @@ checkIdleOrNot(){
   local count=0
   for timeStamp in ${timeStamps[@]};
   do
-    fileName="${1}_$timeStamp"
+    local fileName="${1}_$timeStamp"
     stack="$(echo "$(sed 's| 0x................\b\b||g' "$fileName")")"         # Currently matched by assuming 16 digits (16hexadecimal address) and two spaces (\b = breaks)
     if [ "$stack" == "$IDLE_STACK_FORMAT" ]; then
       let count=count+1
@@ -69,6 +80,8 @@ checkIdleOrNot(){
   fi
 }
 
+# ----
+
 # Checks individual thread stacks with each other, to check if a certain thread has the same stack for the entire duration.
 checkHungOrNot(){
   # $1 = val (threadID)
@@ -77,8 +90,8 @@ checkHungOrNot(){
   local firstStack="$(<${tempFile})"                              # extract first stack, to compare with rest of all
   for timeStamp in ${timeStamps[@]};
   do
-    fileName="${1}_$timeStamp"
-    stack="$(<${fileName})"      
+    local fileName="${1}_$timeStamp"
+    local stack="$(<${fileName})"      
     if [ "$stack" == "$firstStack" ]; then
       let count=count+1
     fi
@@ -90,6 +103,21 @@ checkHungOrNot(){
     echo 0
   fi
 }
+
+# ----
+
+# # Calculates Average CPU Usage of each thread and prints it
+# getCpuUsage(){
+#   declare -A cpuUsage
+#   local cpuValue
+#   for val in ${threadIds[@]};
+#   do
+#     cpuValue=$(ps -o spid,pcpu,comm -T ${pid} | grep "$val" | awk '{print $2}' )
+#     cpuUsage[$val]=$cpuValue
+#     echo $cpuValue
+#   done
+# }
+
 # --------------Program Workflow Start--------------
 
 # Get PID of mongod
@@ -156,3 +184,6 @@ done
 echo "The Hung threads are: "
 echo ${hungThreadIds[@]}
 
+# Get Average CPU Usage of each thread and store in map $cpuUsage
+# getCpuUsage
+# echo ${cpuUsage[@]}
