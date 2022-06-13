@@ -24,10 +24,19 @@ extractStackOfThread(){
   echo "$stackSubstring" > $fileName
 }
 
+getCpuUsage(){
+  # $1 = threadId
+  local cpuValue
+  local fileName="CPU_${timeStamp}"
+  cpuValue=$(ps -o spid,pcpu,comm -T ${pid} | grep "$1" | awk '{print $2}' )
+  echo "$1 $cpuValue" >> $fileName
+}
 
 stackDump="$(sudo eu-stack -p $pid --source))"
+echo "$stackDump" > "FullStack_${timeStamp}"
 
 for val in "${threadIds[@]}";
 do
+    getCpuUsage $val
     extractStackOfThread $val
 done

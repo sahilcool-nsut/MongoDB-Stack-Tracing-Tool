@@ -17,7 +17,7 @@ INTERVAL=$2
 
 # --------------Global Constants--------------
 IDLE_STACK_FORMAT="$(<"IDLE_STACK_FORMAT")"
-
+OUTPUT_FILE_NAME="JointAnalysis"
 # --------------Global Variables used--------------
 # threadIds -> stores useful threads at any time
 # threadNames -> map using key as threadId and value as Name (context) of client connection
@@ -30,6 +30,7 @@ IDLE_STACK_FORMAT="$(<"IDLE_STACK_FORMAT")"
 
 # Takes stack trace using the euStackUtil.sh script. This is done so that stacks can be taken at exact INTERVAL interval,
 # and are processed parallely
+# Also stores CPU Usage of each thread.
 takeStackTrace(){
   for ((i=1;i<=NUMCALLS;i++)); do
     local currTime=$(($(date +%s%N)/1000000))
@@ -72,7 +73,7 @@ checkIdleOrNot(){
       let count=count+1
     fi
   done
-  echo "Thread ID = ${val} : count of idle frame = ${count}" >&2                # >&2 is used to output on stderr, else, yaha se echo kiya to returns from function
+  echo "Thread ID = ${val} : count of idle frame = ${count}" >> $OUTPUT_FILE_NAME                # >&2 is used to output on stderr, else, yaha se echo kiya to returns from function
   if [ $count -eq $NUMCALLS ]; then
       echo 1                                                      # echo returns from function
   else
@@ -96,7 +97,7 @@ checkHungOrNot(){
       let count=count+1
     fi
   done
-  echo "Thread ID = ${val} : count of equal frames = ${count}" >&2                # >&2 is used to output on stderr, else, yaha se echo kiya to returns from function
+  echo "Thread ID = ${val} : count of equal frames = ${count}" >> $OUTPUT_FILE_NAME                # >&2 is used to output on stderr, else, yaha se echo kiya to returns from function
   if [ $count -eq $NUMCALLS ]; then
       echo 1                                                     
   else
@@ -104,26 +105,22 @@ checkHungOrNot(){
   fi
 }
 
-# ----
-
-# # Calculates Average CPU Usage of each thread and prints it
-# getCpuUsage(){
-#   declare -A cpuUsage
-#   local cpuValue
-#   for val in ${threadIds[@]};
-#   do
-#     cpuValue=$(ps -o spid,pcpu,comm -T ${pid} | grep "$val" | awk '{print $2}' )
-#     cpuUsage[$val]=$cpuValue
-#     echo $cpuValue
-#   done
-# }
+beginIndividualAnalysis(){
+  for timeStamp in ${timeStamps[@]};
+  do
+    ./individualAnalysis.sh $timeStamp $pid &         # & for parallel processing.
+  done
+}
 
 # --------------Program Workflow Start--------------
 
+# Create File
+echo > $OUTPUT_FILE_NAME
+
 # Get PID of mongod
 pid=$(pidof mongod)
-echo "Process ID of mongod is: $pid"
-echo 
+echo "Process ID of mongod is: $pid" >> $OUTPUT_FILE_NAME
+echo >> $OUTPUT_FILE_NAME
 
 # Get Connnection Thread details
 threadIds=()
@@ -131,20 +128,25 @@ declare -A threadNames
 declare -A threadRemotes
 getConnectionThreads
 
-echo "Connection Clients found are: "
-echo ${threadIds[@]}
-echo ${threadNames[@]}
-echo ${threadRemotes[@]}
-echo 
+echo "Connection Clients found are: " >> $OUTPUT_FILE_NAME
+echo ${threadIds[@]} >> $OUTPUT_FILE_NAME
+echo ${threadNames[@]} >> $OUTPUT_FILE_NAME
+echo ${threadRemotes[@]} >> $OUTPUT_FILE_NAME
+echo >> $OUTPUT_FILE_NAME
 
 # # Get Entire Stack Trace according to input arguments
 #         # timeStamps is an array of timeStamps. Size = NUMCALLS
 # After this function call, individual thread stacks are stored in file with filenames threadId_timeStamp. Can be retrieved from there
 timeStamps=()
 takeStackTrace
-echo ""       
-echo "-----resynchronization-----"
-echo ""
+echo "" >> $OUTPUT_FILE_NAME       
+echo "-----resynchronization-----" >> $OUTPUT_FILE_NAME
+echo "" >> $OUTPUT_FILE_NAME
+
+
+# Get Individual Analysis of each timestamp
+beginIndividualAnalysis 
+
 
 # --------------Analysis Part Starts--------------
 
@@ -157,14 +159,14 @@ do
     if [ $value -eq 0 ]; then  # Non-Idle 
       newThreadIds+=($val)
     else
-      echo "Thread $val is Idle"
-      echo 
+      echo "Thread $val is Idle" >> $OUTPUT_FILE_NAME
+      echo  >> $OUTPUT_FILE_NAME
     fi
 done
-echo "The Non-idle Threads are: "
+echo "The Non-idle Threads are: " >> $OUTPUT_FILE_NAME
 threadIds=(${newThreadIds[@]})
-echo ${threadIds[@]}                          # Array updated. No need to update threadNames, as it is accessed using threadId values itself
-echo ""
+echo ${threadIds[@]} >> $OUTPUT_FILE_NAME                         # Array updated. No need to update threadNames, as it is accessed using threadId values itself
+echo "" >> $OUTPUT_FILE_NAME
 
 
 hungThreadIds=()
@@ -176,14 +178,47 @@ do
     if [ $value -eq 1 ]; then  # Hung
       hungThreadIds+=($val)
     else
-      echo "Thread $val is NOT Hung"
-      echo 
+      echo "Thread $val is NOT Hung" >> $OUTPUT_FILE_NAME
+      echo >> $OUTPUT_FILE_NAME
     fi
 done
 
-echo "The Hung threads are: "
-echo ${hungThreadIds[@]}
+echo "The Hung threads are: " >> $OUTPUT_FILE_NAME
+echo ${hungThreadIds[@]} >> $OUTPUT_FILE_NAME
 
-# Get Average CPU Usage of each thread and store in map $cpuUsage
+wait
+
+
+
+
+
+# JUNK CODE
+# ----
+
+# Calculates Average CPU Usage using info stored in file CPU_${timeStamp} of each thread and prints it
+# getCpuUsage(){
+#   declare -A cpuUsage
+#   local currThread
+#   local currCPU
+#   for timeStamp in ${timeStamps[@]};
+#   do
+#     local fileName="CPU_$timeStamp"
+#     while read -r line; 
+#     do 
+#       currThread="$(echo $line | awk '{print $1;}')"
+#       currCPU="$(echo $line | awk '{print $2;}')"
+#       cpuUsage[$currThread]=$(awk '{print $1+$2}' <<<"${cpuUsage[currThead]:-0} ${currCPU}")
+#       echo "$currThread: $currCPU: ${cpuUsage[$currThread]}"
+#     done < $fileName
+#   done
+#   for thread in ${threadIds[@]};
+#   do
+#     echo "$thread: ${cpuUsage[$currThread]}"
+#   done
+  
+# }
+
+
+# # Get Average CPU Usage of each thread and store in map $cpuUsage
 # getCpuUsage
 # echo ${cpuUsage[@]}
