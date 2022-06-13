@@ -1,23 +1,14 @@
-#Check Argument Errors
-if (( $# < 2 ))
-then
-    printf "%b" "Error. Not enough arguments.\n" >&2
-    printf "%b" "usage: stackShellScript.sh NUMCALLS INTERVAL(in seconds)\n" >&2
-    exit 1
-elif (( $# > 2 ))
-then
-    printf "%b" "Error. Too many arguments.\n" >&2
-    printf "%b" "usage: stackShellScript.sh NUMCALLS INTERVAL(in seconds)\n" >&2
-    exit 2
-fi
-
 # --------------Arguments--------------
-NUMCALLS=$1
-INTERVAL=$2
+pid=$1
+shift
+timeStamps=("$@")
 
 # --------------Global Constants--------------
 IDLE_STACK_FORMAT="$(<"IDLE_STACK_FORMAT")"
-OUTPUT_FILE_NAME="JointAnalysis"
+OUTPUT_FILE_NAME="OutputFiles/JointAnalysis"
+NUMCALLS=${#timeStamps[@]}
+echo $NUMCALLS
+
 # --------------Global Variables used--------------
 # threadIds -> stores useful threads at any time
 # threadNames -> map using key as threadId and value as Name (context) of client connection
@@ -28,23 +19,39 @@ OUTPUT_FILE_NAME="JointAnalysis"
 
 # --------------Function Definitions--------------
 
-# Takes stack trace using the euStackUtil.sh script. This is done so that stacks can be taken at exact INTERVAL interval,
-# and are processed parallely
-# Also stores CPU Usage of each thread.
-takeStackTrace(){
-  for ((i=1;i<=NUMCALLS;i++)); do
-    local currTime=$(($(date +%s%N)/1000000))
-    timeStamps+=($currTime)
-    ./euStackUtil.sh $currTime $pid "${threadIds[@]}" &         # & for parallel processing.
-    sleep $INTERVAL
-  done
-  wait
+extractStackOfThread(){
+  # $1 = threadId
+  # $2 = timeStamp
+  local dumpFile="stackDumps/FullStack_${2}"
+  stackDump=$(<$dumpFile)
+  # printf "\n\n\n\n\n printing stack dump"
+  # echo "$stackDump"
+  local NL=$'\n'    
+  local startPattern="$1:$NL"   #add newline character too, so that starts directly from stack
+  local stackSubstring="${stackDump#*${startPattern}}"   #removes everything before startingPattern from stack
+  local endPattern="${NL}TID"
+  local stackSubstring="${stackSubstring%%${endPattern}*}"   #removes everything after endString from stack
+
+  # Handling special case for stack of thread which is the last thread (ends an extra ")" in the end of stack)
+  if [ "${stackSubstring: -1}" == ")" ]; then
+    stackSubstring="${stackSubstring::-1}"
+  fi
+  local fileName="stackDumps/${1}_${2}"
+
+  echo "$stackSubstring" > $fileName
 }
 
-# ----
+getCpuUsage(){
+  # $1 = threadId
+  # $2 = timeStamp
+  local cpuValue
+  local fileName="stackDumps/CPU_$2"
+  cpuValue=$(ps -o spid,pcpu,comm -T ${pid} | grep "$1" | awk '{print $2}' )
+  echo "$1 $cpuValue" >> $fileName
+}
 
 # Abhi uses global variable threadIds and threadNames, have to convert into parameters for multithreading
-getConnectionThreads(){                  
+getClientConnectionThreads(){                  
   readarray -t conn_array < <(ps -T -p $pid | grep "conn")      # grep is for pattern matching
                                                                 # output is like:    4099    4453 ?        00:00:11 conn1
   for val in "${conn_array[@]}";
@@ -67,7 +74,7 @@ checkIdleOrNot(){
   local count=0
   for timeStamp in ${timeStamps[@]};
   do
-    local fileName="${1}_$timeStamp"
+    local fileName="stackDumps/${1}_$timeStamp"
     stack="$(echo "$(sed 's| 0x................\b\b||g' "$fileName")")"         # Currently matched by assuming 16 digits (16hexadecimal address) and two spaces (\b = breaks)
     if [ "$stack" == "$IDLE_STACK_FORMAT" ]; then
       let count=count+1
@@ -91,7 +98,7 @@ checkHungOrNot(){
   local firstStack="$(<${tempFile})"                              # extract first stack, to compare with rest of all
   for timeStamp in ${timeStamps[@]};
   do
-    local fileName="${1}_$timeStamp"
+    local fileName="stackDumps/${1}_$timeStamp"
     local stack="$(<${fileName})"      
     if [ "$stack" == "$firstStack" ]; then
       let count=count+1
@@ -105,28 +112,21 @@ checkHungOrNot(){
   fi
 }
 
-beginIndividualAnalysis(){
-  for timeStamp in ${timeStamps[@]};
-  do
-    ./individualAnalysis.sh $timeStamp $pid &         # & for parallel processing.
-  done
-}
+
 
 # --------------Program Workflow Start--------------
+
+echo "Starting Joint analysis"
 
 # Create File
 echo > $OUTPUT_FILE_NAME
 
-# Get PID of mongod
-pid=$(pidof mongod)
-echo "Process ID of mongod is: $pid" >> $OUTPUT_FILE_NAME
-echo >> $OUTPUT_FILE_NAME
 
-# Get Connnection Thread details
+# Get Client Connnection Thread details
 threadIds=()
 declare -A threadNames
 declare -A threadRemotes
-getConnectionThreads
+getClientConnectionThreads
 
 echo "Connection Clients found are: " >> $OUTPUT_FILE_NAME
 echo ${threadIds[@]} >> $OUTPUT_FILE_NAME
@@ -134,18 +134,17 @@ echo ${threadNames[@]} >> $OUTPUT_FILE_NAME
 echo ${threadRemotes[@]} >> $OUTPUT_FILE_NAME
 echo >> $OUTPUT_FILE_NAME
 
-# # Get Entire Stack Trace according to input arguments
-#         # timeStamps is an array of timeStamps. Size = NUMCALLS
-# After this function call, individual thread stacks are stored in file with filenames threadId_timeStamp. Can be retrieved from there
-timeStamps=()
-takeStackTrace
-echo "" >> $OUTPUT_FILE_NAME       
-echo "-----resynchronization-----" >> $OUTPUT_FILE_NAME
-echo "" >> $OUTPUT_FILE_NAME
+echo ${timeStamps[@]}
 
-
-# Get Individual Analysis of each timestamp
-beginIndividualAnalysis 
+# Get individual client stack traces for each time stamp
+for timeStamp in ${timeStamps[@]};
+do
+  for val in "${threadIds[@]}";
+  do
+      getCpuUsage $val $timeStamp
+      extractStackOfThread $val $timeStamp
+  done
+done
 
 
 # --------------Analysis Part Starts--------------
@@ -188,6 +187,7 @@ echo ${hungThreadIds[@]} >> $OUTPUT_FILE_NAME
 
 wait
 
+echo "Joint Analysis Done"
 
 
 

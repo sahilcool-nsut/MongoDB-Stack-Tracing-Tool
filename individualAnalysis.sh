@@ -1,22 +1,10 @@
-# --------------Check Argument Errors--------------
-if (( $# < 2 ))
-then
-    printf "%b" "Error. Not enough arguments.\n" >&2
-    printf "%b" "usage: individualAnalysis.sh TIMESTAMP PID \n" >&2
-    exit 1
-elif (( $# > 2 ))
-then
-    printf "%b" "Error. Too many arguments.\n" >&2
-    printf "%b" "usage: individualAnalysis.sh TIMESTAMP PID\n" >&2
-    exit 2
-fi
 
 # --------------Arguments--------------
 timeStamp=$1
 pid=$2
 
 # --------------Globals--------------
-OUTPUT_FILE_NAME="IndividualAnalysis_$timeStamp"
+OUTPUT_FILE_NAME="OutputFiles/IndividualAnalysis_$timeStamp"
 
 
 # --------------Function Definitions--------------
@@ -62,7 +50,7 @@ getThreadStates(){
     do
         state=$(sudo cat /proc/$pid/task/$threadId/status | grep "State")
         threadStates[$threadId]="$state"
-        echo "$state"
+        # echo "$state"
         if [[ ${stateCounts[$state]} ]]; then
             local count=${stateCounts[$state]}
             let count=$count+1
@@ -111,7 +99,8 @@ getIndividualStackCounts(){
 
 # --------------Program Workflow--------------
 
-fileName="FullStack_${timeStamp}"
+echo "Starting Individual with timeStamp ${timeStamp}"
+fileName="stackDumps/FullStack_${timeStamp}"
 fullStackTrace="$(<${fileName})"
 
 echo "$fullStackTrace" > $OUTPUT_FILE_NAME
@@ -131,8 +120,7 @@ getThreadStates
 
 declare -A threadStacks
 declare -A stackCounts
-extractStackOfThread
-
+extractStackOfThread 
 # echo "${threadStacks[@]}"
 
 getIndividualStackCounts
@@ -159,3 +147,5 @@ echo "Stack Counts: " >> $OUTPUT_FILE_NAME
 for stack in "${!stackCounts[@]}"; do
   echo -e "Count: ${stackCounts[$stack]}\n $stack\n\n" >> $OUTPUT_FILE_NAME
 done
+
+echo "Individual Analysis for timestamp $timeStamp done"
