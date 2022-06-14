@@ -14,14 +14,16 @@
 # echo "${cpuValue}"
 
 
-state=$(sudo cat /proc/5377/task/5464/status | grep "State")
-echo "${state}"
+# state=$(sudo cat /proc/5377/task/5464/status | grep "State")
+# echo "${state}"
 
 
 
 # pattern="mongo .* ${threadId} .* EST"
     # echo "$pattern"
     # echo "$networkDetail" | grep "$pattern"
-    # # threadRemote=$("$networkDetail" | grep "mongo ${threadId}.*EST" | awk '{print $9}')
+    # threadRemote=$("$networkDetail" | grep "mongo ${threadId}.*EST" | awk '{print $9}')
     # echo $threadRemote
-    # netstat -an | grep ":${27017}.*ESTAB" | awk '{print $4":"$5}'
+    # netstat -an | grep ":${27017}.*ESTAB"
+$threadRemote=$(sudo lsof -i | grep "mongo .*EST" | awk '{print $2" : "$9}')
+echo "$threadRemote"
