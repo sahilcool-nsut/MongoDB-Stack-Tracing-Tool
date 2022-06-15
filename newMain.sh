@@ -46,12 +46,12 @@ takeStakeTraceUtil(){
 # # Multithreaded process, will keep taking stack trace in background while we collect thread information. Synchronized Later
 
 captureDetails(){
-    for ((i=1;i<=$NUMCALLS;i++)); 
-    do
+    for ((i=1;i<=NUMCALLS;i++)); do 
+        echo "$i $NUMCALLS"
         local currTime=$(($(date +%s%N)/1000000))
         timeStamps+=($currTime)
         takeStakeTraceUtil $currTime &              # & for parallel processing, synchronization done later in code
-        getThreadIds                                # Get thread details
+        getThreadDetails                                # Get thread details
 
         if (( $i == $NUMCALLS ));then
             break
@@ -67,19 +67,48 @@ captureDetails(){
 
         sleep $newInterval                            
     done
+
+    # Refine the thread IDs. Remove those thread IDs which were not present in ALL the iterations. 
+    # This is possible incase a thread finishes its execution in between, or starts in between
+    # Rare scenario, but incase it happens, it can make the results unexpected due to non uniformity
+    # Also, removing them won't be much of an issue as, if they are not present in high CPU category consistently,
+    # it is most probable that they are not problematic. 
+    local threadLength=${#threadIds[@]}
+    # echo $threadLength
+    for ((j=0;j<${#threadIds[@]};j++));
+    do
+        local threadId=${threadIds[j]}
+        local threadStateString=${threadStates[$threadId]}
+        local tempStateArray=($threadStateString)
+        local stateArrayLength=${#tempStateArray[@]}
+        # echo "$threadId: $stateArrayLength"
+        if (( stateArrayLength < NUMCALLS ));then
+            unset threadIds[j]
+        fi
+    done
 }   
 
 
-getThreadIds(){
+# CURRENTLY ASSUMING THAT EACH THREAD EXISTS FOR ENTIRE DURATION
+# Function to get all thread parameters from "top -H" command. Takes threads which have high CPU usage and follow the pattern "conn" (for mongo clients)
+getThreadDetails(){
 
     while read -r detail;
     do
+        # This checks if the Current thread being processed is exerting higher CPU usage than the threshhold
+        # Incase its lower than it, we can break as the records are in descending order.
+        local checkCPUforThreshold="$(echo $detail | awk '{print $9}')"
+        if (( $(echo "$checkCPUforThreshold < $CPU_THRESHOLD" |bc -l) )); then
+            break;
+        fi
+        # Check if threadID already there, no need to add again
         local threadId=$(echo $detail | awk '{print $1}')
         if ! [[ -v "threadPresentMap[$threadId]" ]] ; then
             threadIds+=($threadId)
             threadPresentMap[$threadId]="Present" 
         fi
 
+        # If state array for a threadID already exists, append, else create
         local threadState="$(echo $detail | awk '{print $8}')"
         if [[ -v "threadStates[$threadId]" ]] ; then
             local temp=${threadStates[$threadId]}
@@ -87,7 +116,8 @@ getThreadIds(){
         else
             threadStates[$threadId]="$threadState"
         fi
-       
+
+        # If CPU array for a threadID already exists, append, else create
         local threadCPU="$(echo $detail | awk '{print $9}')"
         if [[ -v "threadCPUs[$threadId]" ]] ; then
             local temp=${threadCPUs[$threadId]}
@@ -96,10 +126,16 @@ getThreadIds(){
             threadCPUs[$threadId]="$threadCPU"
         fi
 
+        # Can overwrite name in case of clashing thread ID (assuming same thread ID exists over entire duration)
         local threadName="$(echo $detail | awk '{print $12}')"
-        threadNames[$threadId]="$threadName"
-        
-    done < <(top -H -bn1 | awk '{ if ($9 >= $CPU_THRESHOLD ) print $0}' | grep "conn")
+        if ! [[ $threadName == "" ]];then
+            threadNames[$threadId]="$threadName"
+        fi
+    done < <(top -H -bn1 | grep "conn")
+    #  awk '{ if ($9 >= 0 ) print $0}' |
+
+    
+
 }
 
 
@@ -128,12 +164,72 @@ getStackPerThreadUtil(){
   
 }
 
+# Extract stack for each thread from full stacks
 getStackPerThread(){
     for threadId in ${threadIds[@]};
     do
         echo $threadId
         stackTraces[$threadId]=$(getStackPerThreadUtil "$threadId")
     done
+}
+
+# Utility function used to create Individual reports
+getStackByTIDandTimestamp(){
+    local threadId=$1
+    local timeStampParameter=$2
+    local combinationOfStacks="${stackTraces[$threadId]}" 
+
+    for timeStamp in ${timeStamps[@]};do
+        local startPattern=" $NL SEPERATOR$NL"   #add newline character too, so that starts directly from stack
+        local endPattern=" $NL SEPERATOR"
+        local stackSubstring="${combinationOfStacks%%${endPattern}*}"   #removes everything after endString from stack INCLUDING end pattern
+        local combinationOfStacks="${combinationOfStacks#*${startPattern}}"   #removes everything before startingPattern from stack INCLUDING start pattern
+        if [[ $timeStamp == $timeStampParameter ]];then
+            echo "$stackSubstring"
+            break
+        fi
+    done
+}
+
+# Takes index (integer) as parameter to reference to timestamp. (current issue is that all arrays MAY not have index present due to thread not being present)
+createIndividualStackJSON(){
+    local index=$1
+    local currTime=${timeStamps[$index]}
+    local currStack="${fullStackTraces[$currTime]}"
+    local JSON_STRING=$( jq -n \
+                  --arg currTime "$currTime" \
+                  --arg fullStack "$currStack" \
+                  --arg threadId "$threadId" \
+                  '{timeStamp: $currTime, fullStack: $fullStack, threads:[]}')          # Create empty threads arary which will be filled later
+    local fileName="OutputFiles/IndividualOutput_$currTime.json"            
+    echo "$JSON_STRING" > "$fileName"
+    
+    # echo "$currStack"
+    for threadId in ${threadIds[@]};do
+        local threadName=${threadNames[$threadId]}
+
+        # Seperating State of current index (space seperated string -> array -> index)
+        local threadStateString=${threadStates[$threadId]}
+        local tempStateArray=($threadStateString)
+        local threadState=${tempStateArray[$index]}
+
+        # Seperating State of current index (space seperated string -> array -> index)
+        local threadCPUString=${threadCPUs[$threadId]}
+        local tempCPUArray=($threadCPUString)
+        local threadCPU=${tempCPUArray[$index]}
+
+        local stack=$(getStackByTIDandTimestamp $threadId $currTime)
+        # Appending json object into already existing array.
+        local JSON_TEMP=$(jq \
+        --arg threadId "$threadId" \
+        --arg threadName "$threadName" \
+        --arg threadState "$threadState" \
+        --arg threadCPU "$threadCPU" \
+        --arg threadStack "$stack" \
+        '.threads += [{threadId: $threadId, threadName: $threadName, threadState: $threadState, threadCPU: $threadCPU, threadStack: $threadStack}]' "$fileName")
+        echo "$JSON_TEMP" > "$fileName"
+    done
+
 }
 
 
@@ -178,9 +274,10 @@ echo "Starting Stack per Thread"
 getStackPerThread
 
 
-
-
-
+# Create individual JSONs
+for ((i=0;i<NUMCALLS;i++)); do
+    createIndividualStackJSON $i
+done
 
 
 
@@ -199,8 +296,6 @@ done
 echo "" >> $OUTPUT_FILE_NAME
 echo "" >> $OUTPUT_FILE_NAME
 
-echo "hehe3"
-echo "${threadIds[@]}"
 for threadId in ${threadIds[@]};
 do
     echo $threadId >> $OUTPUT_FILE_NAME
@@ -223,8 +318,7 @@ do
     done
 done
 
-echo "hehe4"
-echo "${threadStates[@]}"
+
 
 
 # UTILITY FUNCTIONS
@@ -240,21 +334,3 @@ echo "${threadStates[@]}"
 #     done
 # done
 
-# getStackByTIDandTimestamp(){
-#     local threadId=$1
-#     local timeStampParameter=$2
-#     local combinationOfStacks="${stackTraces[$threadId]}" 
-
-#     for timeStamp in ${timeStamps[@]};do
-#         startPattern=" $NL SEPERATOR$NL"   #add newline character too, so that starts directly from stack
-#         endPattern=" $NL SEPERATOR"
-#         stackSubstring="${combinationOfStacks%%${endPattern}*}"   #removes everything after endString from stack INCLUDING end pattern
-#         combinationOfStacks="${combinationOfStacks#*${startPattern}}"   #removes everything before startingPattern from stack INCLUDING start pattern
-#         echo "$stackSubstring" >> $OUTPUT_FILE_NAME
-#         echo "" >> $OUTPUT_FILE_NAME
-#         if [[ $timeStamp == $timeStampParameter ]];then
-#             echo "$stackSubstring"
-#             break
-#         fi
-#     done
-# }
