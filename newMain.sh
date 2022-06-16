@@ -31,7 +31,7 @@ takeStakeTraceUtil(){
     # $1 = currTime
     echo $"Taking stack dump at timestamp $1"
     # timeStamps+=(${1})
-    stackDump="$(sudo eu-stack -p $pid --source))"
+    stackDump="$(sudo eu-stack -p $pid --source))"    
     local fileName="FullStack_$1"
     echo "$stackDump" > $fileName         
 }
@@ -47,7 +47,6 @@ takeStakeTraceUtil(){
 
 captureDetails(){
     for ((i=1;i<=NUMCALLS;i++)); do 
-        echo "$i $NUMCALLS"
         local currTime=$(($(date +%s%N)/1000000))
         timeStamps+=($currTime)
         takeStakeTraceUtil $currTime &              # & for parallel processing, synchronization done later in code
@@ -132,6 +131,7 @@ getThreadDetails(){
             threadNames[$threadId]="$threadName"
         fi
     done < <(top -H -bn1 | grep "conn")
+    # done < <(cat "sampleTop.txt" | grep "conn")
     #  awk '{ if ($9 >= 0 ) print $0}' |
 
     
@@ -143,19 +143,24 @@ getThreadDetails(){
 getStackPerThreadUtil(){
 
     local tempStackHold=()
-    local threadId=$1
+    local threadId="$1"
+    # echo $threadId
     for timeStamp in ${timeStamps[@]};
     do
         local tempFull="${fullStackTraces[$timeStamp]}"
-        local currStack=$tempFull  
-        local startPattern="$threadId:$NL"   #add newline character too, so that starts directly from stack
-        local stackSubstring="${currStack#*${startPattern}}"   #removes everything before startingPattern from stack
-        local endPattern="${NL}TID"
-        stackSubstring="${stackSubstring%%${endPattern}*}"   #removes everything after endString from stack
+        local currStack=$tempFull
+        # Take current full stack, Seperate it by TID (RS = Record Seperator (\n by default)), 
+        # use variable for pattern ($0~pat is syntax), 
+        # then trim output for spaces and tabs in everyline, 
+        # and finally print all output except first line (thats the line which shows the TID, not needed)
+        local stackSubstring=$(echo "$currStack" | awk -v RS='TID' -v pat="$threadId" '$0~pat' | awk '{ gsub(/^[ \t]+|[ \t]+$/, ""); print }' | tail -n +2)
+        
+        # echo "$stackSubstring" >&2
         # Handling special case for stack of thread which is the last thread (ends an extra ")" in the end of stack)
         if [ "${stackSubstring: -1}" == ")" ]; then
             stackSubstring="${stackSubstring::-1}"
         fi
+        # echo "$threadId $stackSubstring"
         # IMPORTANT -> Seperator used so that can access different stacks of same thread by splitting over seperator.
         tempStackHold+="$stackSubstring ${NL} SEPERATOR${NL}"                
     done
@@ -274,6 +279,7 @@ echo "Starting Stack per Thread"
 getStackPerThread
 
 
+echo "Creating Individual Files"
 # Create individual JSONs
 for ((i=0;i<NUMCALLS;i++)); do
     createIndividualStackJSON $i
@@ -334,3 +340,7 @@ done
 #     done
 # done
 
+# local startPattern="$threadId:$NL"   #add newline character too, so that starts directly from stack
+        # local stackSubstring="${currStack#*${startPattern}}"   #removes everything before startingPattern from stack
+        # local endPattern="${NL}TID"
+        # stackSubstring="${stackSubstring%%${endPattern}*}"   #removes everything after endString from stack
