@@ -15,7 +15,8 @@ fi
 # --------------Arguments--------------
 NUMCALLS=$1
 INTERVAL=$2
-
+currTime=$(($(date +%s%N)/1000000))
+echo $currTime
 # --------------Global Constants--------------
 OUTPUT_FILE_NAME="OutputFiles/NewMain"
 CPU_THRESHOLD=0
@@ -130,7 +131,7 @@ getThreadDetails(){
         if ! [[ $threadName == "" ]];then
             threadNames[$threadId]="$threadName"
         fi
-    done < <(top -H -bn1 | grep "conn")
+    done < <(top -H -bn1 | grep -m 10 "conn")
     # done < <(cat "sampleTop.txt" | grep "conn")
     #  awk '{ if ($9 >= 0 ) print $0}' |
 
@@ -196,7 +197,7 @@ getStackByTIDandTimestamp(){
     done
 }
 
-# Takes index (integer) as parameter to reference to timestamp. (current issue is that all arrays MAY not have index present due to thread not being present)
+# Takes index (integer) as parameter to reference to timestamp.
 createIndividualStackJSON(){
     local index=$1
     local currTime=${timeStamps[$index]}
@@ -250,21 +251,20 @@ echo "Process ID of mongod is: $pid" >> $OUTPUT_FILE_NAME
 echo >> $OUTPUT_FILE_NAME
 
 # # Get Entire Stack Trace according to input arguments
-#         # timeStamps is an array of timeStamps. Size = NUMCALLS
-#         # stackTraces is an array where we can retrieve stack using the different timestaps
-timeStamps=()
+# 
+timeStamps=()                       # timeStamps is an array of timeStamps. Size = NUMCALLS
 threadIds=()    
 declare -A threadPresentMap         # Utility map which tells if a thread was present or not (by threadId)
 declare -A threadStates             # Stores states of thread in all iterations (Space separated)
 declare -A threadCPUs               # Stores CPU usage of thread in all iterations (Space separated)
 declare -A threadNames              # Stores name of thread by threadID (assuming name of thread stays same over iterations)
-declare -A fullStackTraces          # Stores full stack traces of server, accessed by timestamp
-declare -A totalCPUs            
+declare -A fullStackTraces          # Stores full stack traces of server, accessed by timestamp          
 
 captureDetails
 
 
-# Synchronization point for stack traces, will store stacktrace in map and remove the temporary files.
+echo "Waiting for Synchronization"
+# Synchronization point for stack traces, will retrieve full stack traces from files andstore stacktrace in map and remove the temporary files.
 wait                
 for timeStamp in ${timeStamps[@]};
 do
@@ -285,7 +285,8 @@ for ((i=0;i<NUMCALLS;i++)); do
     createIndividualStackJSON $i
 done
 
-
+currTime=$(($(date +%s%N)/1000000))
+echo $currTime
 
 
 
