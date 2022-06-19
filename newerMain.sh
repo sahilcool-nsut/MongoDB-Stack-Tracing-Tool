@@ -5,7 +5,7 @@ Help()
 {
    # Display Help
    echo
-   echo "Syntax: ./newerMain.sh [-n 3 -I 0.5] [-c|N|h]"
+   echo "Syntax: ./newerMain.sh [-n 3 -I 0.5] [-c|N|h|t]"
    echo "options:"
    echo "n       Provide number of iterations for stack (REQUIRED)."
    echo "I       Provide the INTERVAL between iterations (in seconds) (REQUIRED)."
