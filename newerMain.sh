@@ -1,26 +1,94 @@
-#Check Argument Errors
-if (( $# < 2 ))
-then
-    printf "%b" "Error. Not enough arguments.\n" >&2
-    printf "%b" "usage: stackShellScript.sh NUMCALLS INTERVAL(in seconds)\n" >&2
-    exit 1
-elif (( $# > 2 ))
-then
-    printf "%b" "Error. Too many arguments.\n" >&2
-    printf "%b" "usage: stackShellScript.sh NUMCALLS INTERVAL(in seconds)\n" >&2
-    exit 2
+
+# Process the input options. Add options as needed.        #
+
+Help()
+{
+   # Display Help
+   echo
+   echo "Syntax: ./newerMain.sh [-n 3 -I 0.5] [-c|N|h]"
+   echo "options:"
+   echo "n       Provide number of iterations for stack (REQUIRED)."
+   echo "I       Provide the INTERVAL between iterations (in seconds) (REQUIRED)."
+   echo "c       Provide the CPU Usage Threshold for threads (0-100) (OPTIONAL) - Default = 0"
+   echo "N       Provide the Number of Threads to be taken (>0) (OPTIONAL) - Default = 20"
+   echo "t       Provide the Threshold for minimum number of stacks of a thread to be considered (0<num<=iterations) (OPTIONAL) - Default = 0 (consider all threads)"
+   echo "h       Show the help menu"
+   echo
+   exit
+}
+# Get the options
+while getopts ":h:c:N:n:I:t:" option; do
+   case $option in
+    h) # display Help
+        Help
+        exit;;
+    c) #Enter CPU Usage
+        CPU_THRESHOLD=$OPTARG;; 
+    N) #Enter Number of Threads Option
+        TOP_N_THREADS=$OPTARG;;
+    n) #Number of iterations
+        NUMCALLS=$OPTARG;;
+    I) #Intervals 
+        INTERVAL=$OPTARG;;
+    t) #Threshold for number of stacks of thread
+        THREAD_FREQUENCY_THRESHOLD=$OPTARG;;
+    \?) # Invalid option
+        echo "Error: Invalid option"
+        exit;;
+   esac
+done
+shift $((OPTIND-1))
+
+# Checking if options entered were valid, and setting default values for optional options.
+# --------------Option Validation--------------
+if [ -z "${CPU_THRESHOLD}" ]; then
+    CPU_THRESHOLD=0
 fi
+if [ -z "${TOP_N_THREADS}" ]; then
+    TOP_N_THREADS=20
+fi
+if [ -z "${INTERVAL}" ] || [ -z "${NUMCALLS}" ]; then   
+    Help
+fi
+if [ -z "${THREAD_FREQUENCY_THRESHOLD}" ]; then
+    THREAD_FREQUENCY_THRESHOLD=0
+fi
+if (( $(echo "$INTERVAL < 0" |bc -l) )); then
+    echo "Interval should be greater than 0!"
+    Help
+fi
+if [ $CPU_THRESHOLD -lt 0 ] || [ $CPU_THRESHOLD -gt 100 ]; then
+    echo "CPU Threshold should be between 0 and 100"
+    Help
+fi
+if [ $TOP_N_THREADS -lt 0 ]; then
+    echo "Top N Threads should be greater than 0"
+    Help
+fi
+if [ $NUMCALLS -lt 0 ]; then
+    echo "Number of iterations should be greater than 0"
+    Help
+fi
+if [ $THREAD_FREQUENCY_THRESHOLD -lt 0 ] || [ $THREAD_FREQUENCY_THRESHOLD -gt $NUMCALLS ]; then
+    echo "Number of iterations should be greater than 0 and less than or equal to NUMCALLS (number of iterations)"
+    Help
+fi
+echo "$CPU_THRESHOLD"
+echo "$TOP_N_THREADS"
+echo "$INTERVAL"
+echo "$NUMCALLS"
+echo "$THREAD_FREQUENCY_THRESHOLD"
 
 # --------------Arguments--------------
-NUMCALLS=$1
-INTERVAL=$2
 currTime=$(($(date +%s%N)/1000000))
 echo "Starting time: $currTime"
+
+
 # --------------Global Constants--------------
 OUTPUT_FILE_NAME="OutputFiles/NewerMain"
-CPU_THRESHOLD=0
-TOP_N_THREADS=20
-NL=$'\n'                #Newline character used for some parsing purposes
+OUTPUT_MERGED_JSON="OutputFiles/merged.json"
+NL=$'\n'                                    #Newline character used for some parsing purposes
+
 
 # --------------Function Definitions--------------
 multiThreadDetail(){
@@ -31,7 +99,7 @@ multiThreadDetail(){
     echo "$JSON_STRING" > $fileName
     while read -r detail;
     do
-        # echo "$detail"
+        # Faster to echo just once and then retrieve values using array. Seperate echos were taking too much time.
         local resultsArray=($(echo $detail | awk '{ print $1, $8, $9, $12 }'))
         local threadId=${resultsArray[0]}
         local threadState=${resultsArray[1]}
@@ -60,7 +128,7 @@ multiThreadDetail(){
 }
 
 mergeJson(){
-
+    # Function used to merge JSON objects based on their keys.
     jq -s 'def deepmerge(a;b):
     reduce b[] as $item (a;
         reduce ($item | keys_unsorted[]) as $key (.;
@@ -72,8 +140,24 @@ mergeJson(){
             $val
         end)
         );
-    deepmerge({}; .)' OutputFiles/json*.json > "OutputFiles/merged.json"
+    deepmerge({}; .)' OutputFiles/json*.json > $OUTPUT_MERGED_JSON
+    sudo rm OutputFiles/json*.json
+}
 
+thresholdRecords(){
+    threadIdsToRemove=()
+    echo $THREAD_FREQUENCY_THRESHOLD
+    while read -r line;do
+        echo $line
+        threadIdsToRemove+=("$line")
+    done< <(jq --arg threadThreshold "$THREAD_FREQUENCY_THRESHOLD" --raw-output '.threads[] |  select((.iterations | length)<= ($threadThreshold |tonumber)) | .threadId' $OUTPUT_MERGED_JSON)
+    cat $OUTPUT_MERGED_JSON > "temporary.json"
+    for tid in "${threadIdsToRemove[@]}";do
+        # echo "$tid"
+        jq --arg threadId "$tid" 'del(.threads[$threadId])' "temporary.json" > $OUTPUT_MERGED_JSON
+        cat $OUTPUT_MERGED_JSON > "temporary.json"
+    done
+    sudo rm "temporary.json"
 }
 
 getFunctionCounts(){
@@ -101,13 +185,14 @@ getFunctionCounts(){
 
     done< <(jq --raw-output '.threads[] | .iterations[] | .threadStack' OutputFiles/merged.json)
     
+    
+    currTime=$(($(date +%s%N)/1000000))
+    echo "Sorting Started": $currTime <&2
     # Basically first echo the COUNT first, and then the FUNCTION, so that if FUNCTION has spaces, they occur later
     # And we can sort by first field
     # -r = sorting in reverse
     # -n = numeric sorting
     # By default takes first field, else have to specify as -k2 for 2nd etc.
-    currTime=$(($(date +%s%N)/1000000))
-    echo "Sorting Started": $currTime <&2
     for function in "${!functionCallCounts[@]}"; do 
         echo "${functionCallCounts["$function"]} ${function}"
     done | sort -rn | while read number function; do 
@@ -130,6 +215,7 @@ echo >> $OUTPUT_FILE_NAME
 for ((i=0;i<NUMCALLS;i++)); do
     multiThreadDetail $i &
     sleep $INTERVAL
+    echo "starting next iteration of eu-stack at timestamp: $(($(date +%s%N)/1000000))"
 done
 
 # sequentialThreadDetail
@@ -141,11 +227,14 @@ mergeJson
 echo "Merged"
 
 
+# currTime=$(($(date +%s%N)/1000000))
+# echo "Thresholding starting: $currTime"
+# thresholdRecords
+
 currTime=$(($(date +%s%N)/1000000))
 echo "Function Call Starting Time: $currTime"
 declare -A functionCallCounts
 getFunctionCounts
-
 
 
 currTime=$(($(date +%s%N)/1000000))

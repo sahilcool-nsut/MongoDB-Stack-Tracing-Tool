@@ -129,11 +129,27 @@ readJsonData(){
 
 }
 
-readJsonData
+# readJsonData
+
+
+thresholdRecords(){
+    threadIdsToRemove=()
+    while read -r line;do
+        # echo $line
+        threadIdsToRemove+=("$line")
+    done< <(jq --raw-output '.threads[] |  select((.iterations | length)<=1) | .threadId' merged.json)
+    cat "merged.json" > "temporary.json"
+    count=""
+    for tid in "${threadIdsToRemove[@]}";do
+        echo "$tid"
+        jq --arg threadId "$tid" 'del(.threads[$threadId])' "temporary.json" > "merged.json"
+        cat "merged.json" > "temporary.json"
+    done
+}
+
+thresholdRecords
 currTime=$(($(date +%s%N)/1000000))
 echo $currTime
-
-
 
 
 # String Interpolation is independent of the dynamic threadIDs by which my objects start
