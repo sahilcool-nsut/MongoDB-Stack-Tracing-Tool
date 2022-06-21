@@ -70,7 +70,7 @@ if [ $NUMCALLS -lt 0 ]; then
     Help
 fi
 if [ $THREAD_FREQUENCY_THRESHOLD -lt 0 ] || [ $THREAD_FREQUENCY_THRESHOLD -gt $NUMCALLS ]; then
-    echo "Number of iterations should be greater than 0 and less than or equal to NUMCALLS (number of iterations)"
+    echo "Threshold for Iterations captured should be greater than 0 and less than or equal to NUMCALLS (number of iterations)"
     Help
 fi
 echo "$CPU_THRESHOLD"
@@ -165,21 +165,19 @@ getFunctionCounts(){
     while read -r line;do
         currStack=$(echo -e "$line")
         # echo "$currStack"
-        while read -r line; do
-            
-            # echo "$line"
+        while read -r individualLine; do
             # For lines #TID: where no output will be produced in this while loop
-            if [[ "$line" = "" ]];then
+            if [[ "$individualLine" = "" ]];then
 
                 continue
             fi
-            if [[ ${functionCallCounts[$line]} ]]; then
+            if [[ ${functionCallCounts[$individualLine]} ]]; then
                 
-                local count=${functionCallCounts[$line]}
+                local count=${functionCallCounts[$individualLine]}
                 let count=$count+1
-                functionCallCounts[$line]=$count
+                functionCallCounts[$individualLine]=$count
             else
-                functionCallCounts[$line]=1
+                functionCallCounts[$individualLine]=1
             fi
         done< <(echo "$currStack" | awk '{$1=$2=""; print $0}')
 
@@ -227,9 +225,9 @@ mergeJson
 echo "Merged"
 
 
-# currTime=$(($(date +%s%N)/1000000))
-# echo "Thresholding starting: $currTime"
-# thresholdRecords
+currTime=$(($(date +%s%N)/1000000))
+echo "Thresholding starting: $currTime"
+thresholdRecords
 
 currTime=$(($(date +%s%N)/1000000))
 echo "Function Call Starting Time: $currTime"

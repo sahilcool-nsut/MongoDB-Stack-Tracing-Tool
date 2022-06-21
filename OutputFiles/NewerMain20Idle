@@ -1,0 +1,95 @@
+
+Process ID of mongod is: 10339
+
+start_thread - 57
+
+mongo::unique_function<void (mongo::Status)>::makeImpl<mongo::transport::ServiceStateMachine::Impl::scheduleNewLoop(mongo::Status)::{lambda(mongo::Status)#1}>(mongo::transport::ServiceStateMachine::Impl::scheduleNewLoop(mongo::Status)::{lambda(mongo::Status)#1}&&)::SpecificImpl::call(mongo::Status&&) - 57
+
+mongo::unique_function<void ()>::makeImpl<mongo::transport::ServiceExecutorSynchronous::scheduleTask(mongo::unique_function<void ()>, mongo::transport::ServiceExecutor::ScheduleFlags)::{lambda()#2}>(mongo::transport::ServiceExecutorSynchronous::scheduleTask(mongo::unique_function<void ()>, mongo::transport::ServiceExecutor::ScheduleFlags)::{lambda()#2}&&)::SpecificImpl::call() - 57
+
+mongo::unique_function<void ()>::makeImpl<mongo::transport::ServiceExecutor::schedule(mongo::unique_function<void (mongo::Status)>)::{lambda()#1}>(mongo::transport::ServiceExecutor::schedule(mongo::unique_function<void (mongo::Status)>)::{lambda()#1}&&)::SpecificImpl::call() - 57
+
+mongo::unique_function<void ()>::makeImpl<mongo::launchServiceWorkerThread(mongo::unique_function<void ()>)::{lambda()#4}>(mongo::launchServiceWorkerThread(mongo::unique_function<void ()>)::{lambda()#4}&&)::SpecificImpl::call() - 57
+
+mongo::transport::ServiceStateMachine::Impl::startNewLoop(mongo::Status const&) - 57
+
+mongo::(anonymous namespace)::runFunc(void*) - 57
+
+__clone3 - 57
+
+mongo::future_details::SharedStateBase::transitionToFinished() - 56
+
+recvmsg - 29
+
+mongo::unique_function<void (mongo::Status)>::makeImpl<mongo::transport::ServiceExecutorSynchronous::runOnDataAvailable(std::shared_ptr<mongo::transport::Session> const&, mongo::unique_function<void (mongo::Status)>)::{lambda(mongo::Status)#1}>(mongo::transport::ServiceExecutorSynchronous::runOnDataAvailable(std::shared_ptr<mongo::transport::Session> const&, mongo::unique_function<void (mongo::Status)>)::{lambda(mongo::Status)#1}&&)::SpecificImpl::call(mongo::Status&&) - 29
+
+mongo::transport::TransportLayerASIO::ASIOSession::sourceMessageImpl(std::shared_ptr<mongo::Baton> const&) - 29
+
+mongo::transport::TransportLayerASIO::ASIOSession::sourceMessage() - 29
+
+mongo::transport::ServiceStateMachine::Impl::sourceMessage() - 29
+
+mongo::Future<void> mongo::transport::TransportLayerASIO::ASIOSession::read<asio::mutable_buffers_1>(asio::mutable_buffers_1 const&, std::shared_ptr<mongo::Baton> const&) - 29
+
+mongo::Future<void> mongo::transport::TransportLayerASIO::ASIOSession::opportunisticRead<asio::basic_stream_socket<asio::generic::stream_protocol>, asio::mutable_buffers_1>(asio::basic_stream_socket<asio::generic::stream_protocol>&, asio::mutable_buffers_1 const&, std::shared_ptr<mongo::Baton> const&) - 29
+
+asio::detail::socket_ops::sync_recv(int, unsigned char, iovec*, unsigned long, int, bool, std::error_code&) - 29
+
+asio::detail::socket_ops::recv(int, iovec*, unsigned long, int, std::error_code&) - 29
+
+__poll - 28
+
+mongo::unique_function<void (mongo::future_details::SharedStateBase*)>::makeImpl<mongo::future_details::FutureImpl<mongo::future_details::FakeVoid>::makeContinuation<void, mongo::future_details::FutureImpl<mongo::future_details::FakeVoid>::then<mongo::(anonymous namespace)::executeCommand(std::shared_ptr<mongo::(anonymous namespace)::HandleRequest::ExecutionContext>)::{lambda()#2}>(mongo::(anonymous namespace)::executeCommand(std::shared_ptr<mongo::(anonymous namespace)::HandleRequest::ExecutionContext>)::{lambda()#2}&&) &&::{lambda()#3}::operator()() const::{lambda(mongo::future_details::SharedStateImpl<mongo::future_details::FakeVoid>*, mongo::future_details::SharedStateImpl<mongo::future_details::FakeVoid>*)#1}>(mongo::future_details::FutureImpl<mongo::future_details::FakeVoid>::then<mongo::(anonymous namespace)::executeCommand(std::shared_ptr<mongo::(anonymous namespace)::HandleRequest::ExecutionContext>)::{lambda()#2}>(mongo::(anonymous namespace)::executeCommand(std::shared_ptr<mongo::(anonymous namespace)::HandleRequest::ExecutionContext>)::{lambda()#2}&&) &&::{lambda()#3}::operator()() const::{lambda(mongo::future_details::SharedStateImpl<mongo::future_details::FakeVoid>*, mongo::future_details::SharedStateImpl<mongo::future_details::FakeVoid>*)#1}&&)::{lambda(mongo::future_details::SharedStateBase*)#1}>(mongo::(anonymous namespace)::executeCommand(std::shared_ptr<mongo::(anonymous namespace)::HandleRequest::ExecutionContext>)::{lambda()#2}&&)::SpecificImpl::call(mongo::future_details::SharedStateBase*&&) - 28
+
+mongo::unique_function<void (mongo::future_details::SharedStateBase*)>::makeImpl<mongo::future_details::FutureImpl<mongo::future_details::FakeVoid>::makeContinuation<void, mongo::future_details::FutureImpl<mongo::future_details::FakeVoid>::then<mongo::(anonymous namespace)::executeCommand(std::shared_ptr<mongo::(anonymous namespace)::HandleRequest::ExecutionContext>)::{lambda()#1}>(mongo::(anonymous namespace)::executeCommand(std::shared_ptr<mongo::(anonymous namespace)::HandleRequest::ExecutionContext>)::{lambda()#1}&&) &&::{lambda()#3}::operator()() const::{lambda(mongo::future_details::SharedStateImpl<mongo::future_details::FakeVoid>*, mongo::future_details::SharedStateImpl<mongo::future_details::FakeVoid>*)#1}>(mongo::future_details::FutureImpl<mongo::future_details::FakeVoid>::then<mongo::(anonymous namespace)::executeCommand(std::shared_ptr<mongo::(anonymous namespace)::HandleRequest::ExecutionContext>)::{lambda()#1}>(mongo::(anonymous namespace)::executeCommand(std::shared_ptr<mongo::(anonymous namespace)::HandleRequest::ExecutionContext>)::{lambda()#1}&&) &&::{lambda()#3}::operator()() const::{lambda(mongo::future_details::SharedStateImpl<mongo::future_details::FakeVoid>*, mongo::future_details::SharedStateImpl<mongo::future_details::FakeVoid>*)#1}&&)::{lambda(mongo::future_details::SharedStateBase*)#1}>(mongo::(anonymous namespace)::executeCommand(std::shared_ptr<mongo::(anonymous namespace)::HandleRequest::ExecutionContext>)::{lambda()#1}&&)::SpecificImpl::call(mongo::future_details::SharedStateBase*&&) - 28
+
+mongo::transport::TransportLayerASIO::BatonASIO::run_until(mongo::ClockSource*, mongo::Date_t) - 28
+
+mongo::transport::TransportLayerASIO::BatonASIO::run(mongo::ClockSource*) - 28
+
+mongo::transport::ServiceStateMachine::Impl::processMessage() - 28
+
+mongo::ServiceEntryPointMongod::handleRequest(mongo::OperationContext*, mongo::Message const&) - 28
+
+mongo::ServiceEntryPointCommon::handleRequest(mongo::OperationContext*, mongo::Message const&, std::unique_ptr<mongo::ServiceEntryPointCommon::Hooks const, std::default_delete<mongo::ServiceEntryPointCommon::Hooks const> >) - 28
+
+mongo::repl::(anonymous namespace)::CmdHello::runWithReplyBuilder(mongo::OperationContext*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, mongo::BSONObj const&, mongo::rpc::ReplyBuilderInterface*) - 28
+
+mongo::repl::(anonymous namespace)::appendReplicationInfo(mongo::OperationContext*, mongo::BSONObjBuilder*, bool, bool, boost::optional<mongo::TopologyVersion>, boost::optional<long>) - 28
+
+mongo::OperationContext::waitForConditionOrInterruptNoAssertUntil(mongo::stdx::condition_variable&, mongo::BasicLockableAdapter, mongo::Date_t) - 28
+
+mongo::Interruptible::waitForConditionOrInterruptUntil<std::unique_lock<mongo::latch_detail::Latch>, mongo::Interruptible::sleepFor(mongo::Duration<std::ratio<1l, 1000l> >)::{lambda()#2}>(mongo::stdx::condition_variable&, std::unique_lock<mongo::latch_detail::Latch>&, mongo::Date_t, mongo::Interruptible::sleepFor(mongo::Duration<std::ratio<1l, 1000l> >)::{lambda()#2}, mongo::AtomicWord<long>*)::{lambda(mongo::Date_t, mongo::Interruptible::WakeSpeed)#5}::operator()(mongo::Date_t, mongo::Interruptible::WakeSpeed) const - 28
+
+mongo::Interruptible::sleepFor(mongo::Duration<std::ratio<1l, 1000l> >) - 28
+
+mongo::future_details::FutureImpl<mongo::future_details::FakeVoid>::then<mongo::transport::ServiceStateMachine::Impl::startNewLoop(mongo::Status const&)::{lambda()#2}>(mongo::transport::ServiceStateMachine::Impl::startNewLoop(mongo::Status const&)::{lambda()#2}&&) &&::{lambda(mongo::future_details::FakeVoid&&)#1}::operator()(mongo::future_details::FakeVoid&&) const [clone .isra.717] - 28
+
+mongo::CommandHelpers::runCommandInvocation(std::shared_ptr<mongo::RequestExecutionContext>, std::shared_ptr<mongo::CommandInvocation>, mongo::transport::ServiceExecutor::ThreadingModel) - 28
+
+mongo::CommandHelpers::runCommandInvocation(mongo::OperationContext*, mongo::OpMsgRequest const&, mongo::CommandInvocation*, mongo::rpc::ReplyBuilderInterface*) - 28
+
+mongo::ClockSource::waitForConditionUntil(mongo::stdx::condition_variable&, mongo::BasicLockableAdapter, mongo::Date_t, mongo::Waitable*) - 28
+
+mongo::BasicCommandWithReplyBuilderInterface::Invocation::run(mongo::OperationContext*, mongo::rpc::ReplyBuilderInterface*) - 28
+
+mongo::(anonymous namespace)::runCommandInvocation(std::shared_ptr<mongo::RequestExecutionContext>, std::shared_ptr<mongo::CommandInvocation>) - 28
+
+mongo::(anonymous namespace)::RunCommandImpl::_runImpl() - 28
+
+mongo::(anonymous namespace)::RunCommandImpl::_runCommand() - 28
+
+mongo::(anonymous namespace)::RunCommandImpl::run() - 28
+
+mongo::(anonymous namespace)::receivedCommands(std::shared_ptr<mongo::(anonymous namespace)::HandleRequest::ExecutionContext>) - 28
+
+mongo::(anonymous namespace)::executeCommand(std::shared_ptr<mongo::(anonymous namespace)::HandleRequest::ExecutionContext>)::{lambda()#2}::operator()() - 28
+
+mongo::(anonymous namespace)::executeCommand(std::shared_ptr<mongo::(anonymous namespace)::HandleRequest::ExecutionContext>) - 28
+
+mongo::(anonymous namespace)::ExecCommandDatabase::_commandExec() - 28
+
+mongo::(anonymous namespace)::CommandOpRunner::run() - 28
+
+auto mongo::future_details::FutureImpl<mongo::future_details::FakeVoid>::generalImpl<mongo::future_details::FutureImpl<mongo::future_details::FakeVoid>::propagateResultTo(mongo::future_details::SharedStateImpl<mongo::future_details::FakeVoid>*) &&::{lambda(mongo::future_details::FakeVoid&&)#1}, mongo::future_details::FutureImpl<mongo::future_details::FakeVoid>::propagateResultTo(mongo::future_details::SharedStateImpl<mongo::future_details::FakeVoid>*) &&::{lambda(mongo::Status&&)#2}, mongo::future_details::FutureImpl<mongo::future_details::FakeVoid>::propagateResultTo(mongo::future_details::SharedStateImpl<mongo::future_details::FakeVoid>*) &&::{lambda()#3}>(mongo::future_details::FutureImpl<mongo::future_details::FakeVoid>::propagateResultTo(mongo::future_details::SharedStateImpl<mongo::future_details::FakeVoid>*) &&::{lambda(mongo::future_details::FakeVoid&&)#1}&&, mongo::future_details::FutureImpl<mongo::future_details::FakeVoid>::propagateResultTo(mongo::future_details::SharedStateImpl<mongo::future_details::FakeVoid>*) &&::{lambda(mongo::Status&&)#2}&&, mongo::future_details::FutureImpl<mongo::future_details::FakeVoid>::propagateResultTo(mongo::future_details::SharedStateImpl<mongo::future_details::FakeVoid>*) &&::{lambda()#3}&&) - 28
+
