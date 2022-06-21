@@ -1,7 +1,10 @@
+import math
 from queue import Queue
 import json
 import re
 import pydot
+import numpy as np
+import matplotlib.pyplot as plt
 
 # childrenMap = Dictionary with Key as "Function Name" and Value as the "Next" Node
 # data = Entire "Function" String
@@ -33,8 +36,7 @@ def countTotalFunctions(totaFunctionCounts,stack):
             totalFunctionCounts[currFunction] = 1
 
 nodeNum=0
-minimumCount=100000000
-maximumCount=-1
+countsDictionary={}
 def insertInRoot(root,stack,totalFunctionCounts):
     global nodeNum
     functionsList=[]
@@ -68,17 +70,27 @@ def insertInRoot(root,stack,totalFunctionCounts):
             # Would require to add double quotes around function name, but now already replaced colons with semicolons, so no need
             newChildNode=pydot.Node(str((function,nodeNum )))
             currNode.childrenMap[function] = Node(function,nodeNum,newChildNode)
-
             graph.add_node(newChildNode)
-
             nodeNum=nodeNum+1
+
+            # Updating Counts Dictionary
+            if 1 not in countsDictionary:
+                countsDictionary[1]=0
+            countsDictionary[1]+=1
         else:
+            countsDictionary[currNode.childrenMap[function].count]-=1
+            # only trie operation present here, rest are manipulating countsDictionary
             currNode.childrenMap[function].count +=1
+
+            if currNode.childrenMap[function].count not in countsDictionary:
+                countsDictionary[currNode.childrenMap[function].count]=0
+            countsDictionary[currNode.childrenMap[function].count]+=1
         currNode=currNode.childrenMap[function]
 
-colorsList=["FFA500","FFA50099","FFA50075","FFA50050","FFA50010"]
+colorsList=["#FFA500","#FFA50099","#FFA50075","#FFA50050","#FFA50040"]
+
 # Used to traverse the Trie in level order and create edges of existing ndoes.
-def traversal(root):
+def traversal(root,maximumCount,minimumCount):
     q = Queue()
     q.put(root)
     while not q.empty():
@@ -91,11 +103,12 @@ def traversal(root):
             newChildNode=childValue.graphNode
             newChildNode.set('label',childValue.data[:100] + "\nCount: " + str(childValue.count))
            
-            # newChildNode.set('color','blue')
             newChildNode.set('style','filled')
-            newChildNode.set('fillcolor','#FFA50099')
+            currCount = childValue.count
+            normalizedCountIndexColor = min(len(colorsList)-1,math.floor((((maximumCount-currCount)/(maximumCount-minimumCount)) * 1.0) * len(colorsList)))
+            newChildNode.set('fillcolor',colorsList[normalizedCountIndexColor])
             # newChildNode.set('fontcolor','white')
-            # pydot.Node().add_style
+
             edge=pydot.Edge(temporaryFront.graphNode,childValue.graphNode)
             graph.add_edge(edge)
 
@@ -133,18 +146,45 @@ totalFunctionCounts["Root"]=1
 for stack in stacks:
     insertInRoot(root,stack,totalFunctionCounts)
 
+
+maximumCount = max(k for k, v in countsDictionary.items() if v > 0)
+minimumCount = min(k for k, v in countsDictionary.items() if v > 0)
+
 print("Creating Visualization")
 # Insert Edges
-traversal(root)
+traversal(root,maximumCount,minimumCount)
 
 
 print("completed")
 
-graph.write_pdf('output.pdf')
+graph.write_png('graphs/flameGraph.png') # or pdf too
 
-# Utility to sort counts for checking
-sortedCounts=dict(sorted(totalFunctionCounts.items(), key=lambda item: item[1]))
 
+
+numIterations=int(values["numCalls"])
+fig = plt.figure()
+for i in range(0,numIterations):
+    stateMap={}
+    for threadId in values["threads"]:
+        currState=values["threads"][threadId]["iterations"][i]["threadState"]
+        if currState not in stateMap:
+            stateMap[currState]=1
+        else:
+            stateMap[currState]+=1
+    countList=[]
+    labels=[]
+    explode=[]
+    for state in stateMap:
+        countList.append(stateMap[state])
+        labels.append(state)
+        if(state=="R"):
+            explode.append(0.2)
+        else:
+            explode.append(0)
+    plt.subplot(1,numIterations,i+1)
+    plt.pie(countList, labels = labels, explode = explode)
+
+plt.savefig('graphs/statePie')
 
 
 # Trial Graph Code

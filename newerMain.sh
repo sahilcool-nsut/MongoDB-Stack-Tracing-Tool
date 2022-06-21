@@ -95,7 +95,8 @@ multiThreadDetail(){
     index=$1
     local fileName="OutputFiles/json$index.json"
     local JSON_STRING=$( jq -n \
-                  '{threads:{}}')
+                    --arg numCalls "$NUMCALLS" \
+                  '{threads:{},numCalls:$numCalls}')
     echo "$JSON_STRING" > $fileName
     while read -r detail;
     do
