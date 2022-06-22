@@ -155,9 +155,9 @@ print("Creating Visualization")
 traversal(root,maximumCount,minimumCount)
 
 
-print("completed")
 
-graph.write_png('graphs/flameGraph.png') # or pdf too
+
+graph.write_pdf('graphs/flameGraph.pdf') # or png too
 
 
 
@@ -186,7 +186,7 @@ for i in range(0,numIterations):
 
 plt.savefig('graphs/statePie')
 
-
+print("completed")
 # Trial Graph Code
 
 

@@ -73,11 +73,11 @@ if [ $THREAD_FREQUENCY_THRESHOLD -lt 0 ] || [ $THREAD_FREQUENCY_THRESHOLD -gt $N
     echo "Threshold for Iterations captured should be greater than 0 and less than or equal to NUMCALLS (number of iterations)"
     Help
 fi
-echo "$CPU_THRESHOLD"
-echo "$TOP_N_THREADS"
-echo "$INTERVAL"
-echo "$NUMCALLS"
-echo "$THREAD_FREQUENCY_THRESHOLD"
+echo "CPU Threshold: $CPU_THRESHOLD"
+echo "Top N Threads: $TOP_N_THREADS"
+echo "Interval (s): $INTERVAL"
+echo "Number of Iterations: $NUMCALLS"
+echo "Iteration Threshold for thread: $THREAD_FREQUENCY_THRESHOLD"
 
 # --------------Arguments--------------
 currTime=$(($(date +%s%N)/1000000))
@@ -122,7 +122,7 @@ multiThreadDetail(){
         --arg threadStack "$stack" \
         --arg currTime "$currTime" \
         --arg iteration "$index" \
-        '.threads += {($threadId): {threadId: $threadId, iterations: [{iteration: $iteration, timeStamp: $currTime, threadName: $threadName, threadState: $threadState, threadCPU: $threadCPU, threadStack: $threadStack}] }}' $fileName)
+        '.threads += {($threadId): {threadId: $threadId, iterations: [{iteration: $iteration, timeStamp: $currTime, threadId:$threadId,threadName: $threadName, threadState: $threadState, threadCPU: $threadCPU, threadStack: $threadStack, analysis:{}}] }}' $fileName)
         echo "$JSON_TEMP" > $fileName
     # Have to sort by 1st field (threadId) so that order of taking stack remains consistent in all threads. 
     done < <(top -H -bn1 | grep -m $TOP_N_THREADS "conn" | sort -n -k1) 
@@ -159,6 +159,49 @@ thresholdRecords(){
         cat $OUTPUT_MERGED_JSON > "temporary.json"
     done
     sudo rm "temporary.json"
+}
+
+assignQueryType(){
+    # Read all thread IDs. Necessary as threadIds are required later
+    threadIds=()
+    while read -r line;do
+        threadIds+=("$line")
+    done< <(jq --raw-output '.threads[] | .threadId' $OUTPUT_MERGED_JSON)
+
+    
+    # Read stack for each threadId
+    for threadId in "${threadIds[@]}";do
+        for ((i=0;i<NUMCALLS;i++)); do
+
+            # Extract current Stack
+            local currIteration=$i 
+            local currStack="$(jq --arg threadId $threadId --arg iteration $i '.threads[] | select(.threadId==$threadId) | .iterations[] | select(.iteration==$iteration) | .threadStack' $OUTPUT_MERGED_JSON)"
+            currStack="$(echo -e "$currStack")"
+
+
+            
+            # Analysis field is already created in the iteration adding step
+            declare -A analysisMap
+            
+            # Start Analysis by filling analysis map with key = property, and value = propertyVaue
+            while read -r individualLine; do
+
+                if [[ $individualLine == *"recvmsg"* ]]; then
+                    analysisMap["queryType"]="Idle"
+                    break
+                fi
+            done <<< "$currStack"
+
+            # Traverse analysisMap and add fields in the analysis object. JQ FORMAT IS IMPORTANT (basically |= to update and we wanted the entire file back, hence had to update everything since start. Also after |=, next field has to be enclosed in (). While adding new field, Key has to be enclosed in ())
+            for key in "${!analysisMap[@]}"; do
+                tmp=$(mktemp)
+                jq --arg threadId $threadId --argjson iteration $currIteration --arg key "${key}" --arg value "${analysisMap[$key]}" '.threads |= (.[$threadId] |= (.iterations[$iteration] |= (.analysis += {($key):$value})))' $OUTPUT_MERGED_JSON > "$tmp" && mv "$tmp" $OUTPUT_MERGED_JSON
+                # sudo rm "$tmp"
+                          
+            done 
+        done
+      
+    done
 }
 
 getFunctionCounts(){
@@ -230,11 +273,14 @@ currTime=$(($(date +%s%N)/1000000))
 echo "Thresholding starting: $currTime"
 thresholdRecords
 
+# currTime=$(($(date +%s%N)/1000000))
+# echo "Function Call Starting Time: $currTime"
+# declare -A functionCallCounts
+# getFunctionCounts
+
 currTime=$(($(date +%s%N)/1000000))
 echo "Function Call Starting Time: $currTime"
-declare -A functionCallCounts
-getFunctionCounts
-
+assignQueryType
 
 currTime=$(($(date +%s%N)/1000000))
 echo "Ending time: $currTime"
