@@ -97,15 +97,18 @@ def traversal(root,maximumCount,minimumCount):
         temporaryFront = q.get()
         parentNode=temporaryFront.graphNode
         # Took substring of entire function for now (even though it doesnt make sense, but need it for some level of visualization)
-        parentNode.set('label',temporaryFront.data[:100] + "\nCount: " + str(temporaryFront.count))
+        parentNode.set('label',temporaryFront.data[:200] + "\nCount: " + str(temporaryFront.count))
 
         for childKey,childValue in temporaryFront.childrenMap.items():
             newChildNode=childValue.graphNode
-            newChildNode.set('label',childValue.data[:100] + "\nCount: " + str(childValue.count))
+            newChildNode.set('label',childValue.data[:200] + "\nCount: " + str(childValue.count))
            
             newChildNode.set('style','filled')
             currCount = childValue.count
-            normalizedCountIndexColor = min(len(colorsList)-1,math.floor((((maximumCount-currCount)/(maximumCount-minimumCount)) * 1.0) * len(colorsList)))
+            try:
+                normalizedCountIndexColor = min(len(colorsList)-1,math.floor((((maximumCount-currCount)/(maximumCount-minimumCount)) * 1.0) * len(colorsList)))
+            except:
+                normalizedCountIndexColor=0
             newChildNode.set('fillcolor',colorsList[normalizedCountIndexColor])
             # newChildNode.set('fontcolor','white')
 
@@ -121,18 +124,19 @@ print("Starting")
 jsonFile = open('OutputFiles/merged.json', 'r')
 values = json.load(jsonFile)
 stacks=[]
-currentIterationBeingConsidered=1
+currentIterationBeingConsidered=1   # For single iteration, abhi considering all
 
 totalFunctionCounts={}  # For cross checking if counts are correct
 
 print("Extracting Stacks")
 for threadId in values["threads"]:
-    currStack=values["threads"][threadId]["iterations"][currentIterationBeingConsidered]["threadStack"]
-    # Corner case for bad stacks colelcted
-    if len(currStack.split('\n')) <=1:
-        continue
-    stacks.append(currStack)
-    countTotalFunctions(totalFunctionCounts,currStack)
+    for i in range(0,len(values["threads"][threadId]["iterations"])):
+        currStack=values["threads"][threadId]["iterations"][i]["threadStack"]
+        # Corner case for bad stacks colelcted
+        if len(currStack.split('\n')) <=1:
+            continue
+        stacks.append(currStack)
+        countTotalFunctions(totalFunctionCounts,currStack)
 
 
 print("Creating Trie")
@@ -146,9 +150,12 @@ totalFunctionCounts["Root"]=1
 for stack in stacks:
     insertInRoot(root,stack,totalFunctionCounts)
 
-
-maximumCount = max(k for k, v in countsDictionary.items() if v > 0)
-minimumCount = min(k for k, v in countsDictionary.items() if v > 0)
+if len(countsDictionary)>0:
+    maximumCount = max(k for k, v in countsDictionary.items() if v > 0)
+    minimumCount = min(k for k, v in countsDictionary.items() if v > 0)
+else:
+    maximumCount=0
+    minimumCount=0
 
 print("Creating Visualization")
 # Insert Edges
@@ -160,9 +167,12 @@ traversal(root,maximumCount,minimumCount)
 graph.write_pdf('graphs/flameGraph.pdf') # or png too
 
 
-
+# Create Pie Graph of States
 numIterations=int(values["numCalls"])
+stateNamesMap={"S":"Sleeping\n(Interruptable)","R":"Running","t":"Stopped","D":"Sleeping\n(Uninterruptable)","Z":"Zombie"}
 fig = plt.figure()
+rowNum=math.floor(i/2) + 1
+colNum=2
 for i in range(0,numIterations):
     stateMap={}
     for threadId in values["threads"]:
@@ -176,12 +186,15 @@ for i in range(0,numIterations):
     explode=[]
     for state in stateMap:
         countList.append(stateMap[state])
-        labels.append(state)
+        labels.append(stateNamesMap[state])
         if(state=="R"):
             explode.append(0.2)
         else:
             explode.append(0)
-    plt.subplot(1,numIterations,i+1)
+    if colNum==0:
+        colNum=1
+    plt.subplot(rowNum,colNum,i+1)
+    
     plt.pie(countList, labels = labels, explode = explode)
 
 plt.savefig('graphs/statePie')

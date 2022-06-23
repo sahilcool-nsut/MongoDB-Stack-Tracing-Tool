@@ -181,14 +181,61 @@ assignQueryType(){
 
             
             # Analysis field is already created in the iteration adding step
+            unset analysisMap
             declare -A analysisMap
-            
+            # set default as running, if recvmsg found, then will overwrite
+            analysisMap["queryState"]="Running"
             # Start Analysis by filling analysis map with key = property, and value = propertyVaue
             while read -r individualLine; do
-
                 if [[ $individualLine == *"recvmsg"* ]]; then
-                    analysisMap["queryType"]="Idle"
+                    analysisMap["queryState"]="Idle"
                     break
+                fi
+
+                # Which stage is included in call stack (usually in top of stack)
+                if [[ $individualLine == *"CollectionScan"* ]]; then
+                    analysisMap["includesCollectionScanStage"]="True"
+                fi
+                if [[ $individualLine == *"CountStage"* ]]; then
+                    analysisMap["includesCountingStage"]="True"
+                fi
+                if [[ $individualLine == *"SortStage"* ]]; then
+                    analysisMap["includesSortingStage"]="True"
+                fi
+                if [[ $individualLine == *"UpdateStage"* ]]; then
+                    analysisMap["includesUpdationStage"]="True"
+                fi
+                if [[ $individualLine == *"ProjectionStage"* ]]; then
+                    analysisMap["includesProjectionStage"]="True"
+                fi
+
+                # Query Type by Invocation Function in call stack
+                if [[ $individualLine == *"FindCmd"* ]]; then
+                    analysisMap["queryType"]="Find"
+                fi
+                if [[ $individualLine == *"CmdFindAndModify"* ]]; then
+                    analysisMap["queryType"]="FindAndModify"
+                fi
+                if [[ $individualLine == *"PipelineCommand"* ]]; then
+                    analysisMap["queryType"]="Pipeline"
+                fi
+                if [[ $individualLine == *"runAggregate"* ]]; then
+                    analysisMap["queryType"]="Aggregation"
+                fi
+                if [[ $individualLine == *"CmdInsert"* ]]; then
+                    analysisMap["queryType"]="Insert"
+                fi
+
+                # Highest level in stack, to capture these, interval has to be very precise 
+                if [[ $individualLine == *"PathMatchExpression"* ]]; then
+                    analysisMap["currentlyMatchingDocuments"]="Matching Path for expression (still deciding path)"
+                fi
+                if [[ $individualLine == *"InMatchExpression"* ]]; then
+                    analysisMap["currentlyMatchingDocuments"]="Matching 'in' expression"
+                fi
+                
+                if [[ $individualLine == *"ComparisonMatchExpression"* ]]; then
+                    analysisMap["currentlyComparingValues"]="True"
                 fi
             done <<< "$currStack"
 
@@ -281,6 +328,12 @@ thresholdRecords
 currTime=$(($(date +%s%N)/1000000))
 echo "Function Call Starting Time: $currTime"
 assignQueryType
+
+
+
+currTime=$(($(date +%s%N)/1000000))
+echo "Creating Graphs at time :$currTime"
+python graphs.py
 
 currTime=$(($(date +%s%N)/1000000))
 echo "Ending time: $currTime"
