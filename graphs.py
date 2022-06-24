@@ -171,7 +171,7 @@ graph.write_pdf('graphs/flameGraph.pdf') # or png too
 numIterations=int(values["numCalls"])
 stateNamesMap={"S":"Sleeping\n(Interruptable)","R":"Running","t":"Stopped","D":"Sleeping\n(Uninterruptable)","Z":"Zombie"}
 fig = plt.figure()
-rowNum=math.floor(i/2) + 1
+rowNum=math.floor(numIterations/2) + 1
 colNum=2
 for i in range(0,numIterations):
     stateMap={}
