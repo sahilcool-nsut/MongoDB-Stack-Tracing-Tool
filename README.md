@@ -14,6 +14,7 @@ Currently, it also uses a python script to generate the following graphs
 To install its dependencies, a requirements.txt file is provided
 
 To run the script, provide 2 required parameters as shown below
+
 Syntax: ./stackTraceTool.sh [-n 3 -I 0.5] [-c|N|h|t]
 options:
 1) n       Provide number of iterations for stack (REQUIRED).
@@ -24,5 +25,6 @@ options:
 6) h       Show the help menu
 
 Potential Issues: 
-While running the script without sudo permission, it might ask for sudo password while running the script. After entering it, the results of that iteration won't be meaningful, so it may be required to restart the script. 
-The program also creates temporary files
+While running the script without sudo permission, it might ask for sudo password while running the script. After entering it, the results of that iteration won't be meaningful, so it may be required to restart the script.
+
+The program also creates temporary files which are deleted in the process
