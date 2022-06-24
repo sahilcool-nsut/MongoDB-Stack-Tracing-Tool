@@ -73,6 +73,8 @@ if [ $THREAD_FREQUENCY_THRESHOLD -lt 0 ] || [ $THREAD_FREQUENCY_THRESHOLD -gt $N
     echo "Threshold for Iterations captured should be greater than 0 and less than or equal to NUMCALLS (number of iterations)"
     Help
 fi
+echo "Parameters used: "
+echo ""
 echo "CPU Threshold: $CPU_THRESHOLD"
 echo "Top N Threads: $TOP_N_THREADS"
 echo "Interval (s): $INTERVAL"
@@ -91,6 +93,7 @@ NL=$'\n'                                    #Newline character used for some par
 
 
 # --------------Function Definitions--------------
+# Main function used to collect stacks of running threads in a multiprocessing architecture
 multiThreadDetail(){
     index=$1
     local fileName="OutputFiles/json$index.json"
@@ -147,7 +150,6 @@ mergeJson(){
 
 thresholdRecords(){
     threadIdsToRemove=()
-    echo $THREAD_FREQUENCY_THRESHOLD
     while read -r line;do
         echo $line
         threadIdsToRemove+=("$line")
@@ -192,7 +194,7 @@ assignQueryType(){
             # Start Analysis by filling analysis map with key = property, and value = propertyVaue
             while read -r individualLine; do
                 
-                # Major analysis is done at this point, dont need to traverse ahead.
+                # Major analysis is done at this point, dont need to traverse ahead in the call stack
                 if [[ $individualLine == *"ExecCommandDatabase::_commandExec"* ]]; then
                         break
                 fi
@@ -330,8 +332,6 @@ getFunctionCounts(){
 }
 
 # --------------Program Flow--------------
-# Create Output File
-echo > $OUTPUT_FILE_NAME
 
 # Going in!!
 # Get PID of mongod
@@ -351,22 +351,23 @@ echo "Merging"
 mergeJson
 echo "Merged"
 
-
+echo ""
 currTime=$(($(date +%s%N)/1000000))
 echo "Thresholding starting: $currTime"
 thresholdRecords
 
-
+echo ""
 currTime=$(($(date +%s%N)/1000000))
-echo "Assign Query Starting Time: $currTime"
+echo "Query Analysis Starting Time: $currTime"
 assignQueryType
 
 
-
+echo ""
 currTime=$(($(date +%s%N)/1000000))
 echo "Creating Graphs at time :$currTime"
 python graphs.py
 
+echo ""
 currTime=$(($(date +%s%N)/1000000))
 echo "Ending time: $currTime"
 
