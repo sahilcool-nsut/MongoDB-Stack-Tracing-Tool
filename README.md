@@ -27,4 +27,4 @@ options:
 Potential Issues: 
 While running the script without sudo permission, it might ask for sudo password while running the script. After entering it, the results of that iteration won't be meaningful, so it may be required to restart the script.
 
-The program also creates temporary files
+The program also creates temporary files which are deleted in the process
