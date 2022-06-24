@@ -178,24 +178,42 @@ assignQueryType(){
             local currStack="$(jq --arg threadId $threadId --arg iteration $i '.threads[] | select(.threadId==$threadId) | .iterations[] | select(.iteration==$iteration) | .threadStack' $OUTPUT_MERGED_JSON)"
             currStack="$(echo -e "$currStack")"
 
-
+            local currState="$(jq --arg threadId $threadId --arg iteration $i '.threads[] | select(.threadId==$threadId) | .iterations[] | select(.iteration==$iteration) | .threadState' $OUTPUT_MERGED_JSON)"
             
             # Analysis field is already created in the iteration adding step
+            # clear map for fresh iteration
             unset analysisMap
             declare -A analysisMap
             # set default as running, if recvmsg found, then will overwrite
-            analysisMap["queryState"]="Running"
+            if [[ $currState == "R" ]];then
+                analysisMap["queryState"]="Running"
+            fi
+
             # Start Analysis by filling analysis map with key = property, and value = propertyVaue
             while read -r individualLine; do
+                
+                # Major analysis is done at this point, dont need to traverse ahead.
+                if [[ $individualLine == *"ExecCommandDatabase::_commandExec"* ]]; then
+                        break
+                fi
                 if [[ $individualLine == *"recvmsg"* ]]; then
+                    # echo "Idle Found"
                     analysisMap["queryState"]="Idle"
                     break
                 fi
-
-                # Which stage is included in call stack (usually in top of stack)
-                if [[ $individualLine == *"CollectionScan"* ]]; then
-                    analysisMap["includesCollectionScanStage"]="True"
+                if [[ $individualLine == *"__poll"* ]]; then
+                    # echo "Idle Found"
+                    analysisMap["queryState"]="Idle"
+                    break
                 fi
+                # Type of scan encountered
+                if [[ $individualLine == *"CollectionScan"* ]]; then
+                    analysisMap["includesCollectionScan"]="True"
+                fi
+                if [[ $individualLine == *"CountScan"* ]]; then
+                    analysisMap["includesCountScan"]="True"
+                fi
+                # Which stage is included in call stack (usually in top of stack)
                 if [[ $individualLine == *"CountStage"* ]]; then
                     analysisMap["includesCountingStage"]="True"
                 fi
@@ -213,6 +231,9 @@ assignQueryType(){
                 if [[ $individualLine == *"FindCmd"* ]]; then
                     analysisMap["queryType"]="Find"
                 fi
+                if [[ $individualLine == *"CmdCount"* ]]; then
+                    analysisMap["queryType"]="Count"
+                fi
                 if [[ $individualLine == *"CmdFindAndModify"* ]]; then
                     analysisMap["queryType"]="FindAndModify"
                 fi
@@ -226,16 +247,33 @@ assignQueryType(){
                     analysisMap["queryType"]="Insert"
                 fi
 
+                # # other useful information
+                # if [[ $individualLine == *"RunCommandAndWaitForWriteConcern"* ]]; then
+                #     analysisMap["runningParallelWithInsert"]="True"
+                # fi
+
                 # Highest level in stack, to capture these, interval has to be very precise 
+
+                if [[ $individualLine == *"ExprMatchExpression"* ]]; then
+                    analysisMap["includesExpressionMatching"]="True"
+                fi
                 if [[ $individualLine == *"PathMatchExpression"* ]]; then
                     analysisMap["currentlyMatchingDocuments"]="Matching Path for expression (still deciding path)"
                 fi
                 if [[ $individualLine == *"InMatchExpression"* ]]; then
                     analysisMap["currentlyMatchingDocuments"]="Matching 'in' expression"
                 fi
-                
+                if [[ $individualLine == *"RegexMatchExpression"* ]]; then
+                    analysisMap["currentlyMatchingDocuments"]="Matching 'Regex' expression"
+                fi
                 if [[ $individualLine == *"ComparisonMatchExpression"* ]]; then
                     analysisMap["currentlyComparingValues"]="True"
+                fi
+                if [[ $individualLine == *"getNextDocument"* ]]; then
+                    analysisMap["fetchingNextDocument"]="True"
+                fi
+                if [[ $individualLine == *"compareElementStringValues"* ]]; then
+                    analysisMap["currentlyComparingStringValues"]="True"
                 fi
             done <<< "$currStack"
 
@@ -326,7 +364,7 @@ thresholdRecords
 # getFunctionCounts
 
 currTime=$(($(date +%s%N)/1000000))
-echo "Function Call Starting Time: $currTime"
+echo "Assign Query Starting Time: $currTime"
 assignQueryType
 
 
