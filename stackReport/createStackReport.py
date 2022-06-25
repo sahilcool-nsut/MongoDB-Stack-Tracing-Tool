@@ -185,6 +185,13 @@ def createFlameGraph(threads):
         <iframe src="graphs/flameGraph.pdf" title="Flame Graph" height="100%" width="100%" /></iframe>
         <hr class="solid">
     '''
+    # imgString=image_file_path_to_base64_string('graphs/flameGraph.png')
+    # htmlData+='''
+    #     <h2>Flame Graph</h2>
+    #     <p> Shows the call stack in the form of a tree </p>
+    #     <img src="data:image/png;base64,''' + imgString + '''" title="Flame Graph" height="100%" width="100%" /></img>
+    #     <hr class="solid">
+    # '''
     return flameGraph
 
 # Function to create the State Distribution Pie Graph. Also creates a table with state frequencies
@@ -280,9 +287,9 @@ def createIdenticalStackTracesGraph(threads):
 
     # creating the bar plot with dynamic X size, if width of bar = w, total width given is 2*w + 5.
     # Used bbox_inches='tight' to avoid any unnecessary padding on sides of image
-    plt.figure(figsize=(0.6*len(barGraphX) + 5,7)) 
+    plt.figure(figsize=(1.0*len(barGraphX) + 5,7)) 
     plt.bar(barGraphX, barGraphY, color="#FFAD2F",  edgecolor='blue',
-            width = 0.3)
+            width = 0.5)
     
     plt.ylabel("No. of threads")
     plt.title("Identical Stack Traces amongst Threads")
@@ -303,10 +310,10 @@ def createIdenticalStackTracesGraph(threads):
     i=1
     for stackTrace,threadList in stackTraceCount.items():
         # Necessary to replace new lines with br to actually break line in HTML
-        stackTrace = stackTrace.replace("\n","<br><br>")
+        # stackTrace = stackTrace.replace("\n","<br><br>")
         htmlData+="<tr>"
         htmlData+="<td style='text-align:center'>" + "S" + str(i) + "</td>"
-        htmlData+="<td>" + stackTrace[:100] + "....</td>"
+        htmlData+="<td style='white-space: pre-line' class='readMore'>" + stackTrace + "....</td>"
         htmlData+="<td style='text-align:center'>" + str(len(threadList)) + "</td>"
         htmlData+="<td style='text-align:center'>" + ', '.join(threadList) + "</td>"
         htmlData+="<tr>"
@@ -380,13 +387,14 @@ def createConsumingThreadTable(threads):
     for threadID,thread in threads.items():
         if i==5:
             break
-        currStack = thread.threadStack.replace("\n","<br>")
+        # currStack = thread.threadStack.replace("\n","<br>")
+        currStack = thread.threadStack
         htmlData+="<tr>"
         htmlData+="<td style='text-align:center'>" + threadID + "</td>"
         htmlData+="<td style='text-align:center'>" + thread.threadName + "</td>"
         htmlData+="<td style='text-align:center'>" + thread.threadState + "</td>"
         htmlData+="<td style='text-align:center'>" + str(thread.threadCpu)+ "</td>"
-        htmlData+="<td>" + currStack + "</td>"
+        htmlData+='<td style="white-space: pre-line" class="readMore">' + currStack + "</td>"
         htmlData+="<tr>"
         i+=1
     htmlData+='''
@@ -394,16 +402,29 @@ def createConsumingThreadTable(threads):
     <hr class="solid">
     '''
 
-htmlData=""
-if __name__ == "__main__":
-
-    # Open the HTML file and create boilerplate HTML code
-    OUTPUT_FILE = open("StackTraceReport.html","w")
-    htmlData='''
-    <html>
-    <head>
-        <style>
-            * {
+def getJsData():
+    return '''
+    $(document).ready(function() {
+                var max = 200;
+                $(".readMore").each(function() {
+                    var str = $(this).text();
+                    if ($.trim(str).length > max) {
+                        var subStr = str.substring(0, max);
+                        var hiddenStr = str.substring(max, $.trim(str).length);
+                        $(this).empty().html(subStr);
+                        $(this).append(' <a href="javascript:void(0);" class="link">Read more…</a>');
+                        $(this).append('<span class="addText">' + hiddenStr + '</span>');
+                    }
+                });
+                $(".link").click(function() {
+                    $(this).siblings(".addText").contents().unwrap();
+                    $(this).remove();
+                });
+            });
+    '''
+def getCSSData():
+    return '''
+    * {
                 font-family:Arial, Helvetica, sans-serif;
             }
             body{
@@ -434,15 +455,38 @@ if __name__ == "__main__":
                 background-color: #FFFFFF;
                 box-shadow: 0 16px 28px 0 rgb(216 221 230 / 50%);
             }
+
+            .readMore .addText {
+                display: none;
+            }
+    '''
+
+htmlData=""
+if __name__ == "__main__":
+
+    # Open the HTML file and create boilerplate HTML code
+    OUTPUT_FILE = open("StackTraceReport.html","w")
+
+    # HTML Boilerplate, CSS and Javascript code necessary
+    # Currently, Javascript code is for "read more" functionality for stack traces.
+    jsData=getJsData()
+    cssData=getCSSData()
+    htmlData='''
+    <html>
+    <head>
+        <style>
+            '''+cssData+'''
         </style>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script type="text/javascript">
+            '''+jsData+'''
+        </script>
         <title>Stack Trace Report</title>
     </head> 
     <body>
         <h1>Stack Trace report for eu-stack of the mongod server</h1>           
     '''
-    
 
-    
     # Actual driver code for creating the report    
     print("Starting Python script at time: " + str(int(time.time())))
     # Dictionary to access thread objects by threadId
