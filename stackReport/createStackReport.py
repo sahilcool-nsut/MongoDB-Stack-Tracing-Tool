@@ -106,12 +106,14 @@ class FlameGraph:
         while not q.empty():
             temporaryFront = q.get()
             parentNode=temporaryFront.graphNode
+            lineBreakedFunction='\n'.join(temporaryFront.data[i:i+100] for i in range(0, len(temporaryFront.data), 100))
             # Took substring of entire function for now (even though it doesnt make sense, but need it for some level of visualization)
-            parentNode.set('label',temporaryFront.data[:200] + "\nCount: " + str(temporaryFront.count))
+            parentNode.set('label',lineBreakedFunction + "\n\nCount: " + str(temporaryFront.count))
 
             for childKey,childValue in temporaryFront.childrenMap.items():
                 newChildNode=childValue.graphNode
-                newChildNode.set('label',childValue.data[:200] + "\nCount: " + str(childValue.count))
+                lineBreakedFunctionChild='\n'.join(childValue.data[i:i+100] for i in range(0, len(childValue.data), 100))
+                newChildNode.set('label',lineBreakedFunctionChild + "\n\nCount: " + str(childValue.count))
             
                 newChildNode.set('style','filled')
                 currCount = childValue.count
@@ -180,10 +182,15 @@ def createFlameGraph(threads):
     flameGraph.traversal()
     flameGraph.saveGraph()
     htmlData+='''
-        <h2>Flame Graph</h2>
-        <p> Shows the call stack in the form of a tree </p>
-        <iframe src="graphs/flameGraph.pdf" title="Flame Graph" height="100%" width="100%" /></iframe>
-        <hr class="solid">
+        <section id="flameGraph">
+            <h2>II. Call Stack (Flame Graph)</h2>
+            <p> Shows the call stack in the form of a tree </p>
+            <p> Darker the node, more frequently it appeared in the call stack. Individual node counts are also appended in the label </p>
+            <div class="chart-panel">
+                <iframe src="graphs/flameGraph.pdf" title="Flame Graph" height="800px" width="100%" /></iframe>
+            </div>
+            <hr class="solid">
+        </section>
     '''
     # imgString=image_file_path_to_base64_string('graphs/flameGraph.png')
     # htmlData+='''
@@ -261,9 +268,10 @@ def createStateDistributionGraph(threads):
 def createThreadTable(threads):
     global htmlData
     htmlData+='''
-    <h2>Thread Details</h2>
+    <section id="individualThreadDetails">
+    <h2>Individual Thread Details</h2>
     <p> Shows details of each thread </p>
-    <table>
+    <table class="chart-panel">
     <tr>
         <th>Thread ID</th>
         <th>Thread Name</th>
@@ -275,11 +283,12 @@ def createThreadTable(threads):
         htmlData+="<td style='text-align:center'>" + threadID + "</td>"
         htmlData+="<td style='text-align:center'>" + thread.threadName + "</td>"
         htmlData+="<td style='text-align:center'>" + thread.threadState + "</td>"
-        htmlData+="<td style='text-align:center'>" + str(thread.threadCpu)+ "</td>"
+        htmlData+="<td style='text-align:center;font-weight:bold;'>" + str(thread.threadCpu)+ "</td>"
         htmlData+="<tr>"
     htmlData+='''
     </table>
     <hr class="solid">
+    </section>
     '''
 
 # Function to count the frequency of stack traces present, and show a bar graph and table for the same
@@ -307,7 +316,7 @@ def createIdenticalStackTracesGraph(threads):
     # creating the bar plot with dynamic X size, if width of bar = w, total width given is 2*w + 5.
     # Used bbox_inches='tight' to avoid any unnecessary padding on sides of image
     plt.figure(figsize=(1.0*len(barGraphX) + 5,7)) 
-    plt.bar(barGraphX, barGraphY, color="#FFAD2F",  edgecolor='blue',
+    plt.bar(barGraphX, barGraphY, color="#FFAD2F",  edgecolor='#111',
             width = 0.5)
     
     plt.ylabel("No. of threads")
@@ -316,30 +325,33 @@ def createIdenticalStackTracesGraph(threads):
 
     # Create Graph and Table
     htmlData+='''
-    <h2>Identical Stack Traces Distribution</h2>
-    <p> Shows statistics related to frequency of stack traces amongst different threads. Refer to below table for actual stack values </p>
-    <img class="chart-panel" src = "graphs/identicalStackTraceGraph.png" alt = "Identical Stack Traces Distribution" />
-    <table>
-    <tr>
-        <th>Stack Name</th>
-        <th>Stack Trace</th>
-        <th>Thread Count</th>
-        <th>Thread List</th>
-    </tr>'''
+    <section id="stackTraceCount">
+        <h2>III. Identical Stack Traces Distribution</h2>
+        <p> Shows statistics related to frequency of stack traces amongst different threads. Refer to below table for actual stack values </p>
+        <img class="chart-panel" src = "graphs/identicalStackTraceGraph.png" alt = "Identical Stack Traces Distribution" />
+        <table class="chart-panel">
+        <tr>
+            <th>Stack Name</th>
+            <th>Stack Trace</th>
+            <th>Thread Count</th>
+        </tr>
+    '''
+    # Can add thread list too, just add thread list header above and also uncomment threadList in for loop
     i=1
     for stackTrace,threadList in stackTraceCount.items():
         # Necessary to replace new lines with br to actually break line in HTML
         # stackTrace = stackTrace.replace("\n","<br><br>")
         htmlData+="<tr>"
         htmlData+="<td style='text-align:center'>" + "S" + str(i) + "</td>"
-        htmlData+="<td style='white-space: pre-line' class='readMore'>" + stackTrace + "....</td>"
+        htmlData+="<td style='white-space: pre-line' class='readMoreTextHide'>" + stackTrace + "</td>"
         htmlData+="<td style='text-align:center'>" + str(len(threadList)) + "</td>"
-        htmlData+="<td style='text-align:center'>" + ', '.join(threadList) + "</td>"
-        htmlData+="<tr>"
+        # htmlData+="<td style='text-align:center'>" + ', '.join(threadList) + "</td>"
+        htmlData+="</tr>"
         i+=1
     htmlData+='''
     </table>
     <hr class="solid">
+    </section>
     '''
     plt.close()
 
@@ -368,9 +380,10 @@ def createTotalFunctionCountsTable(threads):
     if totalCount==0:
         totalCount=1
     htmlData+='''
+    <section id="mostUsedFunctions">
     <h2>Most Used Functions</h2>
     <p> Shows which functions have been most used across the entire stack trace </p>
-    <table>
+    <table class="chart-panel">
     <tr>
         <th>Thread Count</th>
         <th>Function Name</th>
@@ -379,13 +392,14 @@ def createTotalFunctionCountsTable(threads):
     totalFunctionCounts=dict(sorted(totalFunctionCounts.items(),key=lambda item: item[1],reverse=True))
     for currFunc,currCount in totalFunctionCounts.items():
         htmlData+="<tr>"
-        htmlData+="<td>" + str(currCount) + "</td>"
+        htmlData+="<td style='text-align:center;'>" + str(currCount) + "</td>"
         htmlData+="<td>" + currFunc + "</td>"
-        htmlData+="<td>" + "{:.1f}".format((currCount/totalCount)*100) + "</td>"
+        htmlData+="<td style='text-align:center;'>" + "{:.1f}".format((currCount/totalCount)*100) + "</td>"
         htmlData+="<tr>"
     htmlData+='''
     </table>
     <hr class="solid">
+    </section>
     '''
     return totalFunctionCounts
 
@@ -393,8 +407,9 @@ def createTotalFunctionCountsTable(threads):
 def createConsumingThreadTable(threads):
     global htmlData
     htmlData+='''
+    <section id="cpuConsumingThreads">
     <h2>Top CPU Consuming Threads (Top 5)</h2>
-    <table>
+    <table class="chart-panel">
     <tr>
         <th>Thread ID</th>
         <th>Thread Name</th>
@@ -412,26 +427,27 @@ def createConsumingThreadTable(threads):
         htmlData+="<td style='text-align:center'>" + threadID + "</td>"
         htmlData+="<td style='text-align:center'>" + thread.threadName + "</td>"
         htmlData+="<td style='text-align:center'>" + thread.threadState + "</td>"
-        htmlData+="<td style='text-align:center'>" + str(thread.threadCpu)+ "</td>"
-        htmlData+='<td style="white-space: pre-line" class="readMore">' + currStack + "</td>"
+        htmlData+="<td style='text-align:center;font-weight:bold;'>" + str(thread.threadCpu)+ "</td>"
+        htmlData+='<td class="readMoreTextHide" style="white-space: pre-line">' + currStack + "</td>"
         htmlData+="<tr>"
         i+=1
     htmlData+='''
     </table>
     <hr class="solid">
+    </section>
     '''
 
 def getJsData():
     return '''
     $(document).ready(function() {
                 var max = 200;
-                $(".readMore").each(function() {
+                $(".readMoreTextHide").each(function() {
                     var str = $(this).text();
                     if ($.trim(str).length > max) {
                         var subStr = str.substring(0, max);
                         var hiddenStr = str.substring(max, $.trim(str).length);
                         $(this).empty().html(subStr);
-                        $(this).append(' <a href="javascript:void(0);" class="link">Read more…</a>');
+                        $(this).append(' <a href="javascript:void(0);" class="link">Expand..</a>');
                         $(this).append('<span class="addText">' + hiddenStr + '</span>');
                     }
                 });
@@ -447,13 +463,29 @@ def getCSSData():
                 background-color:#F6FbFb;
             }
             table, th, td {
-                border: 2px solid black;
                 border-collapse: collapse;
                 padding: 8px;
-                font-family: "Lucida Console", "Courier New", monospace;
+                background-color:#FFFFFF;
+            }
+            table{
+                border-radius: 10px;
             }
             th{
-                background-color:#5F9EA0
+                background-color: #111;
+                color:#FFFFFF;
+                text-align:center;
+            }
+            th:first-of-type {
+                border-top-left-radius: 15px;
+            }
+            th:last-of-type {
+                border-top-right-radius: 15px;
+            }
+            tr:last-of-type td:first-of-type {
+                border-bottom-left-radius: 15px;
+            }
+            tr:last-of-type td:last-of-type {
+                border-bottom-right-radius: 15px;
             }
             hr.solid{
                 border: 0;
@@ -470,7 +502,7 @@ def getCSSData():
                 background-color: #FFFFFF;
                 box-shadow: 5px 10px 18px #888888;
             }
-            .readMore .addText {
+            .readMoreTextHide .addText {
                 display: none;
             }
             .sidenav {
@@ -488,7 +520,7 @@ def getCSSData():
             .sidenav a {
                 padding: 6px 32px 6px 32px;
                 text-decoration: none;
-                font-size: 25px;
+                font-size: 18px;
                 color: #818181;
                 display: block;
             }
@@ -529,25 +561,24 @@ if __name__ == "__main__":
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+        <!-- Latest compiled and minified CSS -->
         <style>
             '''+cssData+'''
         </style>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-        
-        <!-- Latest compiled and minified CSS -->
-        <script type="text/javascript">
-            '''+jsData+'''
-        </script>
         <title>Stack Trace Report</title>
     </head> 
     <body>
         <div class="sidenav">
             <div class="sidenav-title"> Eu-Stack Analyzer </div>
             <br>
-            <a href="#threadStateDistribution">Thread State Distribution</a>
-            <a href="#">Services</a>
-            <a href="#">Clients</a>
-            <a href="#">Contact</a>
+            <a href="#threadStateDistribution"> - Thread State Distribution</a>
+            <a href="#flameGraph"> - Call Stack (Flame Graph)</a>
+            <a href="#stackTraceCount"> - Identical Stack Traces Distribution</a>
+            <a href="#cpuConsumingThreads"> - Top CPU Consuming Threads </a>
+            <a href="#mostUsedFunctions"> - Most Used Functions </a>
+            <a href="#individualThreadDetails"> - Individual Thread Details</a>
         </div>
         <div class="main">
 
@@ -567,24 +598,29 @@ if __name__ == "__main__":
     print("Starting creation of state distribution graph at time: " + str(int(time.time())))
     createStateDistributionGraph(threads)
 
-    createThreadTable(threads)
-    
     print("Starting creation of flame graph at time: " + str(int(time.time())))
     createFlameGraph(threads)
-    
+
     print("Starting creation of stack trace count graph at time: " + str(int(time.time())))
     createIdenticalStackTracesGraph(threads)
+
+    print("Starting creation of Most CPU Consuming Threads: " + str(int(time.time())))
+    createConsumingThreadTable(threads)
 
     print("Starting creation of Function Count Table at time: " + str(int(time.time())))
     totalFunctionCounts=createTotalFunctionCountsTable(threads)
 
-    print("Starting creation of Most CPU Consuming Threads: " + str(int(time.time())))
-    createConsumingThreadTable(threads)
+    createThreadTable(threads)
+    
 
     # Finish the html data and save the file
     htmlData+='''
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script type="text/javascript">
+        '''+jsData+'''
+    </script>
     </body>
 </html>'''
     OUTPUT_FILE.write(htmlData)
