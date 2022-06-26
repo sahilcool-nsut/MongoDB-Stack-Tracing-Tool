@@ -219,40 +219,21 @@ def createStateDistributionGraph(threads):
     plt.savefig('graphs/statePie')
     
     htmlData+='''
-    <section id="threadStateDistribution">
-    <h2>I. Thread State Distribution</h2>
+    <h2>Thread State Distribution Graph</h2>
     <p> Pie graph to illustrate the different states of threads present </p>
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-sm">
-                <div class="row">
-        '''
-        
+    <img class="chart-panel" src = "graphs/statePie.png" alt = "Thread State Distribution Graph" />
+    <table>
+    <tr>
+        <th>Thread State</th>
+        <th>Thread Count</th>
+    </tr>'''
     for state in stateCountMap:
-        htmlData+='''
-                    <div class="col">
-                        <div class ="chart-panel" style="padding:12px 24px">
-                            <div style="text-align:center;font-size:48px;font-weight:bold;">
-                    '''
-        htmlData+=str(stateCountMap[state])
-        htmlData+='''       </div>
-                        <hr class='solid'>
-                            <div style="text-align:center;">'''
-        htmlData+=stateNamesMap[state]
-        htmlData+='''
-                            </div>
-                        </div>
-                    </div>
-        '''
+        htmlData+="<tr>"
+        htmlData+="<td style='text-align:center'>" + stateNamesMap[state] + "</td>"
+        htmlData+="<td style='text-align:center'>" + str(stateCountMap[state]) + "</td>"
+        htmlData+="<tr>"
     htmlData+='''
-                </div>
-            </div>
-            <div class="col-sm">
-                <img class="chart-panel" src = "graphs/statePie.png" alt = "Thread State Distribution Graph" />
-            </div>
-        </div>
-    </div>
-    </section>
+    </table>
     <hr class="solid">
     '''
     plt.close()
@@ -466,50 +447,40 @@ def getCSSData():
             .chart-panel {
                 margin: 20px;
                 padding: 20px;
-                border-radius: 20px;
+                border-radius: 10px;
                 background-color: #FFFFFF;
-                box-shadow: 5px 10px 18px #888888;
+                box-shadow: 0 16px 28px 0 rgb(216 221 230 / 50%);
             }
+
             .readMore .addText {
                 display: none;
             }
             .sidenav {
                 height: 100%;
-                width: 250px;
+                width: 200px;
                 position: fixed;
                 z-index: 1;
                 top: 0;
                 left: 0;
                 background-color: #111;
                 overflow-x: hidden;
-                padding-top: 40px;
+                padding-top: 20px;
             }
 
             .sidenav a {
-                padding: 6px 32px 6px 32px;
+                padding: 6px 6px 6px 32px;
                 text-decoration: none;
                 font-size: 25px;
                 color: #818181;
                 display: block;
             }
+
             .sidenav a:hover {
                 color: #f1f1f1;
             }
-            .sidenav-title{
-                padding: 6px 32px 6px 32px;
-                text-decoration: none;
-                font-size: 32px;
-                display: block;
-                color:#FFFFFF;
-                font-weight:bold;
-            }
             @media screen and (max-height: 450px) {
-                .sidenav {padding-top: 15px;}
-                .sidenav a {font-size: 18px;}
-            }
-            .main {
-                margin-left: 300px; /* 30px extra than the width of the sidenav */
-                margin-top:30px;
+            .sidenav {padding-top: 15px;}
+            .sidenav a {font-size: 18px;}
             }
     '''
 
@@ -541,23 +512,20 @@ if __name__ == "__main__":
         <title>Stack Trace Report</title>
     </head> 
     <body>
-        <div class="sidenav">
-            <div class="sidenav-title"> Eu-Stack Analyzer </div>
-            <br>
-            <a href="#threadStateDistribution">Thread State Distribution</a>
-            <a href="#">Services</a>
-            <a href="#">Clients</a>
-            <a href="#">Contact</a>
-        </div>
-        <div class="main">
-
-        <h1>Stack Trace Report for the MongoDB server</h1>
-        <p> Uses eu-stack to collect stack trace and top command for gathering thread details </p>
-        <br>
-        <hr class="solid">           
-        <br>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark" style="padding:12px;">
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo01" aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
+                <a class="navbar-brand" href="#">eu-stack Analyzer</a>
+                <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+            </div>
+        </nav>
+        <h1>Stack Trace report for eu-stack of the mongod server</h1>           
     '''
-
+# <li class="nav-item active">
+            #     <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+            # </li>
     # Actual driver code for creating the report    
     print("Starting Python script at time: " + str(int(time.time())))
     # Dictionary to access thread objects by threadId
@@ -583,7 +551,6 @@ if __name__ == "__main__":
 
     # Finish the html data and save the file
     htmlData+='''
-    </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
     </body>
 </html>'''
