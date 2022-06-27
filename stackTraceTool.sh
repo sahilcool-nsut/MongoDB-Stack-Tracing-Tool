@@ -175,7 +175,7 @@ assignQueryType(){
 
         # i will be the "index" of iterations array
         # currIteration will be the "value" of iteration. (have to use -r for raw output so that can use it in indexing)
-        # Have to use currIteration when accessing elements, while can use the i'th index when updating 
+        # currIteration used for accessing the correct currentOperation file
         for ((i=0;i<numIterations;i++)); do
             # get the actual serial number of iteration, by indexing the iteration array (this index will go till lenght of iteration array, so wont be a problem)
             local currIteration=$(jq -r --arg threadId $threadId --argjson iteration $i '.threads[] | select(.threadId==$threadId) | .iterations[$iteration] | .iteration' $OUTPUT_MERGED_JSON) 
@@ -189,7 +189,7 @@ assignQueryType(){
             if [[ -n $currOp ]]
             then
                 tmp=$(mktemp)
-                jq --arg threadId $threadId --argjson iteration $i --argjson currentOperation "$currOp" '.threads |= (.[$threadId] |= (.iterations[$iteration] |= (.currentOp = $currentOperation)))' $OUTPUT_MERGED_JSON > "$tmp" && mv "$tmp" $OUTPUT_MERGED_JSON
+                jq --arg threadId $threadId --argjson iteration $currIteration --argjson currentOperation "$currOp" '.threads |= (.[$threadId] |= (.iterations[$iteration] |= (.currentOp = $currentOperation)))' $OUTPUT_MERGED_JSON > "$tmp" && mv "$tmp" $OUTPUT_MERGED_JSON
             fi
 
             # Analysis field is already created in the iteration adding step
@@ -358,7 +358,8 @@ wait
 echo ""
 currTime=$(($(date +%s%N)/1000000))
 echo "Query Analysis Starting Time: $currTime"
-assignQueryType
+# assignQueryType
+python pythonAnalysisUtility.py
 
 for ((i=0;i<NUMCALLS;i++)); do
     sudo rm "OutputFiles/currentOp$i.json"
