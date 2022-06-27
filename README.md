@@ -50,6 +50,7 @@ Provides a HTML page with simple UI showing the following information in form of
 If running for a live stack trace, the program can be run using the shell file **takeStack.sh** on a system with a running mongod server. 
 If a live stack trace is not a requirement, we can manually provide the files of the stack trace and top command in the workspace as: 
 > /data/entireStackTrace.txt
+
 > /data/threadDetailsTopH.txt
 
 After this, simply run the python script **createReport.py** to get the results
