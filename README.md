@@ -36,7 +36,7 @@ While running the script without sudo permission, it might ask for sudo password
 A tool to provide individual stack reports is also provided in the folder **/stackReport**
 It uses the combination of a **single iteration of eu-stack** and **top** command to provide insights and analysis using different graphs, by rendering a HTML page. This is done using a **python** script.
 
-!["Individual Stack Report Screenshot"](/Screenshots/StackReportScreenshot.png?raw=true "Individual Stack Report")
+!["Individual Stack Report Screenshot"](https://github.com/sahilcool-nsut/MongoDB-Stack-Tracing-Tool/blob/main/Screenshots/StackReportScreenshot "Individual Stack Report")
 
 ### Features
 Provides a HTML page with simple UI showing the following information in form of **graphs/tables**
