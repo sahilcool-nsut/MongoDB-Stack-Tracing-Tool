@@ -111,12 +111,11 @@ multiThreadDetail(){
         if (( $(echo "$threadCPU < $CPU_THRESHOLD" |bc -l) )); then
             break;
         fi
-        # echo $threadId
+
         local threadName=${resultsArray[3]}
         local stack="$(sudo eu-stack -1 -p $threadId)"
-         
         local currTime=$(($(date +%s%N)/1000000))
-        # echo $currTime
+
         local JSON_TEMP=$(jq \
         --arg threadId "$threadId" \
         --arg threadName "$threadName" \
@@ -125,7 +124,7 @@ multiThreadDetail(){
         --arg threadStack "$stack" \
         --arg currTime "$currTime" \
         --arg iteration "$index" \
-        '.threads += {($threadId): {threadId: $threadId, iterations: [{iteration: $iteration, timeStamp: $currTime, threadId:$threadId,threadName: $threadName, threadState: $threadState, threadCPU: $threadCPU, threadStack: $threadStack, analysis:{}}] }}' $fileName)
+        '.threads += {($threadId): {threadId: $threadId, iterations: [{iteration: $iteration, timeStamp: $currTime, threadId:$threadId,threadName: $threadName, threadState: $threadState, threadCPU: $threadCPU, threadStack: $threadStack, analysis:{},currentOp:{}}] }}' $fileName)
         echo "$JSON_TEMP" > $fileName
     # Have to sort by 1st field (threadId) so that order of taking stack remains consistent in all threads. 
     done < <(top -H -bn1 | grep -m $TOP_N_THREADS "conn" | sort -n -k1) 
@@ -156,7 +155,6 @@ thresholdRecords(){
     done< <(jq --arg threadThreshold "$THREAD_FREQUENCY_THRESHOLD" --raw-output '.threads[] |  select((.iterations | length)<= ($threadThreshold |tonumber)) | .threadId' $OUTPUT_MERGED_JSON)
     cat $OUTPUT_MERGED_JSON > "temporary.json"
     for tid in "${threadIdsToRemove[@]}";do
-        # echo "$tid"
         jq --arg threadId "$tid" 'del(.threads[$threadId])' "temporary.json" > $OUTPUT_MERGED_JSON
         cat $OUTPUT_MERGED_JSON > "temporary.json"
     done
@@ -173,15 +171,27 @@ assignQueryType(){
     
     # Read stack for each threadId
     for threadId in "${threadIds[@]}";do
-        for ((i=0;i<NUMCALLS;i++)); do
+        local numIterations=$(jq --arg threadId $threadId --arg iteration $i '.threads[] | select(.threadId==$threadId) | .iterations | length' $OUTPUT_MERGED_JSON)
 
-            # Extract current Stack
-            local currIteration=$i 
-            local currStack="$(jq --arg threadId $threadId --arg iteration $i '.threads[] | select(.threadId==$threadId) | .iterations[] | select(.iteration==$iteration) | .threadStack' $OUTPUT_MERGED_JSON)"
-            currStack="$(echo -e "$currStack")"
-
-            local currState="$(jq --arg threadId $threadId --arg iteration $i '.threads[] | select(.threadId==$threadId) | .iterations[] | select(.iteration==$iteration) | .threadState' $OUTPUT_MERGED_JSON)"
+        # i will be the "index" of iterations array
+        # currIteration will be the "value" of iteration. (have to use -r for raw output so that can use it in indexing)
+        # Have to use currIteration when accessing elements, while can use the i'th index when updating 
+        for ((i=0;i<numIterations;i++)); do
+            # get the actual serial number of iteration, by indexing the iteration array (this index will go till lenght of iteration array, so wont be a problem)
+            local currIteration=$(jq -r --arg threadId $threadId --argjson iteration $i '.threads[] | select(.threadId==$threadId) | .iterations[$iteration] | .iteration' $OUTPUT_MERGED_JSON) 
+            local currIterationEntireDetails=$(echo $(jq --arg threadId $threadId --arg iteration $currIteration '.threads[] | select(.threadId==$threadId) | .iterations[] | select(.iteration==$iteration) | .' $OUTPUT_MERGED_JSON))
+            local currStack="$(echo -e $(jq '.threadStack' <<< $currIterationEntireDetails ))"
+            local currName=$(jq -r '.threadName' <<< $currIterationEntireDetails)
+            local currState=$(jq -r '.threadState' <<< $currIterationEntireDetails)
             
+            # Uncomment If want to include current operation details
+            currOp=$(echo $(jq --arg threadName $currName '.inprog[] | select(.desc==$threadName) | {secs_running, command, client}' OutputFiles/currentOp$currIteration.json))
+            if [[ -n $currOp ]]
+            then
+                tmp=$(mktemp)
+                jq --arg threadId $threadId --argjson iteration $i --argjson currentOperation "$currOp" '.threads |= (.[$threadId] |= (.iterations[$iteration] |= (.currentOp = $currentOperation)))' $OUTPUT_MERGED_JSON > "$tmp" && mv "$tmp" $OUTPUT_MERGED_JSON
+            fi
+
             # Analysis field is already created in the iteration adding step
             # clear map for fresh iteration
             unset analysisMap
@@ -192,99 +202,82 @@ assignQueryType(){
             fi
 
             # Start Analysis by filling analysis map with key = property, and value = propertyVaue
-            while read -r individualLine; do
-                
-                # Major analysis is done at this point, dont need to traverse ahead in the call stack
-                if [[ $individualLine == *"ExecCommandDatabase::_commandExec"* ]]; then
-                        break
-                fi
-                if [[ $individualLine == *"recvmsg"* ]]; then
-                    # echo "Idle Found"
-                    analysisMap["queryState"]="Idle"
-                    break
-                fi
-                if [[ $individualLine == *"__poll"* ]]; then
-                    # echo "Idle Found"
-                    analysisMap["queryState"]="Idle"
-                    break
-                fi
-                # Type of scan encountered
-                if [[ $individualLine == *"CollectionScan"* ]]; then
-                    analysisMap["includesCollectionScan"]="True"
-                fi
-                if [[ $individualLine == *"CountScan"* ]]; then
-                    analysisMap["includesCountScan"]="True"
-                fi
-                # Which stage is included in call stack (usually in top of stack)
-                if [[ $individualLine == *"CountStage"* ]]; then
-                    analysisMap["includesCountingStage"]="True"
-                fi
-                if [[ $individualLine == *"SortStage"* ]]; then
-                    analysisMap["includesSortingStage"]="True"
-                fi
-                if [[ $individualLine == *"UpdateStage"* ]]; then
-                    analysisMap["includesUpdationStage"]="True"
-                fi
-                if [[ $individualLine == *"ProjectionStage"* ]]; then
-                    analysisMap["includesProjectionStage"]="True"
-                fi
+            if [[ "$currStack" == *"recvmsg"* ]]; then
+                analysisMap["queryState"]="Idle"
+            fi
+            if [[ "$currStack" == *"__poll"* ]]; then
+                analysisMap["queryState"]="Polling"
+            fi
+            # Type of scan encountered
+            if [[ "$currStack" == *"CollectionScan"* ]]; then
+                analysisMap["includesCollectionScan"]="True"
+            fi
+            if [[ "$currStack" == *"CountScan"* ]]; then
+                analysisMap["includesCountScan"]="True"
+            fi
+            # Which stage is included in call stack (usually in top of stack)
+            if [[ "$currStack" == *"CountStage"* ]]; then
+                analysisMap["includesCountingStage"]="True"
+            fi
+            if [[ "$currStack" == *"SortStage"* ]]; then
+                analysisMap["includesSortingStage"]="True"
+            fi
+            if [[ "$currStack" == *"UpdateStage"* ]]; then
+                analysisMap["includesUpdationStage"]="True"
+            fi
+            if [[ "$currStack" == *"ProjectionStage"* ]]; then
+                analysisMap["includesProjectionStage"]="True"
+            fi
 
-                # Query Type by Invocation Function in call stack
-                if [[ $individualLine == *"FindCmd"* ]]; then
-                    analysisMap["queryType"]="Find"
-                fi
-                if [[ $individualLine == *"CmdCount"* ]]; then
-                    analysisMap["queryType"]="Count"
-                fi
-                if [[ $individualLine == *"CmdFindAndModify"* ]]; then
-                    analysisMap["queryType"]="FindAndModify"
-                fi
-                if [[ $individualLine == *"PipelineCommand"* ]]; then
-                    analysisMap["queryType"]="Pipeline"
-                fi
-                if [[ $individualLine == *"runAggregate"* ]]; then
-                    analysisMap["queryType"]="Aggregation"
-                fi
-                if [[ $individualLine == *"CmdInsert"* ]]; then
-                    analysisMap["queryType"]="Insert"
-                fi
+            # Query Type by Invocation Function in call stack
+            if [[ "$currStack" == *"FindCmd"* ]]; then
+                analysisMap["queryType"]="Find"
+            fi
+            if [[ "$currStack" == *"CmdCount"* ]]; then
+                analysisMap["queryType"]="Count"
+            fi
+            if [[ "$currStack" == *"CmdFindAndModify"* ]]; then
+                analysisMap["queryType"]="FindAndModify"
+            fi
+            if [[ "$currStack" == *"PipelineCommand"* ]]; then
+                analysisMap["queryType"]="Pipeline"
+            fi
+            if [[ "$currStack" == *"runAggregate"* ]]; then
+                analysisMap["queryType"]="Aggregation"
+            fi
+            if [[ "$currStack" == *"CmdInsert"* ]]; then
+                analysisMap["queryType"]="Insert"
+            fi
 
-                # # other useful information
-                # if [[ $individualLine == *"RunCommandAndWaitForWriteConcern"* ]]; then
-                #     analysisMap["runningParallelWithInsert"]="True"
-                # fi
+            # Highest level in stack, to capture these, interval has to be very precise 
 
-                # Highest level in stack, to capture these, interval has to be very precise 
-
-                if [[ $individualLine == *"ExprMatchExpression"* ]]; then
-                    analysisMap["includesExpressionMatching"]="True"
-                fi
-                if [[ $individualLine == *"PathMatchExpression"* ]]; then
-                    analysisMap["currentlyMatchingDocuments"]="Matching Path for expression (still deciding path)"
-                fi
-                if [[ $individualLine == *"InMatchExpression"* ]]; then
-                    analysisMap["currentlyMatchingDocuments"]="Matching 'in' expression"
-                fi
-                if [[ $individualLine == *"RegexMatchExpression"* ]]; then
-                    analysisMap["currentlyMatchingDocuments"]="Matching 'Regex' expression"
-                fi
-                if [[ $individualLine == *"ComparisonMatchExpression"* ]]; then
-                    analysisMap["currentlyComparingValues"]="True"
-                fi
-                if [[ $individualLine == *"getNextDocument"* ]]; then
-                    analysisMap["fetchingNextDocument"]="True"
-                fi
-                if [[ $individualLine == *"compareElementStringValues"* ]]; then
-                    analysisMap["currentlyComparingStringValues"]="True"
-                fi
-            done <<< "$currStack"
+            if [[ "$currStack" == *"ExprMatchExpression"* ]]; then
+                analysisMap["includesExpressionMatching"]="True"
+            fi
+            if [[ "$currStack" == *"PathMatchExpression"* ]]; then
+                analysisMap["currentlyMatchingDocuments"]="Matching Path for expression (still deciding path)"
+            fi
+            if [[ "$currStack" == *"InMatchExpression"* ]]; then
+                analysisMap["currentlyMatchingDocuments"]="Matching 'in' expression"
+            fi
+            if [[ "$currStack" == *"RegexMatchExpression"* ]]; then
+                analysisMap["currentlyMatchingDocuments"]="Matching 'Regex' expression"
+            fi
+            if [[ "$currStack" == *"ComparisonMatchExpression"* ]]; then
+                analysisMap["currentlyComparingValues"]="True"
+            fi
+            if [[ "$currStack" == *"getNextDocument"* ]]; then
+                analysisMap["fetchingNextDocument"]="True"
+            fi
+            if [[ "$currStack" == *"compareElementStringValues"* ]]; then
+                analysisMap["currentlyComparingStringValues"]="True"
+            fi
+        
 
             # Traverse analysisMap and add fields in the analysis object. JQ FORMAT IS IMPORTANT (basically |= to update and we wanted the entire file back, hence had to update everything since start. Also after |=, next field has to be enclosed in (). While adding new field, Key has to be enclosed in ())
             for key in "${!analysisMap[@]}"; do
-                tmp=$(mktemp)
-                jq --arg threadId $threadId --argjson iteration $currIteration --arg key "${key}" --arg value "${analysisMap[$key]}" '.threads |= (.[$threadId] |= (.iterations[$iteration] |= (.analysis += {($key):$value})))' $OUTPUT_MERGED_JSON > "$tmp" && mv "$tmp" $OUTPUT_MERGED_JSON
-                # sudo rm "$tmp"
-                          
+                tmp=$(mktemp)   
+                jq --arg threadId $threadId --argjson iteration $i --arg key "${key}" --arg value "${analysisMap[$key]}" '.threads |= (.[$threadId] |= (.iterations[$iteration] |= (.analysis += {($key):$value})))' $OUTPUT_MERGED_JSON > "$tmp" && mv "$tmp" $OUTPUT_MERGED_JSON     
             done 
         done
       
@@ -336,16 +329,21 @@ getFunctionCounts(){
 # Going in!!
 # Get PID of mongod
 pid=$(pidof mongod)
-
+if ! [[ -n $pid ]];then
+    echo "Mongod process not found!! Exiting!"
+    exit
+fi
 for ((i=0;i<NUMCALLS;i++)); do
     multiThreadDetail $i &
+    mongosh localhost:27017 --eval "EJSON.stringify(db.currentOp())" --quiet > "OutputFiles/currentOp$i.json" &
     sleep $INTERVAL
     echo "starting next iteration of eu-stack at timestamp: $(($(date +%s%N)/1000000))"
 done
 
-# sequentialThreadDetail
 
 wait 
+
+
 
 echo "Merging"
 mergeJson
@@ -356,16 +354,15 @@ currTime=$(($(date +%s%N)/1000000))
 echo "Thresholding starting: $currTime"
 thresholdRecords
 
+wait
 echo ""
 currTime=$(($(date +%s%N)/1000000))
 echo "Query Analysis Starting Time: $currTime"
 assignQueryType
 
-
-echo ""
-currTime=$(($(date +%s%N)/1000000))
-echo "Creating Graphs at time :$currTime"
-python graphs.py
+for ((i=0;i<NUMCALLS;i++)); do
+    sudo rm "OutputFiles/currentOp$i.json"
+done
 
 echo ""
 currTime=$(($(date +%s%N)/1000000))
