@@ -1,12 +1,13 @@
 import math
 from queue import Queue
 import time
-import json
 import re
 import pydot
-import numpy as np
 import matplotlib.pyplot as plt
 
+TOP_COMMAND_FILE='data/threadDetailsTopH.txt'
+STACK_TRACE_FILE='data/entireStackTrace.txt'
+htmlData=""
 # Class for an individual thread object with all its attribtues
 class Thread:
     def __init__(self,tid,tname,tcpu,tstate,tstack=""):
@@ -16,6 +17,7 @@ class Thread:
         self.threadState=tstate
         self.threadStack=tstack
 
+# Class including methods for constructing a call stack trie
 class FlameGraph:
     class FlameGraphNode:
         def __init__(self,data,nodeNumber,graphNode):
@@ -24,11 +26,16 @@ class FlameGraph:
             self.count=1
             self.nodeNumber=nodeNumber
             self.graphNode=graphNode
+
     def __init__(self):
         self.graph=pydot.Dot(graph_type='digraph')
+        # Colors in decreasing order of intensity
         self.colorsList=["#FFA500","#FFA50099","#FFA50075","#FFA50050","#FFA50040"]
+        # Stores count of each function in the call stack
         self.countsDictionary={}
+        # Unique node number to identify each node
         self.nodeNum=0
+        # Maximum and minimum counts used to normalize counts for assigning color intensity
         self.maximumFunctionCountInTrie=0
         self.minimumFunctionCountInTrie=0
         self.createRoot()
@@ -43,6 +50,7 @@ class FlameGraph:
         self.graph.write_pdf('graphs/flameGraph.pdf') # or png too
         # <iframe src="http://docs.google.com/gview?url=http://example.com/mypdf.pdf&embedded=true" style="width:718px; height:700px;" frameborder="0"></iframe>
 
+    # Utility function used to calculate maximum and minimum counts present in the trie
     def calculateMaximumMinimumCounts(self):
         if len(self.countsDictionary)>0:
             self.maximumFunctionCountInTrie = max(k for k, v in self.countsDictionary.items() if v > 0)
@@ -100,17 +108,21 @@ class FlameGraph:
                 self.countsDictionary[currNode.childrenMap[function].count]+=1
             currNode=currNode.childrenMap[function]
         
+    # Used to traverse the graph in level order way and create "nodes" used to visualize the graph. 
     def traversal(self):
         q = Queue()
         q.put(self.root)
+
         while not q.empty():
             temporaryFront = q.get()
             parentNode=temporaryFront.graphNode
+            # Have to add line breaks in function name to avoid very long nodes
             lineBreakedFunction='\n'.join(temporaryFront.data[i:i+100] for i in range(0, len(temporaryFront.data), 100))
-            # Took substring of entire function for now (even though it doesnt make sense, but need it for some level of visualization)
+            # Set Parent node label
             parentNode.set('label',lineBreakedFunction + "\n\nCount: " + str(temporaryFront.count))
 
             for childKey,childValue in temporaryFront.childrenMap.items():
+                # Now, set labels and color of each of the child of the parent node.
                 newChildNode=childValue.graphNode
                 lineBreakedFunctionChild='\n'.join(childValue.data[i:i+100] for i in range(0, len(childValue.data), 100))
                 newChildNode.set('label',lineBreakedFunctionChild + "\n\nCount: " + str(childValue.count))
@@ -133,7 +145,7 @@ class FlameGraph:
 def extractInformation():
     threads={}
     # Gather individual thread details first
-    with open('data/threadDetailsTopH.txt') as f:
+    with open(TOP_COMMAND_FILE) as f:
         while True:
             individualThreadDetails = f.readline().strip()
             if not individualThreadDetails: 
@@ -144,12 +156,14 @@ def extractInformation():
             currThread = Thread(tid=fields[0],tname=fields[11],tcpu=fields[8],tstate=fields[7])
             threads[fields[0]] = currThread
 
-    # Now, start reading stack trace and split by "TID" for individual stack traces
-    with open("data/entireStackTrace.txt", "r") as f:
+
+    # After individual details, have to read individual stacks
+    # Start reading stack trace and split by "TID" for individual stack traces
+    with open(STACK_TRACE_FILE, "r") as f:
         entireStackTrace = f.read()
         entireStackTrace = entireStackTrace.split("TID")
 
-    # 
+
     for currStack in entireStackTrace:
         # Remove whitespaces (include newlines and spaces) from leading and trailing areas
         currStack = currStack.strip()
@@ -181,6 +195,7 @@ def createFlameGraph(threads):
     # Insert Edges
     flameGraph.traversal()
     flameGraph.saveGraph()
+    # Insert the flame graph in the HTML. iframe is used to embed the pdf with zoom options
     htmlData+='''
         <section id="flameGraph">
             <h2>II. Call Stack (Flame Graph)</h2>
@@ -192,20 +207,15 @@ def createFlameGraph(threads):
             <hr class="solid">
         </section>
     '''
-    # imgString=image_file_path_to_base64_string('graphs/flameGraph.png')
-    # htmlData+='''
-    #     <h2>Flame Graph</h2>
-    #     <p> Shows the call stack in the form of a tree </p>
-    #     <img src="data:image/png;base64,''' + imgString + '''" title="Flame Graph" height="100%" width="100%" /></img>
-    #     <hr class="solid">
-    # '''
     return flameGraph
 
 # Function to create the State Distribution Pie Graph. Also creates a table with state frequencies
 def createStateDistributionGraph(threads):
     global htmlData
+    # Based on linux thread states
     stateNamesMap={"S":"Sleeping\n(Interruptable)","R":"Running","t":"Stopped","D":"Sleeping\n(Uninterruptable)","Z":"Zombie"}
    
+    # Counts of individual states present in current thread data
     stateCountMap={}
     for key,thread in threads.items():
         currState=thread.threadState
@@ -213,7 +223,10 @@ def createStateDistributionGraph(threads):
             stateCountMap[currState]=1
         else:
             stateCountMap[currState]+=1
+
+    # sort by reversed frequency
     stateCountMap=dict(sorted(stateCountMap.items(), key=lambda item: item[1],reverse=True))
+    # Create Pie Graph
     countList=[]
     labels=[]
     explode=[]
@@ -225,6 +238,9 @@ def createStateDistributionGraph(threads):
     plt.pie(countList, labels = labels, explode = explode,autopct='%1.1f%%',startangle=90)
     plt.savefig('graphs/statePie')
     
+    # Create the HTML data 
+    # Two column layout, left column includes state name and state count, while right column has the pie graph png
+    # Left column is further divided into rows of state information
     htmlData+='''
     <section id="threadStateDistribution">
     <h2>I. Thread State Distribution</h2>
@@ -232,9 +248,10 @@ def createStateDistributionGraph(threads):
     <div class="container">
         <div class="row align-items-center">
             <div class="col-sm">
+                <!-- Used to make state information in rows -->
                 <div class="row">
         '''
-        
+    # Loop over the different states
     for state in stateCountMap:
         htmlData+='''
                     <div class="col">
@@ -269,7 +286,7 @@ def createThreadTable(threads):
     global htmlData
     htmlData+='''
     <section id="individualThreadDetails">
-    <h2>Individual Thread Details</h2>
+    <h2>VI. Individual Thread Details</h2>
     <p> Shows details of each thread </p>
     <table class="chart-panel">
     <tr>
@@ -295,6 +312,7 @@ def createThreadTable(threads):
 def createIdenticalStackTracesGraph(threads):
     global htmlData
     stackTraceCount={}
+    # Loop over threads and store stack counts in the map. Also, store thread ids which are having that stack trace (to be displayed later)
     for threadId,thread in threads.items():
         currStack = thread.threadStack
         currThreadId = threadId
@@ -308,6 +326,7 @@ def createIdenticalStackTracesGraph(threads):
     i=1
     barGraphX=[]
     barGraphY=[]
+    # X axis has sort names for stack traces, exact stack traces are shown in the table below the graph
     for stackTraceList in stackTraceCount.values():
         barGraphY.append(len(stackTraceList))
         barGraphX.append("S" + str(i))
@@ -339,12 +358,12 @@ def createIdenticalStackTracesGraph(threads):
     # Can add thread list too, just add thread list header above and also uncomment threadList in for loop
     i=1
     for stackTrace,threadList in stackTraceCount.items():
-        # Necessary to replace new lines with br to actually break line in HTML
-        # stackTrace = stackTrace.replace("\n","<br><br>")
+        # white-space: pre-line is used to make \n have their effects
+        # Here, read more class is using jquery function to hide entire stack traces to avoid extremely large strings in table
         htmlData+="<tr>"
         htmlData+="<td style='text-align:center'>" + "S" + str(i) + "</td>"
         htmlData+="<td style='white-space: pre-line' class='readMoreTextHide'>" + stackTrace + "</td>"
-        htmlData+="<td style='text-align:center'>" + str(len(threadList)) + "</td>"
+        htmlData+="<td style='text-align:center;font-weight:bold'>" + str(len(threadList)) + "</td>"
         # htmlData+="<td style='text-align:center'>" + ', '.join(threadList) + "</td>"
         htmlData+="</tr>"
         i+=1
@@ -381,7 +400,7 @@ def createTotalFunctionCountsTable(threads):
         totalCount=1
     htmlData+='''
     <section id="mostUsedFunctions">
-    <h2>Most Used Functions</h2>
+    <h2>V. Most Used Functions</h2>
     <p> Shows which functions have been most used across the entire stack trace </p>
     <table class="chart-panel">
     <tr>
@@ -394,7 +413,7 @@ def createTotalFunctionCountsTable(threads):
         htmlData+="<tr>"
         htmlData+="<td style='text-align:center;'>" + str(currCount) + "</td>"
         htmlData+="<td>" + currFunc + "</td>"
-        htmlData+="<td style='text-align:center;'>" + "{:.1f}".format((currCount/totalCount)*100) + "</td>"
+        htmlData+="<td style='text-align:center;font-weight:bold;'>" + "{:.1f}".format((currCount/totalCount)*100) + "</td>"
         htmlData+="<tr>"
     htmlData+='''
     </table>
@@ -408,7 +427,7 @@ def createConsumingThreadTable(threads):
     global htmlData
     htmlData+='''
     <section id="cpuConsumingThreads">
-    <h2>Top CPU Consuming Threads (Top 5)</h2>
+    <h2>IV. Top CPU Consuming Threads (Top 5)</h2>
     <table class="chart-panel">
     <tr>
         <th>Thread ID</th>
@@ -437,6 +456,8 @@ def createConsumingThreadTable(threads):
     </section>
     '''
 
+# Utility function to make main code more readable
+# Currently contains jquery code for "Read More" Functionality
 def getJsData():
     return '''
     $(document).ready(function() {
@@ -457,6 +478,8 @@ def getJsData():
                 });
             });
     '''
+# Utility function to make main code more readable
+# Currently contains custom CSS for tables, sidebar etc. apart from bootstrap
 def getCSSData():
     return '''
             body{
@@ -544,8 +567,6 @@ def getCSSData():
                 margin-top:30px;
             }
     '''
-
-htmlData=""
 if __name__ == "__main__":
 
     # Open the HTML file and create boilerplate HTML code
@@ -590,6 +611,7 @@ if __name__ == "__main__":
     '''
 
     # Actual driver code for creating the report    
+
     print("Starting Python script at time: " + str(int(time.time())))
     # Dictionary to access thread objects by threadId
 
@@ -628,3 +650,13 @@ if __name__ == "__main__":
 
     print("completed")
 
+
+
+#useless code -> to save image when html is converted to pdf
+    # imgString=image_file_path_to_base64_string('graphs/flameGraph.png')
+    # htmlData+='''
+    #     <h2>Flame Graph</h2>
+    #     <p> Shows the call stack in the form of a tree </p>
+    #     <img src="data:image/png;base64,''' + imgString + '''" title="Flame Graph" height="100%" width="100%" /></img>
+    #     <hr class="solid">
+    # '''
