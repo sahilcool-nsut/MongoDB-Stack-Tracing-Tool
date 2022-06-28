@@ -1,23 +1,18 @@
 import os
-from flask import Flask, flash, redirect, render_template, request
+from flask import Flask, render_template, request
 import createStackReport
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = 'data/'
-ALLOWED_EXTENSIONS = {'txt'}
 
-
-
+# Home route, messages is empty right now, later would contain error message
 @app.route('/')
 def home():
    return render_template('home.html',messages={})
 
 
-def allowed_file(filename):
-    return '.' in filename and \
-        filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-
-    
+# On pressing submit button, user is redirected here.
+# Availability of both the submitted files is checked first
+# If there are missing files, user is redirected to home page with an error
+# If no error, the python script is called which generates a HTML template to which the user is then redirected
 @app.route('/uploader', methods = ['GET', 'POST'])
 def upload_file():
     if request.method == 'POST':
