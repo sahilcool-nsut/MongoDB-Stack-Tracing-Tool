@@ -1,4 +1,4 @@
-# MongoDB-Stack-Tracing-Tool
+# I. MongoDB-Stack-Tracing-Tool
 ./pythonStackTracing
 
 This Folder contains a tool used to acquire live Stack Traces of a running **MongoDB Server.**
@@ -33,7 +33,7 @@ While running the script without sudo permission, it might ask for sudo password
 
 
 
-# Eu-Stack Analyzer
+# II. Eu-Stack Analyzer
 ./stackReport
 
 This is a tool to provide individual stack reports, particularly aimed for analyzing Running MongoDB servers.
@@ -54,7 +54,7 @@ It uses the combination of a **single iteration of eu-stack** and **top** comman
 
 !["Individual Stack Report Screenshot"](https://github.com/sahilcool-nsut/MongoDB-Stack-Tracing-Tool/blob/main/Screenshots/StackReportScreenshot "Individual Stack Report")
 
-### Features
+## Features
 Provides a HTML page with simple UI showing the following information in form of **graphs/tables**
 
  - Thread State Distribution
@@ -64,7 +64,7 @@ Provides a HTML page with simple UI showing the following information in form of
  - Most Used Functions
  - Individual Thread Details
 
-### Usage
+## Usage
 To locally run the program, follow the steps given below
  - For initial dependency setup, a requirements.txt is provided
  > pip install -r requirements.txt
@@ -89,3 +89,14 @@ Current Directory Structure:
     - requirements.txt
     
     
+# III. CPU-Intensive Current Ops Extraction
+./extractCurrentOp
+
+This is a which returns a JSON file which contains details of the current High CPU-Intensive mongo clients, and what command the threads have hit. 
+
+This is achieved through the use of the top -H command and the db.currentOp() command feature provided by mongosh.
+
+> top -H -bn1 | grep "conn" > topH.txt
+>
+> mongosh localhost:27017 --eval 'EJSON.stringify(db.currentOp())' --quiet
+
