@@ -71,6 +71,7 @@ To locally run the program, follow the steps given below
  - Run the Flask App by running the command
  > python app.py
  - Now, the server should be up on localhost:5000
+ - !["Upload Files Landing Page"](https://github.com/sahilcool-nsut/MongoDB-Stack-Tracing-Tool/blob/main/Screenshots/UploadScreen.png "Upload Files Landing Page")
  - Go to localhost:5000 and upload the required files. (basic error handling is present to avoid empty files)
  - Press Submit and you will get the results
 
