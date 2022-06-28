@@ -1,0 +1,133 @@
+
+    <!doctype html>
+    <html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- Include Bootstrap and Custom CSS -->
+        <link rel="stylesheet" href="{{ url_for('static', filename='styles/bootstrap.min.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='styles/customStyle.css') }}">
+        <title>Stack Trace Report</title>
+    </head> 
+    <body>
+        <div class="sidenav">
+            <div class="sidenav-title"> Eu-Stack Analyzer </div>
+            <br>
+            <a href="#threadStateDistribution"> - Thread State Distribution</a>
+            <a href="#flameGraph"> - Call Stack (Flame Graph)</a>
+            <a href="#stackTraceCount"> - Identical Stack Traces Distribution</a>
+            <a href="#cpuConsumingThreads"> - Top CPU Consuming Threads </a>
+            <a href="#mostUsedFunctions"> - Most Used Functions </a>
+            <a href="#individualThreadDetails"> - Individual Thread Details</a>
+        </div>
+        <div class="main">
+
+        <h1>Stack Trace Report for the MongoDB server</h1>
+        <p> Uses eu-stack to collect stack trace and top command for gathering thread details </p>
+        <br>
+        <hr class="solid">           
+        <br>
+    
+    <section id="threadStateDistribution">
+    <h2>I. Thread State Distribution</h2>
+    <p> Pie graph to illustrate the different states of threads present </p>
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-sm">
+                <!-- Used to make state information in rows -->
+                <div class="row">
+        
+                    <div class="col">
+                        <div class ="chart-panel" style="padding:12px 24px">
+                            <div style="text-align:center;font-size:48px;font-weight:bold;">
+                    2       </div>
+                        <hr class='solid'>
+                            <div style="text-align:center;">Sleeping
+(Interruptable)
+                            </div>
+                        </div>
+                    </div>
+        
+                </div>
+            </div>
+            <div class="col-sm">
+                <img class="chart-panel" src = "{{ url_for('static', filename='graphs/statePie.png') }}" alt = "Thread State Distribution Graph" />
+            </div>
+        </div>
+    </div>
+    </section>
+    <hr class="solid">
+    
+        <section id="flameGraph">
+            <h2>II. Call Stack (Flame Graph)</h2>
+            <p> Shows the call stack in the form of a tree </p>
+            <p> Darker the node, more frequently it appeared in the call stack. Individual node counts are also appended in the label </p>
+            <div class="chart-panel">
+                <iframe src="{{ url_for('static', filename='graphs/flameGraph.pdf') }}" title="Flame Graph" height="800px" width="100%" /></iframe>
+            </div>
+            <hr class="solid">
+        </section>
+    
+    <section id="stackTraceCount">
+        <h2>III. Identical Stack Traces Distribution</h2>
+        <p> Shows statistics related to frequency of stack traces amongst different threads. Refer to below table for actual stack values </p>
+        <img class="chart-panel" src = "{{ url_for('static', filename='graphs/identicalStackTraceGraph.png') }}" alt = "Identical Stack Traces Distribution" />
+        <table class="chart-panel">
+        <tr>
+            <th>Stack Name</th>
+            <th>Stack Trace</th>
+            <th>Thread Count</th>
+            <th>Stack Analysis</th>
+        </tr>
+    <tr><td style='text-align:center'>S1</td><td style='white-space: pre-line' class='readMoreTextHide'></td><td style='text-align:center;font-weight:bold'>2</td><td><ul><li><b>invalid stack</b>: true</li><ul></td></tr>
+    </table>
+    <hr class="solid">
+    </section>
+    
+    <section id="cpuConsumingThreads">
+    <h2>IV. Top CPU Consuming Threads (Top 5)</h2>
+    <table class="chart-panel">
+    <tr>
+        <th>Thread ID</th>
+        <th>Thread Name</th>
+        <th>Thread State</th>
+        <th>Thread CPU</th>
+        <th>Thread Stack</th>
+    </tr><tr><td style='text-align:center'>5959</td><td style='text-align:center'>conn12</td><td style='text-align:center'>S</td><td style='text-align:center;font-weight:bold;'>0.0</td><td class="readMoreTextHide" style="white-space: pre-line"></td><tr><tr><td style='text-align:center'>5970</td><td style='text-align:center'>conn13</td><td style='text-align:center'>S</td><td style='text-align:center;font-weight:bold;'>0.0</td><td class="readMoreTextHide" style="white-space: pre-line"></td><tr>
+    </table>
+    <hr class="solid">
+    </section>
+    
+    <section id="mostUsedFunctions">
+    <h2>V. Most Used Functions</h2>
+    <p> Shows which functions have been most used across the entire stack trace </p>
+    <table class="chart-panel">
+    <tr>
+        <th>Thread Count</th>
+        <th>Function Name</th>
+        <th>Percentage</th>
+    </tr>
+    </table>
+    <hr class="solid">
+    </section>
+    
+    <section id="individualThreadDetails">
+    <h2>VI. Individual Thread Details</h2>
+    <p> Shows details of each thread </p>
+    <table class="chart-panel">
+    <tr>
+        <th>Thread ID</th>
+        <th>Thread Name</th>
+        <th>Thread State</th>
+        <th>Thread CPU</th>
+    </tr><tr><td style='text-align:center'>5959</td><td style='text-align:center'>conn12</td><td style='text-align:center'>S</td><td style='text-align:center;font-weight:bold;'>0.0</td><tr><tr><td style='text-align:center'>5970</td><td style='text-align:center'>conn13</td><td style='text-align:center'>S</td><td style='text-align:center;font-weight:bold;'>0.0</td><tr>
+    </table>
+    <hr class="solid">
+    </section>
+    
+    </div>
+    <script src="{{ url_for('static', filename='scripts/bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/jquery-3.6.0.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/customScript.js') }}"></script>
+    </body>
+    </html>

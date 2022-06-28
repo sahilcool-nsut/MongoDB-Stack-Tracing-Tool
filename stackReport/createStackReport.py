@@ -1,13 +1,27 @@
 import math
+import os
 from queue import Queue
+import sys
 import time
 import re
 import pydot
 import matplotlib.pyplot as plt
 
-TOP_COMMAND_FILE='data/threadDetailsTopH.txt'
-STACK_TRACE_FILE='data/entireStackTrace.txt'
-htmlData=""
+path = os.getcwd()
+
+OUTPUT_FILE_PATH=os.path.join(path,"templates/StackTraceReport.html")
+
+TOP_COMMAND_FILE=os.path.join(path, "data/topFile.txt")
+STACK_TRACE_FILE=os.path.join(path, "data/stackFile.txt")
+
+FLAME_GRAPH_PATH=os.path.join(path, "static/graphs/flameGraph.pdf")
+STATE_GRAPH_PATH=os.path.join(path, "static/graphs/statePie.png")
+IDENTICAL_STACK_GRAPH_PATH=os.path.join(path, "static/graphs/identicalStackTraceGraph.png")
+
+FLAME_GRAPH_HTML_PATH="{{ url_for('static', filename='graphs/flameGraph.pdf') }}"
+STATE_GRAPH_HTML_PATH="{{ url_for('static', filename='graphs/statePie.png') }}"
+IDENTICAL_STACK_GRAPH_HTML_PATH="{{ url_for('static', filename='graphs/identicalStackTraceGraph.png') }}"
+
 # Class for an individual thread object with all its attribtues
 class Thread:
     def __init__(self,tid,tname,tcpu,tstate,tstack=""):
@@ -19,6 +33,11 @@ class Thread:
 
 # Class including methods for constructing a call stack trie
 class FlameGraph:
+    # childrenMap contains FlameGraphNodes of the children of current node
+    # data contains the current function of the node
+    # count contains how many times the current function has been traversed through the trie
+    # nodeNumber is unique node number
+    # graphNode contains the visualization node object
     class FlameGraphNode:
         def __init__(self,data,nodeNumber,graphNode):
             self.childrenMap={}
@@ -47,8 +66,7 @@ class FlameGraph:
         self.root=self.FlameGraphNode("Root",-1,rootGraphNode)
 
     def saveGraph(self):
-        self.graph.write_pdf('graphs/flameGraph.pdf') # or png too
-        # <iframe src="http://docs.google.com/gview?url=http://example.com/mypdf.pdf&embedded=true" style="width:718px; height:700px;" frameborder="0"></iframe>
+        self.graph.write_pdf(FLAME_GRAPH_PATH) # or png too
 
     # Utility function used to calculate maximum and minimum counts present in the trie
     def calculateMaximumMinimumCounts(self):
@@ -59,7 +77,7 @@ class FlameGraph:
             self.maximumFunctionCountInTrie=0
             self.minimumFunctionCountInTrie=0
 
-    def insertInRoot(self,stack):
+    def insertInTrie(self,stack):
         functionsList=[]
 
         # Extract functions linewise from the current stack
@@ -145,40 +163,44 @@ class FlameGraph:
 def extractInformation():
     threads={}
     # Gather individual thread details first
-    with open(TOP_COMMAND_FILE) as f:
-        while True:
-            individualThreadDetails = f.readline().strip()
-            if not individualThreadDetails: 
-                break
-            fields=individualThreadDetails.split()
-            # Sample TOP output
-            # 61286 mongodb   20   0 3095132   1.5g  38440 S   0.0  20.3   0:00.00 conn37
-            currThread = Thread(tid=fields[0],tname=fields[11],tcpu=fields[8],tstate=fields[7])
-            threads[fields[0]] = currThread
+    try:
+        with open(TOP_COMMAND_FILE) as f:
+            while True:
+                individualThreadDetails = f.readline().strip()
+                if not individualThreadDetails: 
+                    break
+                fields=individualThreadDetails.split()
+                # Sample TOP output
+                # 61286 mongodb   20   0 3095132   1.5g  38440 S   0.0  20.3   0:00.00 conn37
+                currThread = Thread(tid=fields[0],tname=fields[11],tcpu=float(fields[8]),tstate=fields[7])
+                threads[fields[0]] = currThread
 
 
-    # After individual details, have to read individual stacks
-    # Start reading stack trace and split by "TID" for individual stack traces
-    with open(STACK_TRACE_FILE, "r") as f:
-        entireStackTrace = f.read()
-        entireStackTrace = entireStackTrace.split("TID")
+        # After individual details, have to read individual stacks
+        # Start reading stack trace and split by "TID" for individual stack traces
+        with open(STACK_TRACE_FILE, "r") as f:
+            entireStackTrace = f.read()
+            entireStackTrace = entireStackTrace.split("TID")
 
 
-    for currStack in entireStackTrace:
-        # Remove whitespaces (include newlines and spaces) from leading and trailing areas
-        currStack = currStack.strip()
-        # First line of the extracted stack contains the tid as -> 12312: 
-        splitStackForTID=currStack.split('\n',1)        # Limit split to 1, so that we retrieve the first line(The TID)
-        # For bad stacks
-        if len(splitStackForTID) < 2:
-            continue
-        # Extract threadID from left of ':'
-        currThreadId=splitStackForTID[0].split(':')[0]
-        if currThreadId not in threads.keys():
-            continue
-        currStack=splitStackForTID[1]
-        threads[currThreadId].threadStack = currStack
-    threads=dict(sorted(threads.items(), key=lambda item: item[1].threadCpu,reverse=True))
+        for currStack in entireStackTrace:
+            # Remove whitespaces (include newlines and spaces) from leading and trailing areas
+            currStack = currStack.strip()
+            # First line of the extracted stack contains the tid as -> 12312: 
+            splitStackForTID=currStack.split('\n',1)        # Limit split to 1, so that we retrieve the first line(The TID)
+            # For bad stacks
+            if len(splitStackForTID) < 2:
+                continue
+            # Extract threadID from left of ':'
+            currThreadId=splitStackForTID[0].split(':')[0]
+            if currThreadId not in threads.keys():
+                continue
+            currStack=splitStackForTID[1]
+            threads[currThreadId].threadStack = currStack
+        threads=dict(sorted(threads.items(), key=lambda item: item[1].threadCpu,reverse=True))
+    except:
+        print("Some Error occurred while extracting information. Please check if the files are present in the correct directory (/data folder)")
+        sys.exit(2)
     return threads
 
 # Driver Function to create the flame graph using the FlameGraph class. Also embeds the pdf in the HTML
@@ -186,9 +208,10 @@ def createFlameGraph(threads):
     global htmlData
     flameGraph = FlameGraph()
 
+    # Create nodes and insert in the trie
     for key,thread in threads.items():
         currStack = thread.threadStack
-        flameGraph.insertInRoot(currStack)
+        flameGraph.insertInTrie(currStack)
 
     flameGraph.calculateMaximumMinimumCounts()
     
@@ -202,7 +225,7 @@ def createFlameGraph(threads):
             <p> Shows the call stack in the form of a tree </p>
             <p> Darker the node, more frequently it appeared in the call stack. Individual node counts are also appended in the label </p>
             <div class="chart-panel">
-                <iframe src="graphs/flameGraph.pdf" title="Flame Graph" height="800px" width="100%" /></iframe>
+                <iframe src="'''+FLAME_GRAPH_HTML_PATH+'''" title="Flame Graph" height="800px" width="100%" /></iframe>
             </div>
             <hr class="solid">
         </section>
@@ -236,7 +259,7 @@ def createStateDistributionGraph(threads):
         explode.append(0.2)
 
     plt.pie(countList, labels = labels, explode = explode,autopct='%1.1f%%',startangle=90)
-    plt.savefig('graphs/statePie')
+    plt.savefig(STATE_GRAPH_PATH)
     
     # Create the HTML data 
     # Two column layout, left column includes state name and state count, while right column has the pie graph png
@@ -272,7 +295,7 @@ def createStateDistributionGraph(threads):
                 </div>
             </div>
             <div class="col-sm">
-                <img class="chart-panel" src = "graphs/statePie.png" alt = "Thread State Distribution Graph" />
+                <img class="chart-panel" src = "'''+STATE_GRAPH_HTML_PATH+'''" alt = "Thread State Distribution Graph" />
             </div>
         </div>
     </div>
@@ -295,7 +318,8 @@ def createThreadTable(threads):
         <th>Thread State</th>
         <th>Thread CPU</th>
     </tr>'''
-    for threadID,thread in threads.items():
+    # print(htmlData)
+    for threadID,thread in dict(sorted(threads.items(), key=lambda item: item[1].threadCpu,reverse=True)).items():
         htmlData+="<tr>"
         htmlData+="<td style='text-align:center'>" + threadID + "</td>"
         htmlData+="<td style='text-align:center'>" + thread.threadName + "</td>"
@@ -307,6 +331,90 @@ def createThreadTable(threads):
     <hr class="solid">
     </section>
     '''
+
+# Takes input list of unique stacks present, and returns a dictionary of analysis objects of each stack
+def getStackTraceAnalysis(stackTracesList):
+    stackTraceAnalysis={}
+    # Iterate over unique stack traces
+    for currStack in stackTracesList:
+        currAnalysisObject={}
+        if len(currStack.split('\n')) <=1:
+                currAnalysisObject["invalid stack"]="true"
+                stackTraceAnalysis[currStack] = currAnalysisObject
+                continue
+
+        done=False
+        # Incase any of these hit, no need to check further
+        if done == False and "recvmsg" in currStack:
+            currAnalysisObject["queryState"]="Idle"
+            done=True
+        if done == False and "__poll" in currStack:
+            currAnalysisObject["queryState"]="Polling"
+            done=True
+        
+        # Type of Scan present
+        if done == False and "CollectionScan" in currStack:
+            currAnalysisObject["includesCollectionScan"]="True"
+
+        if done == False and "CountScan" in currStack:
+            currAnalysisObject["includesCountScan"]="True"
+
+        # Type of Stage present
+        if done == False and "CountStage" in currStack:
+            currAnalysisObject["includesCountingStage"]="True"
+
+        if done == False and "SortStage" in currStack:
+            currAnalysisObject["includesSortingStag"]="True"
+
+        if done == False and "UpdateStage" in currStack:
+            currAnalysisObject["includesUpdationStage"]="True"
+
+        if done == False and "ProjectionStage" in currStack:
+            currAnalysisObject["includesProjectionStage"]="True"
+
+        # Query type if present
+        if done == False and "FindCmd" in currStack:
+            currAnalysisObject["queryType"]="Find"
+
+        if done == False and "CmdCount" in currStack:
+            currAnalysisObject["queryType"]="Count"
+
+        if done == False and "CmdFindAndModify" in currStack:
+            currAnalysisObject["queryType"]="FindAndModify"
+        
+        if done == False and "PipelineCommand" in currStack:
+            currAnalysisObject["queryType"]="Pipeline"
+
+        if done == False and "runAggregate" in currStack:
+            currAnalysisObject["queryType"]="Aggregation"
+
+        if done == False and "CmdInsert" in currStack:
+            currAnalysisObject["queryType"]="Insert"
+
+        # Higher positions in stack, interval should be precise to catch these.
+        if done == False and "ExprMatchExpression" in currStack:
+            currAnalysisObject["includesExpressionMatching"]="True"
+        
+        if done == False and "PathMatchExpression" in currStack:
+            currAnalysisObject["currentlyMatchingDocuments"]="Matching Path for expression (still deciding path)"
+        
+        if done == False and "InMatchExpression" in currStack:
+            currAnalysisObject["currentlyMatchingDocuments"]="Matching 'in' expression"
+        
+        if done == False and "RegexMatchExpression" in currStack:
+            currAnalysisObject["currentlyMatchingDocuments"]="Matching 'Regex' expression"
+        
+        if done == False and "ComparisonMatchExpression" in currStack:
+            currAnalysisObject["currentlyComparingValues"]="True"
+        
+        if done == False and "getNextDocument" in currStack:
+            currAnalysisObject["fetchingNextDocument"]="True"
+        
+        if done == False and "compareElementStringValues" in currStack:
+            currAnalysisObject["currentlyComparingStringValues"]="True"
+        stackTraceAnalysis[currStack] = currAnalysisObject
+    return stackTraceAnalysis
+
 
 # Function to count the frequency of stack traces present, and show a bar graph and table for the same
 def createIdenticalStackTracesGraph(threads):
@@ -323,6 +431,9 @@ def createIdenticalStackTracesGraph(threads):
     # Sort by length of list of threadIds for each stack trace. (basically the stack trace with most count, comes first)
     stackTraceCount=dict(sorted(stackTraceCount.items(), key=lambda item: len(item[1]),reverse=True))
     
+
+    stackAnalysisDict=getStackTraceAnalysis(list(stackTraceCount.keys()))
+
     i=1
     barGraphX=[]
     barGraphY=[]
@@ -340,19 +451,20 @@ def createIdenticalStackTracesGraph(threads):
     
     plt.ylabel("No. of threads")
     plt.title("Identical Stack Traces amongst Threads")
-    plt.savefig('graphs/identicalStackTraceGraph.png',bbox_inches='tight')
+    plt.savefig(IDENTICAL_STACK_GRAPH_PATH,bbox_inches='tight')
 
     # Create Graph and Table
     htmlData+='''
     <section id="stackTraceCount">
         <h2>III. Identical Stack Traces Distribution</h2>
         <p> Shows statistics related to frequency of stack traces amongst different threads. Refer to below table for actual stack values </p>
-        <img class="chart-panel" src = "graphs/identicalStackTraceGraph.png" alt = "Identical Stack Traces Distribution" />
+        <img class="chart-panel" src = "'''+IDENTICAL_STACK_GRAPH_HTML_PATH+'''" alt = "Identical Stack Traces Distribution" />
         <table class="chart-panel">
         <tr>
             <th>Stack Name</th>
             <th>Stack Trace</th>
             <th>Thread Count</th>
+            <th>Stack Analysis</th>
         </tr>
     '''
     # Can add thread list too, just add thread list header above and also uncomment threadList in for loop
@@ -364,7 +476,18 @@ def createIdenticalStackTracesGraph(threads):
         htmlData+="<td style='text-align:center'>" + "S" + str(i) + "</td>"
         htmlData+="<td style='white-space: pre-line' class='readMoreTextHide'>" + stackTrace + "</td>"
         htmlData+="<td style='text-align:center;font-weight:bold'>" + str(len(threadList)) + "</td>"
-        # htmlData+="<td style='text-align:center'>" + ', '.join(threadList) + "</td>"
+
+        # Analysis
+        currAnalysisObject=stackAnalysisDict[stackTrace]
+        htmlData+="<td>"
+        htmlData+="<ul>"
+        for analysisKey,analysisValue in currAnalysisObject.items():
+            htmlData+="<li><b>" + analysisKey + "</b>: " + analysisValue +"</li>"
+        htmlData+="<ul>"
+        htmlData+="</td>"
+        
+        # Thread List
+        # htmlData+="<td class = 'readMoreTextHide'>" + ' '.join(threadList) + "</td>"
         htmlData+="</tr>"
         i+=1
     htmlData+='''
@@ -412,7 +535,7 @@ def createTotalFunctionCountsTable(threads):
     for currFunc,currCount in totalFunctionCounts.items():
         htmlData+="<tr>"
         htmlData+="<td style='text-align:center;'>" + str(currCount) + "</td>"
-        htmlData+="<td>" + currFunc + "</td>"
+        htmlData+="<td class='readMoreTextHide' style='white-space: pre-line;'>" + '\n'.join(currFunc[i:i+100] for i in range(0, len(currFunc), 100)) + "</td>"
         htmlData+="<td style='text-align:center;font-weight:bold;'>" + "{:.1f}".format((currCount/totalCount)*100) + "</td>"
         htmlData+="<tr>"
     htmlData+='''
@@ -456,138 +579,23 @@ def createConsumingThreadTable(threads):
     </section>
     '''
 
-# Utility function to make main code more readable
-# Currently contains jquery code for "Read More" Functionality
-def getJsData():
-    return '''
-    $(document).ready(function() {
-                var max = 200;
-                $(".readMoreTextHide").each(function() {
-                    var str = $(this).text();
-                    if ($.trim(str).length > max) {
-                        var subStr = str.substring(0, max);
-                        var hiddenStr = str.substring(max, $.trim(str).length);
-                        $(this).empty().html(subStr);
-                        $(this).append(' <a href="javascript:void(0);" class="link">Expand..</a>');
-                        $(this).append('<span class="addText">' + hiddenStr + '</span>');
-                    }
-                });
-                $(".link").click(function() {
-                    $(this).siblings(".addText").contents().unwrap();
-                    $(this).remove();
-                });
-            });
-    '''
-# Utility function to make main code more readable
-# Currently contains custom CSS for tables, sidebar etc. apart from bootstrap
-def getCSSData():
-    return '''
-            body{
-                background-color:#F6FbFb;
-            }
-            table, th, td {
-                border-collapse: collapse;
-                padding: 8px;
-                background-color:#FFFFFF;
-            }
-            table{
-                border-radius: 10px;
-            }
-            th{
-                background-color: #111;
-                color:#FFFFFF;
-                text-align:center;
-            }
-            th:first-of-type {
-                border-top-left-radius: 15px;
-            }
-            th:last-of-type {
-                border-top-right-radius: 15px;
-            }
-            tr:last-of-type td:first-of-type {
-                border-bottom-left-radius: 15px;
-            }
-            tr:last-of-type td:last-of-type {
-                border-bottom-right-radius: 15px;
-            }
-            hr.solid{
-                border: 0;
-                margin: 40px;
-                height: 1px;
-                background: #333;
-                background-image: linear-gradient(to right, #ccc, #333, #ccc);
-                width:80%;
-            }
-            .chart-panel {
-                margin: 20px;
-                padding: 20px;
-                border-radius: 20px;
-                background-color: #FFFFFF;
-                box-shadow: 5px 10px 18px #888888;
-            }
-            .readMoreTextHide .addText {
-                display: none;
-            }
-            .sidenav {
-                height: 100%;
-                width: 250px;
-                position: fixed;
-                z-index: 1;
-                top: 0;
-                left: 0;
-                background-color: #111;
-                overflow-x: hidden;
-                padding-top: 40px;
-            }
-
-            .sidenav a {
-                padding: 6px 32px 6px 32px;
-                text-decoration: none;
-                font-size: 18px;
-                color: #818181;
-                display: block;
-            }
-            .sidenav a:hover {
-                color: #f1f1f1;
-            }
-            .sidenav-title{
-                padding: 6px 32px 6px 32px;
-                text-decoration: none;
-                font-size: 32px;
-                display: block;
-                color:#FFFFFF;
-                font-weight:bold;
-            }
-            @media screen and (max-height: 450px) {
-                .sidenav {padding-top: 15px;}
-                .sidenav a {font-size: 18px;}
-            }
-            .main {
-                margin-left: 300px; /* 30px extra than the width of the sidenav */
-                margin-top:30px;
-            }
-    '''
-if __name__ == "__main__":
-
+def main():
+    global htmlData
     # Open the HTML file and create boilerplate HTML code
-    OUTPUT_FILE = open("StackTraceReport.html","w")
+    OUTPUT_FILE = open(OUTPUT_FILE_PATH,"w")
 
     # HTML Boilerplate, CSS and Javascript code necessary
     # Currently, Javascript code is for "read more" functionality for stack traces.
-    jsData=getJsData()
-    cssData=getCSSData()
+    # All files are fetched from /scripts and /styles folder
     htmlData='''
     <!doctype html>
     <html lang="en">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-        <!-- Latest compiled and minified CSS -->
-        <style>
-            '''+cssData+'''
-        </style>
+        <!-- Include Bootstrap and Custom CSS -->
+        <link rel="stylesheet" href="{{ url_for('static', filename='styles/bootstrap.min.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='styles/customStyle.css') }}">
         <title>Stack Trace Report</title>
     </head> 
     <body>
@@ -613,10 +621,9 @@ if __name__ == "__main__":
     # Actual driver code for creating the report    
 
     print("Starting Python script at time: " + str(int(time.time())))
+
     # Dictionary to access thread objects by threadId
-
     threads=extractInformation()
-
     print("Starting creation of state distribution graph at time: " + str(int(time.time())))
     createStateDistributionGraph(threads)
 
@@ -638,25 +645,16 @@ if __name__ == "__main__":
     # Finish the html data and save the file
     htmlData+='''
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script type="text/javascript">
-        '''+jsData+'''
-    </script>
+    <script src="{{ url_for('static', filename='scripts/bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/jquery-3.6.0.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/customScript.js') }}"></script>
     </body>
-</html>'''
+    </html>'''
     OUTPUT_FILE.write(htmlData)
     OUTPUT_FILE.close()
 
     print("completed")
+if __name__ == "__main__":
+    main()
+    
 
-
-
-#useless code -> to save image when html is converted to pdf
-    # imgString=image_file_path_to_base64_string('graphs/flameGraph.png')
-    # htmlData+='''
-    #     <h2>Flame Graph</h2>
-    #     <p> Shows the call stack in the form of a tree </p>
-    #     <img src="data:image/png;base64,''' + imgString + '''" title="Flame Graph" height="100%" width="100%" /></img>
-    #     <hr class="solid">
-    # '''

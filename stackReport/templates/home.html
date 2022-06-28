@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Include Bootstrap and Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/customStyle.css') }}">
+
+    <title>Stack Trace Report</title>
+</head> 
+<body>
+    <div class="sidenav">
+        <div class="sidenav-title"> Eu-Stack Analyzer </div>
+        <br>
+        <a href="#upload"> - Upload Files</a>
+    </div>
+    <div class="main">
+        <h1>Stack Trace Report for the MongoDB server</h1>
+        <p> Uses eu-stack to collect stack trace and top command for gathering thread details </p>
+        <br>
+        <hr class="solid">           
+        <br>
+        <form action = "http://localhost:5000/uploader" method = "POST" 
+         enctype = "multipart/form-data">
+            <p>
+                <label for="stackFile">Stack File</label>
+                <br>
+                <input id=stackFile type = "file" name = "stackFile" />
+            </p>
+            
+            <br>
+
+            <p> 
+                <label for="topFile">Top File</label>
+                <br>
+                <input id=topFile label="Top File" type = "file" name = "topFile" />
+            </p>
+            <br>
+            <input type = "submit"/>
+        </form>
+        <p>
+            {{ messages['error'] }}
+        </p>
+    </div>
+</body>
+</html>
