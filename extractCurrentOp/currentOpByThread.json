@@ -1,0 +1,1765 @@
+{
+    "92201": {
+        "threadId": "92201",
+        "threadName": "conn4040",
+        "threadCpu": 99.9,
+        "threadState": "R",
+        "currentOp": {
+            "type": "op",
+            "host": "sahilchawla-HP-Pavilion:27017",
+            "desc": "conn4040",
+            "connectionId": 4040,
+            "client": "127.0.0.1:43004",
+            "clientMetadata": {
+                "driver": {
+                    "name": "PyMongo",
+                    "version": "4.1.1"
+                },
+                "os": {
+                    "type": "Linux",
+                    "name": "Linux",
+                    "architecture": "x86_64",
+                    "version": "5.15.0-39-generic"
+                },
+                "platform": "CPython 3.10.4.final.0"
+            },
+            "active": true,
+            "currentOpTime": "2022-06-28T13:17:07.575+05:30",
+            "threaded": true,
+            "opid": 461192,
+            "lsid": {
+                "id": {
+                    "$binary": {
+                        "base64": "bm3yHbRwQaSus/blAWveJA==",
+                        "subType": "04"
+                    }
+                },
+                "uid": {
+                    "$binary": {
+                        "base64": "47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+                        "subType": "00"
+                    }
+                }
+            },
+            "secs_running": 41,
+            "microsecs_running": 41734420,
+            "op": "command",
+            "ns": "testDB.largestCollection",
+            "command": {
+                "aggregate": "largestCollection",
+                "pipeline": [
+                    {
+                        "$match": {
+                            "name": {
+                                "$regex": "/^me/i"
+                            }
+                        }
+                    },
+                    {
+                        "$group": {
+                            "_id": 1,
+                            "n": {
+                                "$sum": 1
+                            }
+                        }
+                    }
+                ],
+                "cursor": {},
+                "lsid": {
+                    "id": {
+                        "$binary": {
+                            "base64": "bm3yHbRwQaSus/blAWveJA==",
+                            "subType": "04"
+                        }
+                    }
+                },
+                "$db": "testDB"
+            },
+            "planSummary": "COLLSCAN",
+            "numYields": 4206,
+            "locks": {
+                "Global": "r"
+            },
+            "waitingForLock": false,
+            "lockStats": {
+                "Global": {
+                    "acquireCount": {
+                        "r": 4208
+                    }
+                },
+                "Mutex": {
+                    "acquireCount": {
+                        "r": 2
+                    }
+                }
+            },
+            "waitingForFlowControl": false,
+            "flowControlStats": {}
+        }
+    },
+    "92187": {
+        "threadId": "92187",
+        "threadName": "conn4030",
+        "threadCpu": 85.3,
+        "threadState": "R",
+        "currentOp": {
+            "type": "op",
+            "host": "sahilchawla-HP-Pavilion:27017",
+            "desc": "conn4030",
+            "connectionId": 4030,
+            "client": "127.0.0.1:42984",
+            "clientMetadata": {
+                "driver": {
+                    "name": "PyMongo",
+                    "version": "4.1.1"
+                },
+                "os": {
+                    "type": "Linux",
+                    "name": "Linux",
+                    "architecture": "x86_64",
+                    "version": "5.15.0-39-generic"
+                },
+                "platform": "CPython 3.10.4.final.0"
+            },
+            "active": true,
+            "currentOpTime": "2022-06-28T13:17:07.575+05:30",
+            "threaded": true,
+            "opid": 461171,
+            "lsid": {
+                "id": {
+                    "$binary": {
+                        "base64": "ijclY1xaT66sVErBEoevkw==",
+                        "subType": "04"
+                    }
+                },
+                "uid": {
+                    "$binary": {
+                        "base64": "47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+                        "subType": "00"
+                    }
+                }
+            },
+            "secs_running": 41,
+            "microsecs_running": 41767120,
+            "op": "command",
+            "ns": "testDB.largestCollection",
+            "command": {
+                "aggregate": "largestCollection",
+                "pipeline": [
+                    {
+                        "$match": {
+                            "name": "Sahil"
+                        }
+                    },
+                    {
+                        "$group": {
+                            "_id": 1,
+                            "n": {
+                                "$sum": 1
+                            }
+                        }
+                    }
+                ],
+                "cursor": {},
+                "lsid": {
+                    "id": {
+                        "$binary": {
+                            "base64": "ijclY1xaT66sVErBEoevkw==",
+                            "subType": "04"
+                        }
+                    }
+                },
+                "$db": "testDB"
+            },
+            "planSummary": "COLLSCAN",
+            "numYields": 4483,
+            "locks": {
+                "Global": "r"
+            },
+            "waitingForLock": false,
+            "lockStats": {
+                "Global": {
+                    "acquireCount": {
+                        "r": 4485
+                    }
+                },
+                "Mutex": {
+                    "acquireCount": {
+                        "r": 2
+                    }
+                }
+            },
+            "waitingForFlowControl": false,
+            "flowControlStats": {}
+        }
+    },
+    "92164": {
+        "threadId": "92164",
+        "threadName": "conn4016",
+        "threadCpu": 70.6,
+        "threadState": "R",
+        "currentOp": {
+            "type": "op",
+            "host": "sahilchawla-HP-Pavilion:27017",
+            "desc": "conn4016",
+            "connectionId": 4016,
+            "client": "127.0.0.1:42956",
+            "clientMetadata": {
+                "driver": {
+                    "name": "PyMongo",
+                    "version": "4.1.1"
+                },
+                "os": {
+                    "type": "Linux",
+                    "name": "Linux",
+                    "architecture": "x86_64",
+                    "version": "5.15.0-39-generic"
+                },
+                "platform": "CPython 3.10.4.final.0"
+            },
+            "active": true,
+            "currentOpTime": "2022-06-28T13:17:07.575+05:30",
+            "threaded": true,
+            "opid": 461155,
+            "lsid": {
+                "id": {
+                    "$binary": {
+                        "base64": "ctBNlG1ZSnmTyhus4+t2Ig==",
+                        "subType": "04"
+                    }
+                },
+                "uid": {
+                    "$binary": {
+                        "base64": "47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+                        "subType": "00"
+                    }
+                }
+            },
+            "secs_running": 41,
+            "microsecs_running": 41774570,
+            "op": "command",
+            "ns": "testDB.largestCollection",
+            "command": {
+                "aggregate": "largestCollection",
+                "pipeline": [
+                    {
+                        "$match": {
+                            "name": {
+                                "$in": [
+                                    "/Yo/",
+                                    "/mi/",
+                                    "/ma/"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "$sort": {
+                            "age": 1,
+                            "date": -1
+                        }
+                    },
+                    {
+                        "$group": {
+                            "_id": null,
+                            "amount": {
+                                "$sum": {
+                                    "$add": [
+                                        "$date",
+                                        "$age"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                ],
+                "cursor": {},
+                "lsid": {
+                    "id": {
+                        "$binary": {
+                            "base64": "ctBNlG1ZSnmTyhus4+t2Ig==",
+                            "subType": "04"
+                        }
+                    }
+                },
+                "$db": "testDB"
+            },
+            "planSummary": "COLLSCAN",
+            "numYields": 4826,
+            "locks": {
+                "Global": "r"
+            },
+            "waitingForLock": false,
+            "lockStats": {
+                "Global": {
+                    "acquireCount": {
+                        "r": 4828
+                    }
+                },
+                "Mutex": {
+                    "acquireCount": {
+                        "r": 2
+                    }
+                }
+            },
+            "waitingForFlowControl": false,
+            "flowControlStats": {}
+        }
+    },
+    "92058": {
+        "threadId": "92058",
+        "threadName": "conn3977",
+        "threadCpu": 64.7,
+        "threadState": "R",
+        "currentOp": {
+            "type": "op",
+            "host": "sahilchawla-HP-Pavilion:27017",
+            "desc": "conn3977",
+            "connectionId": 3977,
+            "client": "127.0.0.1:42874",
+            "clientMetadata": {
+                "driver": {
+                    "name": "PyMongo",
+                    "version": "4.1.1"
+                },
+                "os": {
+                    "type": "Linux",
+                    "name": "Linux",
+                    "architecture": "x86_64",
+                    "version": "5.15.0-39-generic"
+                },
+                "platform": "CPython 3.10.4.final.0"
+            },
+            "active": true,
+            "currentOpTime": "2022-06-28T13:17:07.575+05:30",
+            "threaded": true,
+            "opid": 461082,
+            "lsid": {
+                "id": {
+                    "$binary": {
+                        "base64": "k4QptjuWTfOMai4e22Kjwg==",
+                        "subType": "04"
+                    }
+                },
+                "uid": {
+                    "$binary": {
+                        "base64": "47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+                        "subType": "00"
+                    }
+                }
+            },
+            "secs_running": 41,
+            "microsecs_running": 41874601,
+            "op": "command",
+            "ns": "testDB.largestCollection",
+            "command": {
+                "aggregate": "largestCollection",
+                "pipeline": [
+                    {
+                        "$match": {
+                            "name": {
+                                "$regex": "/^me/i"
+                            }
+                        }
+                    },
+                    {
+                        "$group": {
+                            "_id": 1,
+                            "n": {
+                                "$sum": 1
+                            }
+                        }
+                    }
+                ],
+                "cursor": {},
+                "lsid": {
+                    "id": {
+                        "$binary": {
+                            "base64": "k4QptjuWTfOMai4e22Kjwg==",
+                            "subType": "04"
+                        }
+                    }
+                },
+                "$db": "testDB"
+            },
+            "planSummary": "COLLSCAN",
+            "numYields": 4447,
+            "locks": {
+                "Global": "r"
+            },
+            "waitingForLock": false,
+            "lockStats": {
+                "Global": {
+                    "acquireCount": {
+                        "r": 4449
+                    }
+                },
+                "Mutex": {
+                    "acquireCount": {
+                        "r": 2
+                    }
+                }
+            },
+            "waitingForFlowControl": false,
+            "flowControlStats": {}
+        }
+    },
+    "92269": {
+        "threadId": "92269",
+        "threadName": "conn4066",
+        "threadCpu": 61.8,
+        "threadState": "R",
+        "currentOp": {
+            "type": "op",
+            "host": "sahilchawla-HP-Pavilion:27017",
+            "desc": "conn4066",
+            "connectionId": 4066,
+            "client": "127.0.0.1:43060",
+            "clientMetadata": {
+                "driver": {
+                    "name": "PyMongo",
+                    "version": "4.1.1"
+                },
+                "os": {
+                    "type": "Linux",
+                    "name": "Linux",
+                    "architecture": "x86_64",
+                    "version": "5.15.0-39-generic"
+                },
+                "platform": "CPython 3.10.4.final.0"
+            },
+            "active": true,
+            "currentOpTime": "2022-06-28T13:17:07.575+05:30",
+            "threaded": true,
+            "opid": 461236,
+            "lsid": {
+                "id": {
+                    "$binary": {
+                        "base64": "y6mpP9s1R1GDXgWLHs6E5Q==",
+                        "subType": "04"
+                    }
+                },
+                "uid": {
+                    "$binary": {
+                        "base64": "47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+                        "subType": "00"
+                    }
+                }
+            },
+            "secs_running": 41,
+            "microsecs_running": 41658399,
+            "op": "command",
+            "ns": "testDB.largestCollection",
+            "command": {
+                "aggregate": "largestCollection",
+                "pipeline": [
+                    {
+                        "$match": {
+                            "name": {
+                                "$regex": "/^me/i"
+                            }
+                        }
+                    },
+                    {
+                        "$group": {
+                            "_id": 1,
+                            "n": {
+                                "$sum": 1
+                            }
+                        }
+                    }
+                ],
+                "cursor": {},
+                "lsid": {
+                    "id": {
+                        "$binary": {
+                            "base64": "y6mpP9s1R1GDXgWLHs6E5Q==",
+                            "subType": "04"
+                        }
+                    }
+                },
+                "$db": "testDB"
+            },
+            "planSummary": "COLLSCAN",
+            "numYields": 4300,
+            "locks": {
+                "Global": "r"
+            },
+            "waitingForLock": false,
+            "lockStats": {
+                "Global": {
+                    "acquireCount": {
+                        "r": 4302
+                    }
+                },
+                "Mutex": {
+                    "acquireCount": {
+                        "r": 2
+                    }
+                }
+            },
+            "waitingForFlowControl": false,
+            "flowControlStats": {}
+        }
+    },
+    "92250": {
+        "threadId": "92250",
+        "threadName": "conn4058",
+        "threadCpu": 32.4,
+        "threadState": "R",
+        "currentOp": {
+            "type": "op",
+            "host": "sahilchawla-HP-Pavilion:27017",
+            "desc": "conn4058",
+            "connectionId": 4058,
+            "client": "127.0.0.1:43044",
+            "clientMetadata": {
+                "driver": {
+                    "name": "PyMongo",
+                    "version": "4.1.1"
+                },
+                "os": {
+                    "type": "Linux",
+                    "name": "Linux",
+                    "architecture": "x86_64",
+                    "version": "5.15.0-39-generic"
+                },
+                "platform": "CPython 3.10.4.final.0"
+            },
+            "active": true,
+            "currentOpTime": "2022-06-28T13:17:07.575+05:30",
+            "threaded": true,
+            "opid": 461222,
+            "lsid": {
+                "id": {
+                    "$binary": {
+                        "base64": "jFyyqpUYSb2AMBmEFEnAUQ==",
+                        "subType": "04"
+                    }
+                },
+                "uid": {
+                    "$binary": {
+                        "base64": "47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+                        "subType": "00"
+                    }
+                }
+            },
+            "secs_running": 41,
+            "microsecs_running": 41670757,
+            "op": "command",
+            "ns": "testDB.largestCollection",
+            "command": {
+                "aggregate": "largestCollection",
+                "pipeline": [
+                    {
+                        "$match": {
+                            "name": "Sahil"
+                        }
+                    },
+                    {
+                        "$group": {
+                            "_id": 1,
+                            "n": {
+                                "$sum": 1
+                            }
+                        }
+                    }
+                ],
+                "cursor": {},
+                "lsid": {
+                    "id": {
+                        "$binary": {
+                            "base64": "jFyyqpUYSb2AMBmEFEnAUQ==",
+                            "subType": "04"
+                        }
+                    }
+                },
+                "$db": "testDB"
+            },
+            "planSummary": "COLLSCAN",
+            "numYields": 4579,
+            "locks": {
+                "Global": "r"
+            },
+            "waitingForLock": false,
+            "lockStats": {
+                "Global": {
+                    "acquireCount": {
+                        "r": 4581
+                    }
+                },
+                "Mutex": {
+                    "acquireCount": {
+                        "r": 2
+                    }
+                }
+            },
+            "waitingForFlowControl": false,
+            "flowControlStats": {}
+        }
+    },
+    "92318": {
+        "threadId": "92318",
+        "threadName": "conn4090",
+        "threadCpu": 29.4,
+        "threadState": "R",
+        "currentOp": {
+            "type": "op",
+            "host": "sahilchawla-HP-Pavilion:27017",
+            "desc": "conn4090",
+            "connectionId": 4090,
+            "client": "127.0.0.1:43112",
+            "clientMetadata": {
+                "driver": {
+                    "name": "PyMongo",
+                    "version": "4.1.1"
+                },
+                "os": {
+                    "type": "Linux",
+                    "name": "Linux",
+                    "architecture": "x86_64",
+                    "version": "5.15.0-39-generic"
+                },
+                "platform": "CPython 3.10.4.final.0"
+            },
+            "active": true,
+            "currentOpTime": "2022-06-28T13:17:07.575+05:30",
+            "threaded": true,
+            "opid": 461271,
+            "lsid": {
+                "id": {
+                    "$binary": {
+                        "base64": "B/5pXM2NTxq96ybyxbDI9g==",
+                        "subType": "04"
+                    }
+                },
+                "uid": {
+                    "$binary": {
+                        "base64": "47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+                        "subType": "00"
+                    }
+                }
+            },
+            "secs_running": 41,
+            "microsecs_running": 41566765,
+            "op": "command",
+            "ns": "testDB.largestCollection",
+            "command": {
+                "aggregate": "largestCollection",
+                "pipeline": [
+                    {
+                        "$match": {
+                            "name": {
+                                "$regex": "/^me/i"
+                            }
+                        }
+                    },
+                    {
+                        "$group": {
+                            "_id": 1,
+                            "n": {
+                                "$sum": 1
+                            }
+                        }
+                    }
+                ],
+                "cursor": {},
+                "lsid": {
+                    "id": {
+                        "$binary": {
+                            "base64": "B/5pXM2NTxq96ybyxbDI9g==",
+                            "subType": "04"
+                        }
+                    }
+                },
+                "$db": "testDB"
+            },
+            "planSummary": "COLLSCAN",
+            "numYields": 4615,
+            "locks": {
+                "Global": "r"
+            },
+            "waitingForLock": false,
+            "lockStats": {
+                "Global": {
+                    "acquireCount": {
+                        "r": 4617
+                    }
+                },
+                "Mutex": {
+                    "acquireCount": {
+                        "r": 2
+                    }
+                }
+            },
+            "waitingForFlowControl": false,
+            "flowControlStats": {}
+        }
+    },
+    "92126": {
+        "threadId": "92126",
+        "threadName": "conn4003",
+        "threadCpu": 26.5,
+        "threadState": "R",
+        "currentOp": {
+            "type": "op",
+            "host": "sahilchawla-HP-Pavilion:27017",
+            "desc": "conn4003",
+            "connectionId": 4003,
+            "client": "127.0.0.1:42930",
+            "clientMetadata": {
+                "driver": {
+                    "name": "PyMongo",
+                    "version": "4.1.1"
+                },
+                "os": {
+                    "type": "Linux",
+                    "name": "Linux",
+                    "architecture": "x86_64",
+                    "version": "5.15.0-39-generic"
+                },
+                "platform": "CPython 3.10.4.final.0"
+            },
+            "active": true,
+            "currentOpTime": "2022-06-28T13:17:07.575+05:30",
+            "threaded": true,
+            "opid": 461141,
+            "lsid": {
+                "id": {
+                    "$binary": {
+                        "base64": "YPCW++1tTpiJ4qxGKxCv2w==",
+                        "subType": "04"
+                    }
+                },
+                "uid": {
+                    "$binary": {
+                        "base64": "47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+                        "subType": "00"
+                    }
+                }
+            },
+            "secs_running": 41,
+            "microsecs_running": 41792469,
+            "op": "command",
+            "ns": "testDB.largestCollection",
+            "command": {
+                "aggregate": "largestCollection",
+                "pipeline": [
+                    {
+                        "$match": {
+                            "name": {
+                                "$in": [
+                                    "/Yo/",
+                                    "/mi/",
+                                    "/ma/"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "$sort": {
+                            "age": 1,
+                            "date": -1
+                        }
+                    },
+                    {
+                        "$group": {
+                            "_id": null,
+                            "amount": {
+                                "$sum": {
+                                    "$add": [
+                                        "$date",
+                                        "$age"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                ],
+                "cursor": {},
+                "lsid": {
+                    "id": {
+                        "$binary": {
+                            "base64": "YPCW++1tTpiJ4qxGKxCv2w==",
+                            "subType": "04"
+                        }
+                    }
+                },
+                "$db": "testDB"
+            },
+            "planSummary": "COLLSCAN",
+            "numYields": 4712,
+            "locks": {
+                "Global": "r"
+            },
+            "waitingForLock": false,
+            "lockStats": {
+                "Global": {
+                    "acquireCount": {
+                        "r": 4714
+                    }
+                },
+                "Mutex": {
+                    "acquireCount": {
+                        "r": 2
+                    }
+                }
+            },
+            "waitingForFlowControl": false,
+            "flowControlStats": {}
+        }
+    },
+    "92194": {
+        "threadId": "92194",
+        "threadName": "conn4036",
+        "threadCpu": 26.5,
+        "threadState": "R",
+        "currentOp": {
+            "type": "op",
+            "host": "sahilchawla-HP-Pavilion:27017",
+            "desc": "conn4036",
+            "connectionId": 4036,
+            "client": "127.0.0.1:42996",
+            "clientMetadata": {
+                "driver": {
+                    "name": "PyMongo",
+                    "version": "4.1.1"
+                },
+                "os": {
+                    "type": "Linux",
+                    "name": "Linux",
+                    "architecture": "x86_64",
+                    "version": "5.15.0-39-generic"
+                },
+                "platform": "CPython 3.10.4.final.0"
+            },
+            "active": true,
+            "currentOpTime": "2022-06-28T13:17:07.574+05:30",
+            "threaded": true,
+            "opid": 461183,
+            "lsid": {
+                "id": {
+                    "$binary": {
+                        "base64": "5Qwi7DxoSSOO35qUI1mlWQ==",
+                        "subType": "04"
+                    }
+                },
+                "uid": {
+                    "$binary": {
+                        "base64": "47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+                        "subType": "00"
+                    }
+                }
+            },
+            "secs_running": 41,
+            "microsecs_running": 41748780,
+            "op": "command",
+            "ns": "testDB.largestCollection",
+            "command": {
+                "aggregate": "largestCollection",
+                "pipeline": [
+                    {
+                        "$match": {
+                            "name": {
+                                "$in": [
+                                    "/Yo/",
+                                    "/mi/",
+                                    "/ma/"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "$sort": {
+                            "age": 1,
+                            "date": -1
+                        }
+                    },
+                    {
+                        "$group": {
+                            "_id": null,
+                            "amount": {
+                                "$sum": {
+                                    "$add": [
+                                        "$date",
+                                        "$age"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                ],
+                "cursor": {},
+                "lsid": {
+                    "id": {
+                        "$binary": {
+                            "base64": "5Qwi7DxoSSOO35qUI1mlWQ==",
+                            "subType": "04"
+                        }
+                    }
+                },
+                "$db": "testDB"
+            },
+            "planSummary": "COLLSCAN",
+            "numYields": 4992,
+            "locks": {
+                "Global": "r"
+            },
+            "waitingForLock": false,
+            "lockStats": {
+                "Global": {
+                    "acquireCount": {
+                        "r": 4994
+                    }
+                },
+                "Mutex": {
+                    "acquireCount": {
+                        "r": 2
+                    }
+                }
+            },
+            "waitingForFlowControl": false,
+            "flowControlStats": {}
+        }
+    },
+    "92015": {
+        "threadId": "92015",
+        "threadName": "conn3961",
+        "threadCpu": 23.5,
+        "threadState": "R",
+        "currentOp": {
+            "type": "op",
+            "host": "sahilchawla-HP-Pavilion:27017",
+            "desc": "conn3961",
+            "connectionId": 3961,
+            "client": "127.0.0.1:42842",
+            "clientMetadata": {
+                "driver": {
+                    "name": "PyMongo",
+                    "version": "4.1.1"
+                },
+                "os": {
+                    "type": "Linux",
+                    "name": "Linux",
+                    "architecture": "x86_64",
+                    "version": "5.15.0-39-generic"
+                },
+                "platform": "CPython 3.10.4.final.0"
+            },
+            "active": true,
+            "currentOpTime": "2022-06-28T13:17:07.575+05:30",
+            "threaded": true,
+            "opid": 461058,
+            "lsid": {
+                "id": {
+                    "$binary": {
+                        "base64": "XwGUhrYYR6G9RJcqBSKD2g==",
+                        "subType": "04"
+                    }
+                },
+                "uid": {
+                    "$binary": {
+                        "base64": "47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+                        "subType": "00"
+                    }
+                }
+            },
+            "secs_running": 41,
+            "microsecs_running": 41899521,
+            "op": "command",
+            "ns": "testDB.largestCollection",
+            "command": {
+                "aggregate": "largestCollection",
+                "pipeline": [
+                    {
+                        "$match": {
+                            "name": {
+                                "$regex": "/^me/i"
+                            }
+                        }
+                    },
+                    {
+                        "$group": {
+                            "_id": 1,
+                            "n": {
+                                "$sum": 1
+                            }
+                        }
+                    }
+                ],
+                "cursor": {},
+                "lsid": {
+                    "id": {
+                        "$binary": {
+                            "base64": "XwGUhrYYR6G9RJcqBSKD2g==",
+                            "subType": "04"
+                        }
+                    }
+                },
+                "$db": "testDB"
+            },
+            "planSummary": "COLLSCAN",
+            "numYields": 5398,
+            "locks": {
+                "Global": "r"
+            },
+            "waitingForLock": false,
+            "lockStats": {
+                "Global": {
+                    "acquireCount": {
+                        "r": 5400
+                    }
+                },
+                "Mutex": {
+                    "acquireCount": {
+                        "r": 2
+                    }
+                }
+            },
+            "waitingForFlowControl": false,
+            "flowControlStats": {}
+        }
+    },
+    "92086": {
+        "threadId": "92086",
+        "threadName": "conn3988",
+        "threadCpu": 23.5,
+        "threadState": "R",
+        "currentOp": {
+            "type": "op",
+            "host": "sahilchawla-HP-Pavilion:27017",
+            "desc": "conn3988",
+            "connectionId": 3988,
+            "client": "127.0.0.1:42898",
+            "clientMetadata": {
+                "driver": {
+                    "name": "PyMongo",
+                    "version": "4.1.1"
+                },
+                "os": {
+                    "type": "Linux",
+                    "name": "Linux",
+                    "architecture": "x86_64",
+                    "version": "5.15.0-39-generic"
+                },
+                "platform": "CPython 3.10.4.final.0"
+            },
+            "active": true,
+            "currentOpTime": "2022-06-28T13:17:07.574+05:30",
+            "threaded": true,
+            "opid": 461097,
+            "lsid": {
+                "id": {
+                    "$binary": {
+                        "base64": "ihuY88+NSaCCtrYLyayiSw==",
+                        "subType": "04"
+                    }
+                },
+                "uid": {
+                    "$binary": {
+                        "base64": "47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+                        "subType": "00"
+                    }
+                }
+            },
+            "secs_running": 41,
+            "microsecs_running": 41863463,
+            "op": "command",
+            "ns": "testDB.largestCollection",
+            "command": {
+                "aggregate": "largestCollection",
+                "pipeline": [
+                    {
+                        "$match": {
+                            "name": {
+                                "$in": [
+                                    "/Yo/",
+                                    "/mi/",
+                                    "/ma/"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "$sort": {
+                            "age": 1,
+                            "date": -1
+                        }
+                    },
+                    {
+                        "$group": {
+                            "_id": null,
+                            "amount": {
+                                "$sum": {
+                                    "$add": [
+                                        "$date",
+                                        "$age"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                ],
+                "cursor": {},
+                "lsid": {
+                    "id": {
+                        "$binary": {
+                            "base64": "ihuY88+NSaCCtrYLyayiSw==",
+                            "subType": "04"
+                        }
+                    }
+                },
+                "$db": "testDB"
+            },
+            "planSummary": "COLLSCAN",
+            "numYields": 4777,
+            "locks": {
+                "Global": "r"
+            },
+            "waitingForLock": false,
+            "lockStats": {
+                "Global": {
+                    "acquireCount": {
+                        "r": 4779
+                    }
+                },
+                "Mutex": {
+                    "acquireCount": {
+                        "r": 2
+                    }
+                }
+            },
+            "waitingForFlowControl": false,
+            "flowControlStats": {}
+        }
+    },
+    "92163": {
+        "threadId": "92163",
+        "threadName": "conn4015",
+        "threadCpu": 23.5,
+        "threadState": "R",
+        "currentOp": {
+            "type": "op",
+            "host": "sahilchawla-HP-Pavilion:27017",
+            "desc": "conn4015",
+            "connectionId": 4015,
+            "client": "127.0.0.1:42954",
+            "clientMetadata": {
+                "driver": {
+                    "name": "PyMongo",
+                    "version": "4.1.1"
+                },
+                "os": {
+                    "type": "Linux",
+                    "name": "Linux",
+                    "architecture": "x86_64",
+                    "version": "5.15.0-39-generic"
+                },
+                "platform": "CPython 3.10.4.final.0"
+            },
+            "active": true,
+            "currentOpTime": "2022-06-28T13:17:07.574+05:30",
+            "threaded": true,
+            "opid": 461178,
+            "lsid": {
+                "id": {
+                    "$binary": {
+                        "base64": "kSCds1IUQXePBxnfFOZYNQ==",
+                        "subType": "04"
+                    }
+                },
+                "uid": {
+                    "$binary": {
+                        "base64": "47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+                        "subType": "00"
+                    }
+                }
+            },
+            "secs_running": 41,
+            "microsecs_running": 41754550,
+            "op": "command",
+            "ns": "testDB.largestCollection",
+            "command": {
+                "aggregate": "largestCollection",
+                "pipeline": [
+                    {
+                        "$match": {
+                            "name": {
+                                "$in": [
+                                    "/Yo/",
+                                    "/mi/",
+                                    "/ma/"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "$sort": {
+                            "age": 1,
+                            "date": -1
+                        }
+                    },
+                    {
+                        "$group": {
+                            "_id": null,
+                            "amount": {
+                                "$sum": {
+                                    "$add": [
+                                        "$date",
+                                        "$age"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                ],
+                "cursor": {},
+                "lsid": {
+                    "id": {
+                        "$binary": {
+                            "base64": "kSCds1IUQXePBxnfFOZYNQ==",
+                            "subType": "04"
+                        }
+                    }
+                },
+                "$db": "testDB"
+            },
+            "planSummary": "COLLSCAN",
+            "numYields": 4700,
+            "locks": {
+                "Global": "r"
+            },
+            "waitingForLock": false,
+            "lockStats": {
+                "Global": {
+                    "acquireCount": {
+                        "r": 4702
+                    }
+                },
+                "Mutex": {
+                    "acquireCount": {
+                        "r": 2
+                    }
+                }
+            },
+            "waitingForFlowControl": false,
+            "flowControlStats": {}
+        }
+    },
+    "92255": {
+        "threadId": "92255",
+        "threadName": "conn4061",
+        "threadCpu": 23.5,
+        "threadState": "R",
+        "currentOp": {
+            "type": "op",
+            "host": "sahilchawla-HP-Pavilion:27017",
+            "desc": "conn4061",
+            "connectionId": 4061,
+            "client": "127.0.0.1:43050",
+            "clientMetadata": {
+                "driver": {
+                    "name": "PyMongo",
+                    "version": "4.1.1"
+                },
+                "os": {
+                    "type": "Linux",
+                    "name": "Linux",
+                    "architecture": "x86_64",
+                    "version": "5.15.0-39-generic"
+                },
+                "platform": "CPython 3.10.4.final.0"
+            },
+            "active": true,
+            "currentOpTime": "2022-06-28T13:17:07.574+05:30",
+            "threaded": true,
+            "opid": 461223,
+            "lsid": {
+                "id": {
+                    "$binary": {
+                        "base64": "p+7cwfS9RPGiUcDwu06P5Q==",
+                        "subType": "04"
+                    }
+                },
+                "uid": {
+                    "$binary": {
+                        "base64": "47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+                        "subType": "00"
+                    }
+                }
+            },
+            "secs_running": 41,
+            "microsecs_running": 41669562,
+            "op": "command",
+            "ns": "testDB.largestCollection",
+            "command": {
+                "aggregate": "largestCollection",
+                "pipeline": [
+                    {
+                        "$match": {
+                            "name": {
+                                "$regex": "/^me/i"
+                            }
+                        }
+                    },
+                    {
+                        "$group": {
+                            "_id": 1,
+                            "n": {
+                                "$sum": 1
+                            }
+                        }
+                    }
+                ],
+                "cursor": {},
+                "lsid": {
+                    "id": {
+                        "$binary": {
+                            "base64": "p+7cwfS9RPGiUcDwu06P5Q==",
+                            "subType": "04"
+                        }
+                    }
+                },
+                "$db": "testDB"
+            },
+            "planSummary": "COLLSCAN",
+            "numYields": 5140,
+            "locks": {
+                "Global": "r"
+            },
+            "waitingForLock": false,
+            "lockStats": {
+                "Global": {
+                    "acquireCount": {
+                        "r": 5142
+                    }
+                },
+                "Mutex": {
+                    "acquireCount": {
+                        "r": 2
+                    }
+                }
+            },
+            "waitingForFlowControl": false,
+            "flowControlStats": {}
+        }
+    },
+    "92043": {
+        "threadId": "92043",
+        "threadName": "conn3972",
+        "threadCpu": 20.6,
+        "threadState": "R",
+        "currentOp": {
+            "type": "op",
+            "host": "sahilchawla-HP-Pavilion:27017",
+            "desc": "conn3972",
+            "connectionId": 3972,
+            "client": "127.0.0.1:42862",
+            "clientMetadata": {
+                "driver": {
+                    "name": "PyMongo",
+                    "version": "4.1.1"
+                },
+                "os": {
+                    "type": "Linux",
+                    "name": "Linux",
+                    "architecture": "x86_64",
+                    "version": "5.15.0-39-generic"
+                },
+                "platform": "CPython 3.10.4.final.0"
+            },
+            "active": true,
+            "currentOpTime": "2022-06-28T13:17:07.575+05:30",
+            "threaded": true,
+            "opid": 461074,
+            "lsid": {
+                "id": {
+                    "$binary": {
+                        "base64": "YtuGZwENTyKz5HSIb/zeLw==",
+                        "subType": "04"
+                    }
+                },
+                "uid": {
+                    "$binary": {
+                        "base64": "47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+                        "subType": "00"
+                    }
+                }
+            },
+            "secs_running": 41,
+            "microsecs_running": 41883276,
+            "op": "command",
+            "ns": "testDB.largestCollection",
+            "command": {
+                "aggregate": "largestCollection",
+                "pipeline": [
+                    {
+                        "$match": {
+                            "name": "Sahil"
+                        }
+                    },
+                    {
+                        "$group": {
+                            "_id": 1,
+                            "n": {
+                                "$sum": 1
+                            }
+                        }
+                    }
+                ],
+                "cursor": {},
+                "lsid": {
+                    "id": {
+                        "$binary": {
+                            "base64": "YtuGZwENTyKz5HSIb/zeLw==",
+                            "subType": "04"
+                        }
+                    }
+                },
+                "$db": "testDB"
+            },
+            "planSummary": "COLLSCAN",
+            "numYields": 5607,
+            "locks": {
+                "Global": "r"
+            },
+            "waitingForLock": false,
+            "lockStats": {
+                "Global": {
+                    "acquireCount": {
+                        "r": 5609
+                    }
+                },
+                "Mutex": {
+                    "acquireCount": {
+                        "r": 2
+                    }
+                }
+            },
+            "waitingForFlowControl": false,
+            "flowControlStats": {}
+        }
+    },
+    "92089": {
+        "threadId": "92089",
+        "threadName": "conn3989",
+        "threadCpu": 20.6,
+        "threadState": "R",
+        "currentOp": {
+            "type": "op",
+            "host": "sahilchawla-HP-Pavilion:27017",
+            "desc": "conn3989",
+            "connectionId": 3989,
+            "client": "127.0.0.1:42900",
+            "clientMetadata": {
+                "driver": {
+                    "name": "PyMongo",
+                    "version": "4.1.1"
+                },
+                "os": {
+                    "type": "Linux",
+                    "name": "Linux",
+                    "architecture": "x86_64",
+                    "version": "5.15.0-39-generic"
+                },
+                "platform": "CPython 3.10.4.final.0"
+            },
+            "active": true,
+            "currentOpTime": "2022-06-28T13:17:07.574+05:30",
+            "threaded": true,
+            "opid": 461102,
+            "lsid": {
+                "id": {
+                    "$binary": {
+                        "base64": "PvWsW4LSTr+QBpVf3OosyQ==",
+                        "subType": "04"
+                    }
+                },
+                "uid": {
+                    "$binary": {
+                        "base64": "47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+                        "subType": "00"
+                    }
+                }
+            },
+            "secs_running": 41,
+            "microsecs_running": 41857781,
+            "op": "command",
+            "ns": "testDB.largestCollection",
+            "command": {
+                "aggregate": "largestCollection",
+                "pipeline": [
+                    {
+                        "$match": {
+                            "name": "Sahil"
+                        }
+                    },
+                    {
+                        "$group": {
+                            "_id": 1,
+                            "n": {
+                                "$sum": 1
+                            }
+                        }
+                    }
+                ],
+                "cursor": {},
+                "lsid": {
+                    "id": {
+                        "$binary": {
+                            "base64": "PvWsW4LSTr+QBpVf3OosyQ==",
+                            "subType": "04"
+                        }
+                    }
+                },
+                "$db": "testDB"
+            },
+            "planSummary": "COLLSCAN",
+            "numYields": 5202,
+            "locks": {
+                "Global": "r"
+            },
+            "waitingForLock": false,
+            "lockStats": {
+                "Global": {
+                    "acquireCount": {
+                        "r": 5204
+                    }
+                },
+                "Mutex": {
+                    "acquireCount": {
+                        "r": 2
+                    }
+                }
+            },
+            "waitingForFlowControl": false,
+            "flowControlStats": {}
+        }
+    },
+    "92275": {
+        "threadId": "92275",
+        "threadName": "conn4069",
+        "threadCpu": 20.6,
+        "threadState": "R",
+        "currentOp": {
+            "type": "op",
+            "host": "sahilchawla-HP-Pavilion:27017",
+            "desc": "conn4069",
+            "connectionId": 4069,
+            "client": "127.0.0.1:43066",
+            "clientMetadata": {
+                "driver": {
+                    "name": "PyMongo",
+                    "version": "4.1.1"
+                },
+                "os": {
+                    "type": "Linux",
+                    "name": "Linux",
+                    "architecture": "x86_64",
+                    "version": "5.15.0-39-generic"
+                },
+                "platform": "CPython 3.10.4.final.0"
+            },
+            "active": true,
+            "currentOpTime": "2022-06-28T13:17:07.575+05:30",
+            "threaded": true,
+            "opid": 461250,
+            "lsid": {
+                "id": {
+                    "$binary": {
+                        "base64": "hkB6gSxYTUekChxkNVE/IQ==",
+                        "subType": "04"
+                    }
+                },
+                "uid": {
+                    "$binary": {
+                        "base64": "47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+                        "subType": "00"
+                    }
+                }
+            },
+            "secs_running": 41,
+            "microsecs_running": 41605525,
+            "op": "command",
+            "ns": "testDB.largestCollection",
+            "command": {
+                "aggregate": "largestCollection",
+                "pipeline": [
+                    {
+                        "$match": {
+                            "name": {
+                                "$in": [
+                                    "/Yo/",
+                                    "/mi/",
+                                    "/ma/"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "$sort": {
+                            "age": 1,
+                            "date": -1
+                        }
+                    },
+                    {
+                        "$group": {
+                            "_id": null,
+                            "amount": {
+                                "$sum": {
+                                    "$add": [
+                                        "$date",
+                                        "$age"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                ],
+                "cursor": {},
+                "lsid": {
+                    "id": {
+                        "$binary": {
+                            "base64": "hkB6gSxYTUekChxkNVE/IQ==",
+                            "subType": "04"
+                        }
+                    }
+                },
+                "$db": "testDB"
+            },
+            "planSummary": "COLLSCAN",
+            "numYields": 5168,
+            "locks": {
+                "Global": "r"
+            },
+            "waitingForLock": false,
+            "lockStats": {
+                "Global": {
+                    "acquireCount": {
+                        "r": 5170
+                    }
+                },
+                "Mutex": {
+                    "acquireCount": {
+                        "r": 2
+                    }
+                }
+            },
+            "waitingForFlowControl": false,
+            "flowControlStats": {}
+        }
+    },
+    "92281": {
+        "threadId": "92281",
+        "threadName": "conn4073",
+        "threadCpu": 20.6,
+        "threadState": "R",
+        "currentOp": {
+            "type": "op",
+            "host": "sahilchawla-HP-Pavilion:27017",
+            "desc": "conn4073",
+            "connectionId": 4073,
+            "client": "127.0.0.1:43074",
+            "clientMetadata": {
+                "driver": {
+                    "name": "PyMongo",
+                    "version": "4.1.1"
+                },
+                "os": {
+                    "type": "Linux",
+                    "name": "Linux",
+                    "architecture": "x86_64",
+                    "version": "5.15.0-39-generic"
+                },
+                "platform": "CPython 3.10.4.final.0"
+            },
+            "active": true,
+            "currentOpTime": "2022-06-28T13:17:07.575+05:30",
+            "threaded": true,
+            "opid": 461248,
+            "lsid": {
+                "id": {
+                    "$binary": {
+                        "base64": "bWu5Ade6TCqvEjOG2Uln9g==",
+                        "subType": "04"
+                    }
+                },
+                "uid": {
+                    "$binary": {
+                        "base64": "47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=",
+                        "subType": "00"
+                    }
+                }
+            },
+            "secs_running": 41,
+            "microsecs_running": 41618868,
+            "op": "command",
+            "ns": "testDB.largestCollection",
+            "command": {
+                "aggregate": "largestCollection",
+                "pipeline": [
+                    {
+                        "$match": {
+                            "name": {
+                                "$in": [
+                                    "/Yo/",
+                                    "/mi/",
+                                    "/ma/"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "$sort": {
+                            "age": 1,
+                            "date": -1
+                        }
+                    },
+                    {
+                        "$group": {
+                            "_id": null,
+                            "amount": {
+                                "$sum": {
+                                    "$add": [
+                                        "$date",
+                                        "$age"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                ],
+                "cursor": {},
+                "lsid": {
+                    "id": {
+                        "$binary": {
+                            "base64": "bWu5Ade6TCqvEjOG2Uln9g==",
+                            "subType": "04"
+                        }
+                    }
+                },
+                "$db": "testDB"
+            },
+            "planSummary": "COLLSCAN",
+            "numYields": 4624,
+            "locks": {
+                "Global": "r"
+            },
+            "waitingForLock": false,
+            "lockStats": {
+                "Global": {
+                    "acquireCount": {
+                        "r": 4626
+                    }
+                },
+                "Mutex": {
+                    "acquireCount": {
+                        "r": 2
+                    }
+                }
+            },
+            "waitingForFlowControl": false,
+            "flowControlStats": {}
+        }
+    }
+}
