@@ -261,7 +261,7 @@ def parseOptions(argv):
         showHelp()
         sys.exit(2)
     for opt, arg in opts:
-        if opt == '-h':
+        if opt in ("-h", "--help"):
             showHelp()
             sys.exit()
         elif opt in ("-n", "--num-iterations"):
