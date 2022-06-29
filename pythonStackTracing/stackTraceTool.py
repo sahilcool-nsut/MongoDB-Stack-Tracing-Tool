@@ -30,7 +30,7 @@ def runStackCommand(threadId,threads):
     stdout, stderr = p.communicate()
     currThread = threads[threadId]
     currThread.threadStack = stdout.decode('UTF-8')
-    currThread.threadStackTimeStamp=str(int(round(time.time() * 1000)))
+    currThread.threadStackTimeStamp=str(int(round(time.time() * 1000)))[-6:]
     threads[threadId] = currThread
 
 # This function is multithreaded to collect current operations using mongosh command
@@ -65,12 +65,12 @@ def gatherThreadInformation(threads):
         threads[currThread.threadId]=currThread
 
     totalProcesses=[]
-    print("Starting multiprocessing of eu-stack calls at time: " +str(int(round(time.time() * 1000))))    
+    print("Starting multiprocessing of eu-stack calls at time: " +str(int(round(time.time() * 1000)))[-6:])    
     for threadId,thread in threads.items():
         process=multiprocessing.Process(target=runStackCommand,args=(threadId,threads,))
         process.start()
         totalProcesses.append(process)
-    print("All processes were created, now waiting : " +str(int(round(time.time() * 1000))))
+    print("All processes were created, now waiting : " +str(int(round(time.time() * 1000)))[-6:])
     for p in totalProcesses:
         p.join()
     
@@ -317,7 +317,7 @@ def parseOptions(argv):
 
 if __name__ == "__main__":
 
-    print("Starting script at " + str(int(round(time.time() * 1000))))
+    print("Starting script at " + str(int(round(time.time() * 1000)))[-6:][-6:])
     print("")
     parseOptions(sys.argv[1:])
 
@@ -335,7 +335,7 @@ if __name__ == "__main__":
     for i in range(0,NUMCALLS):
         time1=int(round(time.time() * 1000))
 
-        print("Starting iteration " + str(i) + " at time: " + str(int(round(time.time() * 1000))))
+        print("Starting iteration " + str(i) + " at time: " + str(int(round(time.time() * 1000)))[-6:])
 
         # Dictionary used to store data for current iteration.
         threads=manager.dict()
@@ -360,20 +360,20 @@ if __name__ == "__main__":
             pass
         else:
             time.sleep(error)
-        print("Completed iteration : " +str(int(round(time.time() * 1000)))+"\n\n")
+        print("Completed iteration : " +str(int(round(time.time() * 1000)))[-6:]+"\n\n")
         
     
     # We wait for current ops before creating JSON file
-    print("Now waiting for currentOps to complete: " + str(int(round(time.time() * 1000))))
+    print("Now waiting for currentOps to complete: " + str(int(round(time.time() * 1000)))[-6:])
     for process in currentOpProcesses:
         process.join()
 
-    print("Starting to create JSON file at time: " + str(int(round(time.time() * 1000))))
+    print("Starting to create JSON file at time: " + str(int(round(time.time() * 1000)))[-6:])
     # Create JSON File
     createJsonFile(allIterationsThreads)
     
     # Performed Analysis seperately, and not while collection, so that time between thread stacks is precise
-    print("Starting analysis at time:  " + str(int(round(time.time() * 1000))))
+    print("Starting analysis at time:  " + str(int(round(time.time() * 1000)))[-6:])
 
     # Reads data from the file created and adds analysis and currentOps in it
     performAnalysis(currentOps)

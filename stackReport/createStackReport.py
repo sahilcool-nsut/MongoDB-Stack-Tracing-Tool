@@ -186,7 +186,7 @@ def extractInformation():
         for currStack in entireStackTrace:
             # Remove whitespaces (include newlines and spaces) from leading and trailing areas
             currStack = currStack.strip()
-            # First line of the extracted stack contains the tid as -> 12312: 
+            # First line of the extracted stack contains the tid time() * 1000)))as -> 12312: 
             splitStackForTID=currStack.split('\n',1)        # Limit split to 1, so that we retrieve the first line(The TID)
             # For bad stacks
             if len(splitStackForTID) < 2:
@@ -620,23 +620,23 @@ def main():
 
     # Actual driver code for creating the report    
 
-    print("Starting Python script at time: " + str(int(time.time())))
+    print("Starting Python script at time: " + str(int(round(time.time() * 1000)))[-6:])
 
     # Dictionary to access thread objects by threadId
     threads=extractInformation()
-    print("Starting creation of state distribution graph at time: " + str(int(time.time())))
+    print("Starting creation of state distribution graph at time: " + str(int(round(time.time() * 1000)))[-6:])
     createStateDistributionGraph(threads)
 
-    print("Starting creation of flame graph at time: " + str(int(time.time())))
+    print("Starting creation of flame graph at time: " + str(int(round(time.time() * 1000)))[-6:])
     createFlameGraph(threads)
 
-    print("Starting creation of stack trace count graph at time: " + str(int(time.time())))
+    print("Starting creation of stack trace count graph at time: " + str(int(round(time.time() * 1000)))[-6:])
     createIdenticalStackTracesGraph(threads)
 
-    print("Starting creation of Most CPU Consuming Threads: " + str(int(time.time())))
+    print("Starting creation of Most CPU Consuming Threads: " + str(int(round(time.time() * 1000)))[-6:])
     createConsumingThreadTable(threads)
 
-    print("Starting creation of Function Count Table at time: " + str(int(time.time())))
+    print("Starting creation of Function Count Table at time: " + str(int(round(time.time() * 1000)))[-6:])
     totalFunctionCounts=createTotalFunctionCountsTable(threads)
 
     createThreadTable(threads)

@@ -53,7 +53,7 @@ def gatherThreadInformation(threads,currentOps):
     process.start()
     totalProcesses.append(process)
 
-    print("All processes were created, now waiting : " +str(int(round(time.time() * 1000))))
+    print("All processes were created, now waiting : " +str(int(round(time.time() * 1000)))[-6:])
     for p in totalProcesses:
         p.join()
     currentOps=currentOps["value"]
@@ -69,6 +69,7 @@ def gatherThreadInformation(threads,currentOps):
                         break
         except: 
             print("Something went wrong while parsing current operations")
+    print("Completed script at : " +str(int(round(time.time() * 1000)))[-6:])
     
 def createJSON(threads):
     entireJSONObject={}
