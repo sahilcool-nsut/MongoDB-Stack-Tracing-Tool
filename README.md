@@ -1,4 +1,4 @@
-# I. MongoDB-Stack-Tracing-Tool
+# I. MongoDB-Live-Stack-Tracing-Tool
 ./pythonStackTracing
 
 This Folder contains a tool used to acquire live Stack Traces of a running **MongoDB Server.**
@@ -33,7 +33,7 @@ While running the script without sudo permission, it might ask for sudo password
 
 
 
-# II. Eu-Stack Analyzer
+# II. Eu-Stack Report Web Utility
 ./stackReport
 
 This is a tool to provide individual stack reports, particularly aimed for analyzing Running MongoDB servers.

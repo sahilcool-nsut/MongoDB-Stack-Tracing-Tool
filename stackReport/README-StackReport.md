@@ -1,4 +1,4 @@
-# Eu-Stack Analyzer
+# Eu-Stack Report Web Utility
 ./stackReport
 
 This is a tool to provide individual stack reports, particularly aimed for analyzing Running MongoDB servers.

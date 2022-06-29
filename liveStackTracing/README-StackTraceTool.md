@@ -1,4 +1,4 @@
-# MongoDB-Stack-Tracing-Tool
+# MongoDB-Live-Stack-Tracing-Tool
 This Repository contains a tool used to acquire live Stack Traces of a running **MongoDB Server.**
 This utility can be useful in **debugging** issues in **real-time** when the server is experiencing high CPU usage due to client queries. 
 
