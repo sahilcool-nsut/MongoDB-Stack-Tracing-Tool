@@ -1,6 +1,8 @@
+import getopt
 import multiprocessing
 import subprocess
 import json
+import sys
 import time
 
 CPU_THRESHOLD=20.0
@@ -85,8 +87,46 @@ def createJSON(threads):
         jsonFile.close()
     except:
         print("Couldn't open file for creating JSON")
-    
+# Function to show help menu
+def showHelp():
+    # Display Help
+    print("")
+    print("Syntax: python extractCurrentOp.py [-c 30]")
+    print("options:")
+    print("c or --cpu-threshold       Provide the CPU Usage Threshold for threads (0-100) (OPTIONAL) - Default = 20")
+    print("h or --help                Show the help menu")
+    print("")
+    exit
+
+# Function to parse the command line options
+def parseOptions(argv):
+    global CPU_THRESHOLD
+    try:
+    #   h requires no input, so no colon for it
+        opts, args = getopt.getopt(argv,"c:h",["cpu-threshold=","help"])
+    except getopt.GetoptError:
+        showHelp()
+        sys.exit(2)
+    for opt, arg in opts:
+        if opt in ("-h", "--help"):
+            showHelp()
+            sys.exit()
+        elif opt in ("-c", "--cpu-threshold"):
+            try:
+                CPU_THRESHOLD = float(arg)
+                if CPU_THRESHOLD > 100 or CPU_THRESHOLD < 0:
+                    sys.exit(2)
+            except:
+                print("CPU Threshold should be an integer/float between 0 and 100. Value provided was: " + str(arg) + "\nExiting")
+                sys.exit(2)
+    if CPU_THRESHOLD==-1:
+        CPU_THRESHOLD=20.0
+    print("Parameters used: ")
+    print("")
+    print("CPU Threshold: " + str(CPU_THRESHOLD))
+    print("")
 if __name__=="__main__":
+    parseOptions(sys.argv[1:])
     manager = multiprocessing.Manager()
     threads = manager.dict()
     currentOps = manager.dict()

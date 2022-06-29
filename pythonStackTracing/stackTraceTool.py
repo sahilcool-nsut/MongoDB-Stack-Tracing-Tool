@@ -238,11 +238,11 @@ def showHelp():
     print("")
     print("Syntax: python stackTraceTool.py [-n 3 -I 0.5] [-c|N|h]")
     print("options:")
-    print("n       Provide number of iterations for stack (REQUIRED).")
-    print("I       Provide the INTERVAL between iterations (in seconds) (REQUIRED).")
-    print("c       Provide the CPU Usage Threshold for threads (0-100) (OPTIONAL) - Default = 20")
-    print("N       Provide the Number of Threads to be taken (>0) (OPTIONAL) - Default = 20")
-    print("h       Show the help menu")
+    print("n or --num-iterations         Provide number of iterations for stack (REQUIRED).")
+    print("I or --interval               Provide the INTERVAL between iterations (in seconds) (REQUIRED).")
+    print("c or --cpu-threshold          Provide the CPU Usage Threshold for threads (0-100) (OPTIONAL) - Default = 20")
+    print("N or --num-threads            Provide the Number of Threads to be taken (>0) (OPTIONAL) - Default = 20")
+    print("h or --help                   Show the help menu")
     print("")
     exit
 
@@ -254,7 +254,7 @@ def parseOptions(argv):
     global TOP_N_THREADS
     try:
     #   h requires no input, so no colon for it
-        opts, args = getopt.getopt(argv,"n:I:c:N:h",["num-iterations=","interval","cpu-threshold","num-threads","help"])
+        opts, args = getopt.getopt(argv,"n:I:c:N:h",["num-iterations=","interval=","cpu-threshold=","num-threads=","help"])
     except getopt.GetoptError:
         showHelp()
         sys.exit(2)
