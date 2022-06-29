@@ -238,7 +238,7 @@ def createJsonFile(allIterationsThreads):
 def showHelp():
     # Display Help
     print("")
-    print("Syntax: python stackTraceTool.py [-n 3 -I 0.5] [-c|N|h|t]")
+    print("Syntax: python stackTraceTool.py [-n 3 -I 0.5] [-c|N|h]")
     print("options:")
     print("n       Provide number of iterations for stack (REQUIRED).")
     print("I       Provide the INTERVAL between iterations (in seconds) (REQUIRED).")
