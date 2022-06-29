@@ -39,9 +39,7 @@ def runStackCommand(threadId,threads):
 def runCurrentOpsCommand(currentOps,iteration):
     p = subprocess.Popen("mongosh localhost:27017 --eval 'EJSON.stringify(db.currentOp())' --quiet", stdout=subprocess.PIPE, shell=True)
     stdout, stderr = p.communicate()
-    # print(stdout.decode('UTF-8'))
     currentOps[iteration]=json.loads(stdout.decode('UTF-8'))
-    # print(currentOps)
 
 # Driver Function to gather thread information from top and eu-stack commands
 def gatherThreadInformation(threads):
