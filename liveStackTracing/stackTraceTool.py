@@ -28,10 +28,18 @@ class Thread:
 def runStackCommand(threadId,threads):
     p = subprocess.Popen("sudo eu-stack -1 -p " + str(threadId), stdout=subprocess.PIPE, shell=True)
     stdout, stderr = p.communicate()
-    currThread = threads[threadId]
-    currThread.threadStack = stdout.decode('UTF-8')
-    currThread.threadStackTimeStamp=str(int(round(time.time() * 1000)))[-6:]
-    threads[threadId] = currThread
+    if stderr != None:
+        currThread = threads[threadId]
+        currThread.threadStack = "Error while collecting Stack (Most probably thread dissapeared)"
+        currThread.threadStackTimeStamp=str(int(round(time.time() * 1000)))[-6:]
+        threads[threadId] = currThread
+    else:
+        currThread = threads[threadId]
+        currThread.threadStack = stdout.decode('UTF-8')
+        if currThread.threadStack=="":
+            currThread.threadStack="Error while collecting Stack (Most probably thread dissapeared)"
+        currThread.threadStackTimeStamp=str(int(round(time.time() * 1000)))[-6:]
+        threads[threadId] = currThread
 
 # This function is multithreaded to collect current operations using mongosh command
 # EJSON = Extended JSON to convert UUID, TimeStamps into json readable objects.
