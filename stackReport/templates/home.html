@@ -6,7 +6,7 @@
     <!-- Include Bootstrap and Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='styles/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles/customStyle.css') }}">
-
+    
     <title>Stack Trace Report</title>
 </head> 
 <body>
@@ -37,8 +37,13 @@
                 <input id=topFile label="Top File" type = "file" name = "topFile" />
             </p>
             <br>
-            <input type = "submit"/>
+            <input type = "submit" onclick='document.getElementById("loading").style.display="block";'/>
         </form>
+        <p>
+            <div id="loading" style="display:none;">
+                <img src="{{ url_for('static', filename='loading.gif') }}" alt="Loading" height="35px" width="35px">
+            </div>
+        </p>
         <p>
             {{ messages['error'] }}
         </p>

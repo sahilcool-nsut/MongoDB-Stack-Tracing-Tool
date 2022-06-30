@@ -1,1 +1,1929 @@
-{"53043": {"threadId": "53043", "threadName": "conn4397", "threadCpu": 48.5, "threadState": "R", "currentOp": {"type": "op", "host": "sahilchawla-HP-Pavilion:27017", "desc": "conn4397", "connectionId": 4397, "client": "127.0.0.1:41932", "clientMetadata": {"driver": {"name": "PyMongo", "version": "4.1.1"}, "os": {"type": "Linux", "name": "Linux", "architecture": "x86_64", "version": "5.15.0-39-generic"}, "platform": "CPython 3.10.4.final.0"}, "active": true, "currentOpTime": "2022-06-29T17:58:51.628+05:30", "threaded": true, "opid": 90590, "lsid": {"id": {"$binary": {"base64": "WydMGuGiTkixJi7DZB8Uww==", "subType": "04"}}, "uid": {"$binary": {"base64": "47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=", "subType": "00"}}}, "secs_running": 56, "microsecs_running": 56355016, "op": "command", "ns": "testDB.largestCollection", "command": {"aggregate": "largestCollection", "pipeline": [{"$match": {"name": {"$regex": "/^me/i"}}}, {"$group": {"_id": 1, "n": {"$sum": 1}}}], "cursor": {}, "lsid": {"id": {"$binary": {"base64": "WydMGuGiTkixJi7DZB8Uww==", "subType": "04"}}}, "$db": "testDB"}, "planSummary": "COLLSCAN", "numYields": 6221, "locks": {"Global": "r"}, "waitingForLock": false, "lockStats": {"Global": {"acquireCount": {"r": 6223}}, "Mutex": {"acquireCount": {"r": 2}}}, "waitingForFlowControl": false, "flowControlStats": {}}}, "53126": {"threadId": "53126", "threadName": "conn4429", "threadCpu": 36.4, "threadState": "R", "currentOp": {"type": "op", "host": "sahilchawla-HP-Pavilion:27017", "desc": "conn4429", "connectionId": 4429, "client": "127.0.0.1:41998", "clientMetadata": {"driver": {"name": "PyMongo", "version": "4.1.1"}, "os": {"type": "Linux", "name": "Linux", "architecture": "x86_64", "version": "5.15.0-39-generic"}, "platform": "CPython 3.10.4.final.0"}, "active": true, "currentOpTime": "2022-06-29T17:58:51.628+05:30", "threaded": true, "opid": 90658, "lsid": {"id": {"$binary": {"base64": "zzfVO44bQOO9gNBDziCgeA==", "subType": "04"}}, "uid": {"$binary": {"base64": "47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=", "subType": "00"}}}, "secs_running": 56, "microsecs_running": 56236967, "op": "command", "ns": "testDB.largestCollection", "command": {"aggregate": "largestCollection", "pipeline": [{"$match": {"name": {"$in": ["/Yo/", "/mi/", "/ma/"]}}}, {"$sort": {"age": 1, "date": -1}}, {"$group": {"_id": null, "amount": {"$sum": {"$add": ["$date", "$age"]}}}}], "cursor": {}, "lsid": {"id": {"$binary": {"base64": "zzfVO44bQOO9gNBDziCgeA==", "subType": "04"}}}, "$db": "testDB"}, "planSummary": "COLLSCAN", "numYields": 7419, "locks": {"Global": "r"}, "waitingForLock": false, "lockStats": {"Global": {"acquireCount": {"r": 7421}}, "Mutex": {"acquireCount": {"r": 2}}}, "waitingForFlowControl": false, "flowControlStats": {}}}, "53151": {"threadId": "53151", "threadName": "conn4439", "threadCpu": 33.3, "threadState": "R", "currentOp": {"type": "op", "host": "sahilchawla-HP-Pavilion:27017", "desc": "conn4439", "connectionId": 4439, "client": "127.0.0.1:42018", "clientMetadata": {"driver": {"name": "PyMongo", "version": "4.1.1"}, "os": {"type": "Linux", "name": "Linux", "architecture": "x86_64", "version": "5.15.0-39-generic"}, "platform": "CPython 3.10.4.final.0"}, "active": true, "currentOpTime": "2022-06-29T17:58:51.628+05:30", "threaded": true, "opid": 90669, "lsid": {"id": {"$binary": {"base64": "TZb0S7HBSPinbjN9t8T5EQ==", "subType": "04"}}, "uid": {"$binary": {"base64": "47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=", "subType": "00"}}}, "secs_running": 56, "microsecs_running": 56215655, "op": "command", "ns": "testDB.largestCollection", "command": {"aggregate": "largestCollection", "pipeline": [{"$match": {"name": {"$in": ["/Yo/", "/mi/", "/ma/"]}}}, {"$sort": {"age": 1, "date": -1}}, {"$group": {"_id": null, "amount": {"$sum": {"$add": ["$date", "$age"]}}}}], "cursor": {}, "lsid": {"id": {"$binary": {"base64": "TZb0S7HBSPinbjN9t8T5EQ==", "subType": "04"}}}, "$db": "testDB"}, "planSummary": "COLLSCAN", "numYields": 7079, "locks": {"Global": "r"}, "waitingForLock": false, "lockStats": {"Global": {"acquireCount": {"r": 7081}}, "Mutex": {"acquireCount": {"r": 2}}}, "waitingForFlowControl": false, "flowControlStats": {}}}, "53299": {"threadId": "53299", "threadName": "conn4505", "threadCpu": 30.3, "threadState": "R", "currentOp": {"type": "op", "host": "sahilchawla-HP-Pavilion:27017", "desc": "conn4505", "connectionId": 4505, "client": "127.0.0.1:42162", "clientMetadata": {"driver": {"name": "PyMongo", "version": "4.1.1"}, "os": {"type": "Linux", "name": "Linux", "architecture": "x86_64", "version": "5.15.0-39-generic"}, "platform": "CPython 3.10.4.final.0"}, "active": true, "currentOpTime": "2022-06-29T17:58:51.627+05:30", "threaded": true, "opid": 90780, "lsid": {"id": {"$binary": {"base64": "T3pZy2JkQU68+4chqDnEkg==", "subType": "04"}}, "uid": {"$binary": {"base64": "47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=", "subType": "00"}}}, "secs_running": 56, "microsecs_running": 56049963, "op": "command", "ns": "testDB.largestCollection", "command": {"aggregate": "largestCollection", "pipeline": [{"$match": {"name": {"$regex": "/^me/i"}}}, {"$group": {"_id": 1, "n": {"$sum": 1}}}], "cursor": {}, "lsid": {"id": {"$binary": {"base64": "T3pZy2JkQU68+4chqDnEkg==", "subType": "04"}}}, "$db": "testDB"}, "planSummary": "COLLSCAN", "numYields": 6585, "locks": {"Global": "r"}, "waitingForLock": false, "lockStats": {"Global": {"acquireCount": {"r": 6587}}, "Mutex": {"acquireCount": {"r": 2}}}, "waitingForFlowControl": false, "flowControlStats": {}}}, "53215": {"threadId": "53215", "threadName": "conn4465", "threadCpu": 27.3, "threadState": "R", "currentOp": {"type": "op", "host": "sahilchawla-HP-Pavilion:27017", "desc": "conn4465", "connectionId": 4465, "client": "127.0.0.1:42074", "clientMetadata": {"driver": {"name": "PyMongo", "version": "4.1.1"}, "os": {"type": "Linux", "name": "Linux", "architecture": "x86_64", "version": "5.15.0-39-generic"}, "platform": "CPython 3.10.4.final.0"}, "active": true, "currentOpTime": "2022-06-29T17:58:51.628+05:30", "threaded": true, "opid": 90704, "lsid": {"id": {"$binary": {"base64": "b0UAHfcYSVWP4rfTHa7TlA==", "subType": "04"}}, "uid": {"$binary": {"base64": "47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=", "subType": "00"}}}, "secs_running": 56, "microsecs_running": 56155797, "op": "command", "ns": "testDB.largestCollection", "command": {"aggregate": "largestCollection", "pipeline": [{"$match": {"name": {"$regex": "/^me/i"}}}, {"$group": {"_id": 1, "n": {"$sum": 1}}}], "cursor": {}, "lsid": {"id": {"$binary": {"base64": "b0UAHfcYSVWP4rfTHa7TlA==", "subType": "04"}}}, "$db": "testDB"}, "planSummary": "COLLSCAN", "numYields": 7503, "locks": {"Global": "r"}, "waitingForLock": false, "lockStats": {"Global": {"acquireCount": {"r": 7505}}, "Mutex": {"acquireCount": {"r": 2}}}, "waitingForFlowControl": false, "flowControlStats": {}}}, "53016": {"threadId": "53016", "threadName": "conn4385", "threadCpu": 21.2, "threadState": "R", "currentOp": {"type": "op", "host": "sahilchawla-HP-Pavilion:27017", "desc": "conn4385", "connectionId": 4385, "client": "127.0.0.1:41908", "clientMetadata": {"driver": {"name": "PyMongo", "version": "4.1.1"}, "os": {"type": "Linux", "name": "Linux", "architecture": "x86_64", "version": "5.15.0-39-generic"}, "platform": "CPython 3.10.4.final.0"}, "active": true, "currentOpTime": "2022-06-29T17:58:51.628+05:30", "threaded": true, "opid": 90573, "lsid": {"id": {"$binary": {"base64": "7Lpef62mR1GB8e/mqpvbqA==", "subType": "04"}}, "uid": {"$binary": {"base64": "47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=", "subType": "00"}}}, "secs_running": 56, "microsecs_running": 56365124, "op": "command", "ns": "testDB.largestCollection", "command": {"aggregate": "largestCollection", "pipeline": [{"$match": {"name": {"$in": ["/Yo/", "/mi/", "/ma/"]}}}, {"$sort": {"age": 1, "date": -1}}, {"$group": {"_id": null, "amount": {"$sum": {"$add": ["$date", "$age"]}}}}], "cursor": {}, "lsid": {"id": {"$binary": {"base64": "7Lpef62mR1GB8e/mqpvbqA==", "subType": "04"}}}, "$db": "testDB"}, "planSummary": "COLLSCAN", "numYields": 7017, "locks": {"Global": "r"}, "waitingForLock": false, "lockStats": {"Global": {"acquireCount": {"r": 7019}}, "Mutex": {"acquireCount": {"r": 2}}}, "waitingForFlowControl": false, "flowControlStats": {}}}, "53238": {"threadId": "53238", "threadName": "conn4475", "threadCpu": 21.2, "threadState": "R", "currentOp": {"type": "op", "host": "sahilchawla-HP-Pavilion:27017", "desc": "conn4475", "connectionId": 4475, "client": "127.0.0.1:42098", "clientMetadata": {"driver": {"name": "PyMongo", "version": "4.1.1"}, "os": {"type": "Linux", "name": "Linux", "architecture": "x86_64", "version": "5.15.0-39-generic"}, "platform": "CPython 3.10.4.final.0"}, "active": true, "currentOpTime": "2022-06-29T17:58:51.628+05:30", "threaded": true, "opid": 90721, "lsid": {"id": {"$binary": {"base64": "DmnuOpRxQtmljpK1rFmwnA==", "subType": "04"}}, "uid": {"$binary": {"base64": "47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=", "subType": "00"}}}, "secs_running": 56, "microsecs_running": 56142304, "op": "command", "ns": "testDB.largestCollection", "command": {"aggregate": "largestCollection", "pipeline": [{"$match": {"name": {"$regex": "/^me/i"}}}, {"$group": {"_id": 1, "n": {"$sum": 1}}}], "cursor": {}, "lsid": {"id": {"$binary": {"base64": "DmnuOpRxQtmljpK1rFmwnA==", "subType": "04"}}}, "$db": "testDB"}, "planSummary": "COLLSCAN", "numYields": 5682, "locks": {"Global": "r"}, "waitingForLock": false, "lockStats": {"Global": {"acquireCount": {"r": 5684}}, "Mutex": {"acquireCount": {"r": 2}}}, "waitingForFlowControl": false, "flowControlStats": {}}}, "53329": {"threadId": "53329", "threadName": "conn4519", "threadCpu": 21.2, "threadState": "R", "currentOp": {"type": "op", "host": "sahilchawla-HP-Pavilion:27017", "desc": "conn4519", "connectionId": 4519, "client": "127.0.0.1:42190", "clientMetadata": {"driver": {"name": "PyMongo", "version": "4.1.1"}, "os": {"type": "Linux", "name": "Linux", "architecture": "x86_64", "version": "5.15.0-39-generic"}, "platform": "CPython 3.10.4.final.0"}, "active": true, "currentOpTime": "2022-06-29T17:58:51.628+05:30", "threaded": true, "opid": 90803, "lsid": {"id": {"$binary": {"base64": "D/WTaabuQmuBg8dUBcBJiQ==", "subType": "04"}}, "uid": {"$binary": {"base64": "47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=", "subType": "00"}}}, "secs_running": 55, "microsecs_running": 55978308, "op": "command", "ns": "testDB.largestCollection", "command": {"aggregate": "largestCollection", "pipeline": [{"$match": {"name": {"$regex": "/^me/i"}}}, {"$group": {"_id": 1, "n": {"$sum": 1}}}], "cursor": {}, "lsid": {"id": {"$binary": {"base64": "D/WTaabuQmuBg8dUBcBJiQ==", "subType": "04"}}}, "$db": "testDB"}, "planSummary": "COLLSCAN", "numYields": 7221, "locks": {"Global": "r"}, "waitingForLock": false, "lockStats": {"Global": {"acquireCount": {"r": 7223}}, "Mutex": {"acquireCount": {"r": 2}}}, "waitingForFlowControl": false, "flowControlStats": {}}}, "53334": {"threadId": "53334", "threadName": "conn4521", "threadCpu": 21.2, "threadState": "R", "currentOp": {"type": "op", "host": "sahilchawla-HP-Pavilion:27017", "desc": "conn4521", "connectionId": 4521, "client": "127.0.0.1:42194", "clientMetadata": {"driver": {"name": "PyMongo", "version": "4.1.1"}, "os": {"type": "Linux", "name": "Linux", "architecture": "x86_64", "version": "5.15.0-39-generic"}, "platform": "CPython 3.10.4.final.0"}, "active": true, "currentOpTime": "2022-06-29T17:58:51.628+05:30", "threaded": true, "opid": 90846, "lsid": {"id": {"$binary": {"base64": "3eDkpPohTZeheALvxEo6HQ==", "subType": "04"}}, "uid": {"$binary": {"base64": "47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=", "subType": "00"}}}, "secs_running": 55, "microsecs_running": 55866243, "op": "command", "ns": "testDB.largestCollection", "command": {"aggregate": "largestCollection", "pipeline": [{"$match": {"name": {"$regex": "/^me/i"}}}, {"$group": {"_id": 1, "n": {"$sum": 1}}}], "cursor": {}, "lsid": {"id": {"$binary": {"base64": "3eDkpPohTZeheALvxEo6HQ==", "subType": "04"}}}, "$db": "testDB"}, "planSummary": "COLLSCAN", "numYields": 6514, "locks": {"Global": "r"}, "waitingForLock": false, "lockStats": {"Global": {"acquireCount": {"r": 6516}}, "Mutex": {"acquireCount": {"r": 2}}}, "waitingForFlowControl": false, "flowControlStats": {}}}, "53380": {"threadId": "53380", "threadName": "conn4539", "threadCpu": 21.2, "threadState": "R", "currentOp": {"type": "op", "host": "sahilchawla-HP-Pavilion:27017", "desc": "conn4539", "connectionId": 4539, "client": "127.0.0.1:42240", "clientMetadata": {"driver": {"name": "PyMongo", "version": "4.1.1"}, "os": {"type": "Linux", "name": "Linux", "architecture": "x86_64", "version": "5.15.0-39-generic"}, "platform": "CPython 3.10.4.final.0"}, "active": true, "currentOpTime": "2022-06-29T17:58:51.629+05:30", "threaded": true, "opid": 90833, "lsid": {"id": {"$binary": {"base64": "axchzzTXRn6vQiNGB7w9tg==", "subType": "04"}}, "uid": {"$binary": {"base64": "47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=", "subType": "00"}}}, "secs_running": 55, "microsecs_running": 55913431, "op": "command", "ns": "testDB.largestCollection", "command": {"aggregate": "largestCollection", "pipeline": [{"$match": {"name": {"$in": ["/Yo/", "/mi/", "/ma/"]}}}, {"$sort": {"age": 1, "date": -1}}, {"$group": {"_id": null, "amount": {"$sum": {"$add": ["$date", "$age"]}}}}], "cursor": {}, "lsid": {"id": {"$binary": {"base64": "axchzzTXRn6vQiNGB7w9tg==", "subType": "04"}}}, "$db": "testDB"}, "planSummary": "COLLSCAN", "numYields": 7602, "locks": {"Global": "r"}, "waitingForLock": false, "lockStats": {"Global": {"acquireCount": {"r": 7604}}, "Mutex": {"acquireCount": {"r": 2}}}, "waitingForFlowControl": false, "flowControlStats": {}}}, "53423": {"threadId": "53423", "threadName": "conn4559", "threadCpu": 21.2, "threadState": "R", "currentOp": {"type": "op", "host": "sahilchawla-HP-Pavilion:27017", "desc": "conn4559", "connectionId": 4559, "client": "127.0.0.1:42286", "clientMetadata": {"driver": {"name": "PyMongo", "version": "4.1.1"}, "os": {"type": "Linux", "name": "Linux", "architecture": "x86_64", "version": "5.15.0-39-generic"}, "platform": "CPython 3.10.4.final.0"}, "active": true, "currentOpTime": "2022-06-29T17:58:51.628+05:30", "threaded": true, "opid": 90865, "lsid": {"id": {"$binary": {"base64": "elyBaPC2Rz2UAyVpyEUVTg==", "subType": "04"}}, "uid": {"$binary": {"base64": "47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=", "subType": "00"}}}, "secs_running": 55, "microsecs_running": 55829837, "op": "command", "ns": "testDB.largestCollection", "command": {"aggregate": "largestCollection", "pipeline": [{"$match": {"name": {"$regex": "/^me/i"}}}, {"$group": {"_id": 1, "n": {"$sum": 1}}}], "cursor": {}, "lsid": {"id": {"$binary": {"base64": "elyBaPC2Rz2UAyVpyEUVTg==", "subType": "04"}}}, "$db": "testDB"}, "planSummary": "COLLSCAN", "numYields": 5709, "locks": {"Global": "r"}, "waitingForLock": false, "lockStats": {"Global": {"acquireCount": {"r": 5711}}, "Mutex": {"acquireCount": {"r": 2}}}, "waitingForFlowControl": false, "flowControlStats": {}}}}
+{
+    "5148": {
+        "threadId": "5148",
+        "threadName": "conn1",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {}
+    },
+    "77048": {
+        "threadId": "77048",
+        "threadName": "conn25464",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {
+            "type": "op",
+            "host": "sahilchawla-HP-Pavilion:27017",
+            "desc": "conn25464",
+            "connectionId": 25464,
+            "client": "127.0.0.1:34450",
+            "clientMetadata": {
+                "driver": {
+                    "name": "PyMongo",
+                    "version": "4.1.1"
+                },
+                "os": {
+                    "type": "Linux",
+                    "name": "Linux",
+                    "architecture": "x86_64",
+                    "version": "5.15.0-39-generic"
+                },
+                "platform": "CPython 3.10.4.final.0"
+            },
+            "active": true,
+            "currentOpTime": "2022-06-30T07:24:28.635+05:30",
+            "threaded": true,
+            "opid": 73609,
+            "secs_running": 6,
+            "microsecs_running": 6196665,
+            "op": "command",
+            "ns": "admin.$cmd",
+            "command": {
+                "hello": 1,
+                "topologyVersion": {
+                    "processId": {
+                        "$oid": "62bcfa3467f1b0b20f3e12ad"
+                    },
+                    "counter": 0
+                },
+                "maxAwaitTimeMS": 10000,
+                "$db": "admin"
+            },
+            "numYields": 0,
+            "waitingForLatch": {
+                "timestamp": {
+                    "$date": "2022-06-30T01:54:22.538Z"
+                },
+                "captureName": "AnonymousLatch"
+            },
+            "locks": {},
+            "waitingForLock": false,
+            "lockStats": {},
+            "waitingForFlowControl": false,
+            "flowControlStats": {}
+        }
+    },
+    "77051": {
+        "threadId": "77051",
+        "threadName": "conn25465",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {
+            "type": "op",
+            "host": "sahilchawla-HP-Pavilion:27017",
+            "desc": "conn25465",
+            "connectionId": 25465,
+            "client": "127.0.0.1:34452",
+            "clientMetadata": {
+                "driver": {
+                    "name": "PyMongo",
+                    "version": "4.1.1"
+                },
+                "os": {
+                    "type": "Linux",
+                    "name": "Linux",
+                    "architecture": "x86_64",
+                    "version": "5.15.0-39-generic"
+                },
+                "platform": "CPython 3.10.4.final.0"
+            },
+            "active": true,
+            "currentOpTime": "2022-06-30T07:24:28.634+05:30",
+            "threaded": true,
+            "opid": 73603,
+            "secs_running": 6,
+            "microsecs_running": 6224472,
+            "op": "command",
+            "ns": "admin.$cmd",
+            "command": {
+                "hello": 1,
+                "topologyVersion": {
+                    "processId": {
+                        "$oid": "62bcfa3467f1b0b20f3e12ad"
+                    },
+                    "counter": 0
+                },
+                "maxAwaitTimeMS": 10000,
+                "$db": "admin"
+            },
+            "numYields": 0,
+            "waitingForLatch": {
+                "timestamp": {
+                    "$date": "2022-06-30T01:54:22.510Z"
+                },
+                "captureName": "AnonymousLatch"
+            },
+            "locks": {},
+            "waitingForLock": false,
+            "lockStats": {},
+            "waitingForFlowControl": false,
+            "flowControlStats": {}
+        }
+    },
+    "77055": {
+        "threadId": "77055",
+        "threadName": "conn25466",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {}
+    },
+    "77057": {
+        "threadId": "77057",
+        "threadName": "conn25467",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {}
+    },
+    "77058": {
+        "threadId": "77058",
+        "threadName": "conn25468",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {
+            "type": "op",
+            "host": "sahilchawla-HP-Pavilion:27017",
+            "desc": "conn25468",
+            "connectionId": 25468,
+            "client": "127.0.0.1:34458",
+            "clientMetadata": {
+                "driver": {
+                    "name": "PyMongo",
+                    "version": "4.1.1"
+                },
+                "os": {
+                    "type": "Linux",
+                    "name": "Linux",
+                    "architecture": "x86_64",
+                    "version": "5.15.0-39-generic"
+                },
+                "platform": "CPython 3.10.4.final.0"
+            },
+            "active": true,
+            "currentOpTime": "2022-06-30T07:24:28.634+05:30",
+            "threaded": true,
+            "opid": 73604,
+            "secs_running": 6,
+            "microsecs_running": 6212512,
+            "op": "command",
+            "ns": "admin.$cmd",
+            "command": {
+                "hello": 1,
+                "topologyVersion": {
+                    "processId": {
+                        "$oid": "62bcfa3467f1b0b20f3e12ad"
+                    },
+                    "counter": 0
+                },
+                "maxAwaitTimeMS": 10000,
+                "$db": "admin"
+            },
+            "numYields": 0,
+            "waitingForLatch": {
+                "timestamp": {
+                    "$date": "2022-06-30T01:54:22.522Z"
+                },
+                "captureName": "AnonymousLatch"
+            },
+            "locks": {},
+            "waitingForLock": false,
+            "lockStats": {},
+            "waitingForFlowControl": false,
+            "flowControlStats": {}
+        }
+    },
+    "77062": {
+        "threadId": "77062",
+        "threadName": "conn25469",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {}
+    },
+    "77063": {
+        "threadId": "77063",
+        "threadName": "conn25470",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {
+            "type": "op",
+            "host": "sahilchawla-HP-Pavilion:27017",
+            "desc": "conn25470",
+            "connectionId": 25470,
+            "client": "127.0.0.1:34462",
+            "clientMetadata": {
+                "driver": {
+                    "name": "PyMongo",
+                    "version": "4.1.1"
+                },
+                "os": {
+                    "type": "Linux",
+                    "name": "Linux",
+                    "architecture": "x86_64",
+                    "version": "5.15.0-39-generic"
+                },
+                "platform": "CPython 3.10.4.final.0"
+            },
+            "active": true,
+            "currentOpTime": "2022-06-30T07:24:28.635+05:30",
+            "threaded": true,
+            "opid": 73606,
+            "secs_running": 6,
+            "microsecs_running": 6200660,
+            "op": "command",
+            "ns": "admin.$cmd",
+            "command": {
+                "hello": 1,
+                "topologyVersion": {
+                    "processId": {
+                        "$oid": "62bcfa3467f1b0b20f3e12ad"
+                    },
+                    "counter": 0
+                },
+                "maxAwaitTimeMS": 10000,
+                "$db": "admin"
+            },
+            "numYields": 0,
+            "waitingForLatch": {
+                "timestamp": {
+                    "$date": "2022-06-30T01:54:22.534Z"
+                },
+                "captureName": "AnonymousLatch"
+            },
+            "locks": {},
+            "waitingForLock": false,
+            "lockStats": {},
+            "waitingForFlowControl": false,
+            "flowControlStats": {}
+        }
+    },
+    "77067": {
+        "threadId": "77067",
+        "threadName": "conn25471",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {
+            "type": "op",
+            "host": "sahilchawla-HP-Pavilion:27017",
+            "desc": "conn25471",
+            "connectionId": 25471,
+            "client": "127.0.0.1:34464",
+            "clientMetadata": {
+                "driver": {
+                    "name": "PyMongo",
+                    "version": "4.1.1"
+                },
+                "os": {
+                    "type": "Linux",
+                    "name": "Linux",
+                    "architecture": "x86_64",
+                    "version": "5.15.0-39-generic"
+                },
+                "platform": "CPython 3.10.4.final.0"
+            },
+            "active": true,
+            "currentOpTime": "2022-06-30T07:24:28.635+05:30",
+            "threaded": true,
+            "opid": 73607,
+            "secs_running": 6,
+            "microsecs_running": 6197689,
+            "op": "command",
+            "ns": "admin.$cmd",
+            "command": {
+                "hello": 1,
+                "topologyVersion": {
+                    "processId": {
+                        "$oid": "62bcfa3467f1b0b20f3e12ad"
+                    },
+                    "counter": 0
+                },
+                "maxAwaitTimeMS": 10000,
+                "$db": "admin"
+            },
+            "numYields": 0,
+            "waitingForLatch": {
+                "timestamp": {
+                    "$date": "2022-06-30T01:54:22.537Z"
+                },
+                "captureName": "AnonymousLatch"
+            },
+            "locks": {},
+            "waitingForLock": false,
+            "lockStats": {},
+            "waitingForFlowControl": false,
+            "flowControlStats": {}
+        }
+    },
+    "77068": {
+        "threadId": "77068",
+        "threadName": "conn25472",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {}
+    },
+    "77072": {
+        "threadId": "77072",
+        "threadName": "conn25473",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {}
+    },
+    "77073": {
+        "threadId": "77073",
+        "threadName": "conn25474",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {
+            "type": "op",
+            "host": "sahilchawla-HP-Pavilion:27017",
+            "desc": "conn25474",
+            "connectionId": 25474,
+            "client": "127.0.0.1:34470",
+            "clientMetadata": {
+                "driver": {
+                    "name": "PyMongo",
+                    "version": "4.1.1"
+                },
+                "os": {
+                    "type": "Linux",
+                    "name": "Linux",
+                    "architecture": "x86_64",
+                    "version": "5.15.0-39-generic"
+                },
+                "platform": "CPython 3.10.4.final.0"
+            },
+            "active": true,
+            "currentOpTime": "2022-06-30T07:24:28.634+05:30",
+            "threaded": true,
+            "opid": 73605,
+            "secs_running": 6,
+            "microsecs_running": 6204464,
+            "op": "command",
+            "ns": "admin.$cmd",
+            "command": {
+                "hello": 1,
+                "topologyVersion": {
+                    "processId": {
+                        "$oid": "62bcfa3467f1b0b20f3e12ad"
+                    },
+                    "counter": 0
+                },
+                "maxAwaitTimeMS": 10000,
+                "$db": "admin"
+            },
+            "numYields": 0,
+            "waitingForLatch": {
+                "timestamp": {
+                    "$date": "2022-06-30T01:54:22.530Z"
+                },
+                "captureName": "AnonymousLatch"
+            },
+            "locks": {},
+            "waitingForLock": false,
+            "lockStats": {},
+            "waitingForFlowControl": false,
+            "flowControlStats": {}
+        }
+    },
+    "77075": {
+        "threadId": "77075",
+        "threadName": "conn25475",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {}
+    },
+    "77078": {
+        "threadId": "77078",
+        "threadName": "conn25476",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {
+            "type": "op",
+            "host": "sahilchawla-HP-Pavilion:27017",
+            "desc": "conn25476",
+            "connectionId": 25476,
+            "client": "127.0.0.1:34474",
+            "clientMetadata": {
+                "driver": {
+                    "name": "PyMongo",
+                    "version": "4.1.1"
+                },
+                "os": {
+                    "type": "Linux",
+                    "name": "Linux",
+                    "architecture": "x86_64",
+                    "version": "5.15.0-39-generic"
+                },
+                "platform": "CPython 3.10.4.final.0"
+            },
+            "active": true,
+            "currentOpTime": "2022-06-30T07:24:28.634+05:30",
+            "threaded": true,
+            "opid": 73608,
+            "secs_running": 6,
+            "microsecs_running": 6196587,
+            "op": "command",
+            "ns": "admin.$cmd",
+            "command": {
+                "hello": 1,
+                "topologyVersion": {
+                    "processId": {
+                        "$oid": "62bcfa3467f1b0b20f3e12ad"
+                    },
+                    "counter": 0
+                },
+                "maxAwaitTimeMS": 10000,
+                "$db": "admin"
+            },
+            "numYields": 0,
+            "waitingForLatch": {
+                "timestamp": {
+                    "$date": "2022-06-30T01:54:22.538Z"
+                },
+                "captureName": "AnonymousLatch"
+            },
+            "locks": {},
+            "waitingForLock": false,
+            "lockStats": {},
+            "waitingForFlowControl": false,
+            "flowControlStats": {}
+        }
+    },
+    "77082": {
+        "threadId": "77082",
+        "threadName": "conn25477",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {
+            "type": "op",
+            "host": "sahilchawla-HP-Pavilion:27017",
+            "desc": "conn25477",
+            "connectionId": 25477,
+            "client": "127.0.0.1:34476",
+            "clientMetadata": {
+                "driver": {
+                    "name": "PyMongo",
+                    "version": "4.1.1"
+                },
+                "os": {
+                    "type": "Linux",
+                    "name": "Linux",
+                    "architecture": "x86_64",
+                    "version": "5.15.0-39-generic"
+                },
+                "platform": "CPython 3.10.4.final.0"
+            },
+            "active": true,
+            "currentOpTime": "2022-06-30T07:24:28.634+05:30",
+            "threaded": true,
+            "opid": 73629,
+            "secs_running": 6,
+            "microsecs_running": 6116557,
+            "op": "command",
+            "ns": "admin.$cmd",
+            "command": {
+                "hello": 1,
+                "topologyVersion": {
+                    "processId": {
+                        "$oid": "62bcfa3467f1b0b20f3e12ad"
+                    },
+                    "counter": 0
+                },
+                "maxAwaitTimeMS": 10000,
+                "$db": "admin"
+            },
+            "numYields": 0,
+            "waitingForLatch": {
+                "timestamp": {
+                    "$date": "2022-06-30T01:54:22.618Z"
+                },
+                "captureName": "AnonymousLatch"
+            },
+            "locks": {},
+            "waitingForLock": false,
+            "lockStats": {},
+            "waitingForFlowControl": false,
+            "flowControlStats": {}
+        }
+    },
+    "77086": {
+        "threadId": "77086",
+        "threadName": "conn25478",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {}
+    },
+    "77087": {
+        "threadId": "77087",
+        "threadName": "conn25479",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {
+            "type": "op",
+            "host": "sahilchawla-HP-Pavilion:27017",
+            "desc": "conn25479",
+            "connectionId": 25479,
+            "client": "127.0.0.1:34480",
+            "clientMetadata": {
+                "driver": {
+                    "name": "PyMongo",
+                    "version": "4.1.1"
+                },
+                "os": {
+                    "type": "Linux",
+                    "name": "Linux",
+                    "architecture": "x86_64",
+                    "version": "5.15.0-39-generic"
+                },
+                "platform": "CPython 3.10.4.final.0"
+            },
+            "active": true,
+            "currentOpTime": "2022-06-30T07:24:28.635+05:30",
+            "threaded": true,
+            "opid": 73631,
+            "secs_running": 6,
+            "microsecs_running": 6092603,
+            "op": "command",
+            "ns": "admin.$cmd",
+            "command": {
+                "hello": 1,
+                "topologyVersion": {
+                    "processId": {
+                        "$oid": "62bcfa3467f1b0b20f3e12ad"
+                    },
+                    "counter": 0
+                },
+                "maxAwaitTimeMS": 10000,
+                "$db": "admin"
+            },
+            "numYields": 0,
+            "waitingForLatch": {
+                "timestamp": {
+                    "$date": "2022-06-30T01:54:22.642Z"
+                },
+                "captureName": "AnonymousLatch"
+            },
+            "locks": {},
+            "waitingForLock": false,
+            "lockStats": {},
+            "waitingForFlowControl": false,
+            "flowControlStats": {}
+        }
+    },
+    "77088": {
+        "threadId": "77088",
+        "threadName": "conn25480",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {}
+    },
+    "77090": {
+        "threadId": "77090",
+        "threadName": "conn25481",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {}
+    },
+    "77093": {
+        "threadId": "77093",
+        "threadName": "conn25482",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {
+            "type": "op",
+            "host": "sahilchawla-HP-Pavilion:27017",
+            "desc": "conn25482",
+            "connectionId": 25482,
+            "client": "127.0.0.1:34486",
+            "clientMetadata": {
+                "driver": {
+                    "name": "PyMongo",
+                    "version": "4.1.1"
+                },
+                "os": {
+                    "type": "Linux",
+                    "name": "Linux",
+                    "architecture": "x86_64",
+                    "version": "5.15.0-39-generic"
+                },
+                "platform": "CPython 3.10.4.final.0"
+            },
+            "active": true,
+            "currentOpTime": "2022-06-30T07:24:28.634+05:30",
+            "threaded": true,
+            "opid": 73632,
+            "secs_running": 6,
+            "microsecs_running": 6092592,
+            "op": "command",
+            "ns": "admin.$cmd",
+            "command": {
+                "hello": 1,
+                "topologyVersion": {
+                    "processId": {
+                        "$oid": "62bcfa3467f1b0b20f3e12ad"
+                    },
+                    "counter": 0
+                },
+                "maxAwaitTimeMS": 10000,
+                "$db": "admin"
+            },
+            "numYields": 0,
+            "waitingForLatch": {
+                "timestamp": {
+                    "$date": "2022-06-30T01:54:22.642Z"
+                },
+                "captureName": "AnonymousLatch"
+            },
+            "locks": {},
+            "waitingForLock": false,
+            "lockStats": {},
+            "waitingForFlowControl": false,
+            "flowControlStats": {}
+        }
+    },
+    "77097": {
+        "threadId": "77097",
+        "threadName": "conn25483",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {
+            "type": "op",
+            "host": "sahilchawla-HP-Pavilion:27017",
+            "desc": "conn25483",
+            "connectionId": 25483,
+            "client": "127.0.0.1:34488",
+            "clientMetadata": {
+                "driver": {
+                    "name": "PyMongo",
+                    "version": "4.1.1"
+                },
+                "os": {
+                    "type": "Linux",
+                    "name": "Linux",
+                    "architecture": "x86_64",
+                    "version": "5.15.0-39-generic"
+                },
+                "platform": "CPython 3.10.4.final.0"
+            },
+            "active": true,
+            "currentOpTime": "2022-06-30T07:24:28.635+05:30",
+            "threaded": true,
+            "opid": 73614,
+            "secs_running": 6,
+            "microsecs_running": 6172171,
+            "op": "command",
+            "ns": "admin.$cmd",
+            "command": {
+                "hello": 1,
+                "topologyVersion": {
+                    "processId": {
+                        "$oid": "62bcfa3467f1b0b20f3e12ad"
+                    },
+                    "counter": 0
+                },
+                "maxAwaitTimeMS": 10000,
+                "$db": "admin"
+            },
+            "numYields": 0,
+            "waitingForLatch": {
+                "timestamp": {
+                    "$date": "2022-06-30T01:54:22.563Z"
+                },
+                "captureName": "AnonymousLatch"
+            },
+            "locks": {},
+            "waitingForLock": false,
+            "lockStats": {},
+            "waitingForFlowControl": false,
+            "flowControlStats": {}
+        }
+    },
+    "77098": {
+        "threadId": "77098",
+        "threadName": "conn25484",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {}
+    },
+    "77102": {
+        "threadId": "77102",
+        "threadName": "conn25485",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {}
+    },
+    "77103": {
+        "threadId": "77103",
+        "threadName": "conn25486",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {
+            "type": "op",
+            "host": "sahilchawla-HP-Pavilion:27017",
+            "desc": "conn25486",
+            "connectionId": 25486,
+            "client": "127.0.0.1:34494",
+            "clientMetadata": {
+                "driver": {
+                    "name": "PyMongo",
+                    "version": "4.1.1"
+                },
+                "os": {
+                    "type": "Linux",
+                    "name": "Linux",
+                    "architecture": "x86_64",
+                    "version": "5.15.0-39-generic"
+                },
+                "platform": "CPython 3.10.4.final.0"
+            },
+            "active": true,
+            "currentOpTime": "2022-06-30T07:24:28.635+05:30",
+            "threaded": true,
+            "opid": 73611,
+            "secs_running": 6,
+            "microsecs_running": 6180604,
+            "op": "command",
+            "ns": "admin.$cmd",
+            "command": {
+                "hello": 1,
+                "topologyVersion": {
+                    "processId": {
+                        "$oid": "62bcfa3467f1b0b20f3e12ad"
+                    },
+                    "counter": 0
+                },
+                "maxAwaitTimeMS": 10000,
+                "$db": "admin"
+            },
+            "numYields": 0,
+            "waitingForLatch": {
+                "timestamp": {
+                    "$date": "2022-06-30T01:54:22.554Z"
+                },
+                "captureName": "AnonymousLatch"
+            },
+            "locks": {},
+            "waitingForLock": false,
+            "lockStats": {},
+            "waitingForFlowControl": false,
+            "flowControlStats": {}
+        }
+    },
+    "77107": {
+        "threadId": "77107",
+        "threadName": "conn25487",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {
+            "type": "op",
+            "host": "sahilchawla-HP-Pavilion:27017",
+            "desc": "conn25487",
+            "connectionId": 25487,
+            "client": "127.0.0.1:34496",
+            "clientMetadata": {
+                "driver": {
+                    "name": "PyMongo",
+                    "version": "4.1.1"
+                },
+                "os": {
+                    "type": "Linux",
+                    "name": "Linux",
+                    "architecture": "x86_64",
+                    "version": "5.15.0-39-generic"
+                },
+                "platform": "CPython 3.10.4.final.0"
+            },
+            "active": true,
+            "currentOpTime": "2022-06-30T07:24:28.634+05:30",
+            "threaded": true,
+            "opid": 73612,
+            "secs_running": 6,
+            "microsecs_running": 6180581,
+            "op": "command",
+            "ns": "admin.$cmd",
+            "command": {
+                "hello": 1,
+                "topologyVersion": {
+                    "processId": {
+                        "$oid": "62bcfa3467f1b0b20f3e12ad"
+                    },
+                    "counter": 0
+                },
+                "maxAwaitTimeMS": 10000,
+                "$db": "admin"
+            },
+            "numYields": 0,
+            "waitingForLatch": {
+                "timestamp": {
+                    "$date": "2022-06-30T01:54:22.554Z"
+                },
+                "captureName": "AnonymousLatch"
+            },
+            "locks": {},
+            "waitingForLock": false,
+            "lockStats": {},
+            "waitingForFlowControl": false,
+            "flowControlStats": {}
+        }
+    },
+    "77108": {
+        "threadId": "77108",
+        "threadName": "conn25488",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {}
+    },
+    "77111": {
+        "threadId": "77111",
+        "threadName": "conn25489",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {}
+    },
+    "77114": {
+        "threadId": "77114",
+        "threadName": "conn25490",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {
+            "type": "op",
+            "host": "sahilchawla-HP-Pavilion:27017",
+            "desc": "conn25490",
+            "connectionId": 25490,
+            "client": "127.0.0.1:34502",
+            "clientMetadata": {
+                "driver": {
+                    "name": "PyMongo",
+                    "version": "4.1.1"
+                },
+                "os": {
+                    "type": "Linux",
+                    "name": "Linux",
+                    "architecture": "x86_64",
+                    "version": "5.15.0-39-generic"
+                },
+                "platform": "CPython 3.10.4.final.0"
+            },
+            "active": true,
+            "currentOpTime": "2022-06-30T07:24:28.635+05:30",
+            "threaded": true,
+            "opid": 73613,
+            "secs_running": 6,
+            "microsecs_running": 6172187,
+            "op": "command",
+            "ns": "admin.$cmd",
+            "command": {
+                "hello": 1,
+                "topologyVersion": {
+                    "processId": {
+                        "$oid": "62bcfa3467f1b0b20f3e12ad"
+                    },
+                    "counter": 0
+                },
+                "maxAwaitTimeMS": 10000,
+                "$db": "admin"
+            },
+            "numYields": 0,
+            "waitingForLatch": {
+                "timestamp": {
+                    "$date": "2022-06-30T01:54:22.563Z"
+                },
+                "captureName": "AnonymousLatch"
+            },
+            "locks": {},
+            "waitingForLock": false,
+            "lockStats": {},
+            "waitingForFlowControl": false,
+            "flowControlStats": {}
+        }
+    },
+    "77118": {
+        "threadId": "77118",
+        "threadName": "conn25491",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {
+            "type": "op",
+            "host": "sahilchawla-HP-Pavilion:27017",
+            "desc": "conn25491",
+            "connectionId": 25491,
+            "client": "127.0.0.1:34504",
+            "clientMetadata": {
+                "driver": {
+                    "name": "PyMongo",
+                    "version": "4.1.1"
+                },
+                "os": {
+                    "type": "Linux",
+                    "name": "Linux",
+                    "architecture": "x86_64",
+                    "version": "5.15.0-39-generic"
+                },
+                "platform": "CPython 3.10.4.final.0"
+            },
+            "active": true,
+            "currentOpTime": "2022-06-30T07:24:28.634+05:30",
+            "threaded": true,
+            "opid": 73616,
+            "secs_running": 6,
+            "microsecs_running": 6168619,
+            "op": "command",
+            "ns": "admin.$cmd",
+            "command": {
+                "hello": 1,
+                "topologyVersion": {
+                    "processId": {
+                        "$oid": "62bcfa3467f1b0b20f3e12ad"
+                    },
+                    "counter": 0
+                },
+                "maxAwaitTimeMS": 10000,
+                "$db": "admin"
+            },
+            "numYields": 0,
+            "waitingForLatch": {
+                "timestamp": {
+                    "$date": "2022-06-30T01:54:22.566Z"
+                },
+                "captureName": "AnonymousLatch"
+            },
+            "locks": {},
+            "waitingForLock": false,
+            "lockStats": {},
+            "waitingForFlowControl": false,
+            "flowControlStats": {}
+        }
+    },
+    "77120": {
+        "threadId": "77120",
+        "threadName": "conn25492",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {
+            "type": "op",
+            "host": "sahilchawla-HP-Pavilion:27017",
+            "desc": "conn25492",
+            "connectionId": 25492,
+            "client": "127.0.0.1:34506",
+            "clientMetadata": {
+                "driver": {
+                    "name": "PyMongo",
+                    "version": "4.1.1"
+                },
+                "os": {
+                    "type": "Linux",
+                    "name": "Linux",
+                    "architecture": "x86_64",
+                    "version": "5.15.0-39-generic"
+                },
+                "platform": "CPython 3.10.4.final.0"
+            },
+            "active": true,
+            "currentOpTime": "2022-06-30T07:24:28.634+05:30",
+            "threaded": true,
+            "opid": 73621,
+            "secs_running": 6,
+            "microsecs_running": 6143444,
+            "op": "command",
+            "ns": "admin.$cmd",
+            "command": {
+                "hello": 1,
+                "topologyVersion": {
+                    "processId": {
+                        "$oid": "62bcfa3467f1b0b20f3e12ad"
+                    },
+                    "counter": 0
+                },
+                "maxAwaitTimeMS": 10000,
+                "$db": "admin"
+            },
+            "numYields": 0,
+            "waitingForLatch": {
+                "timestamp": {
+                    "$date": "2022-06-30T01:54:22.591Z"
+                },
+                "captureName": "AnonymousLatch"
+            },
+            "locks": {},
+            "waitingForLock": false,
+            "lockStats": {},
+            "waitingForFlowControl": false,
+            "flowControlStats": {}
+        }
+    },
+    "77121": {
+        "threadId": "77121",
+        "threadName": "conn25493",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {}
+    },
+    "77126": {
+        "threadId": "77126",
+        "threadName": "conn25494",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {
+            "type": "op",
+            "host": "sahilchawla-HP-Pavilion:27017",
+            "desc": "conn25494",
+            "connectionId": 25494,
+            "client": "127.0.0.1:34510",
+            "clientMetadata": {
+                "driver": {
+                    "name": "PyMongo",
+                    "version": "4.1.1"
+                },
+                "os": {
+                    "type": "Linux",
+                    "name": "Linux",
+                    "architecture": "x86_64",
+                    "version": "5.15.0-39-generic"
+                },
+                "platform": "CPython 3.10.4.final.0"
+            },
+            "active": true,
+            "currentOpTime": "2022-06-30T07:24:28.635+05:30",
+            "threaded": true,
+            "opid": 73615,
+            "secs_running": 6,
+            "microsecs_running": 6170736,
+            "op": "command",
+            "ns": "admin.$cmd",
+            "command": {
+                "hello": 1,
+                "topologyVersion": {
+                    "processId": {
+                        "$oid": "62bcfa3467f1b0b20f3e12ad"
+                    },
+                    "counter": 0
+                },
+                "maxAwaitTimeMS": 10000,
+                "$db": "admin"
+            },
+            "numYields": 0,
+            "waitingForLatch": {
+                "timestamp": {
+                    "$date": "2022-06-30T01:54:22.564Z"
+                },
+                "captureName": "AnonymousLatch"
+            },
+            "locks": {},
+            "waitingForLock": false,
+            "lockStats": {},
+            "waitingForFlowControl": false,
+            "flowControlStats": {}
+        }
+    },
+    "77130": {
+        "threadId": "77130",
+        "threadName": "conn25495",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {}
+    },
+    "77131": {
+        "threadId": "77131",
+        "threadName": "conn25496",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {
+            "type": "op",
+            "host": "sahilchawla-HP-Pavilion:27017",
+            "desc": "conn25496",
+            "connectionId": 25496,
+            "client": "127.0.0.1:34514",
+            "clientMetadata": {
+                "driver": {
+                    "name": "PyMongo",
+                    "version": "4.1.1"
+                },
+                "os": {
+                    "type": "Linux",
+                    "name": "Linux",
+                    "architecture": "x86_64",
+                    "version": "5.15.0-39-generic"
+                },
+                "platform": "CPython 3.10.4.final.0"
+            },
+            "active": true,
+            "currentOpTime": "2022-06-30T07:24:28.635+05:30",
+            "threaded": true,
+            "opid": 73617,
+            "secs_running": 6,
+            "microsecs_running": 6156631,
+            "op": "command",
+            "ns": "admin.$cmd",
+            "command": {
+                "hello": 1,
+                "topologyVersion": {
+                    "processId": {
+                        "$oid": "62bcfa3467f1b0b20f3e12ad"
+                    },
+                    "counter": 0
+                },
+                "maxAwaitTimeMS": 10000,
+                "$db": "admin"
+            },
+            "numYields": 0,
+            "waitingForLatch": {
+                "timestamp": {
+                    "$date": "2022-06-30T01:54:22.578Z"
+                },
+                "captureName": "AnonymousLatch"
+            },
+            "locks": {},
+            "waitingForLock": false,
+            "lockStats": {},
+            "waitingForFlowControl": false,
+            "flowControlStats": {}
+        }
+    },
+    "77132": {
+        "threadId": "77132",
+        "threadName": "conn25497",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {}
+    },
+    "77135": {
+        "threadId": "77135",
+        "threadName": "conn25498",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {}
+    },
+    "77136": {
+        "threadId": "77136",
+        "threadName": "conn25499",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {}
+    },
+    "77137": {
+        "threadId": "77137",
+        "threadName": "conn25500",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {
+            "type": "op",
+            "host": "sahilchawla-HP-Pavilion:27017",
+            "desc": "conn25500",
+            "connectionId": 25500,
+            "client": "127.0.0.1:34522",
+            "clientMetadata": {
+                "driver": {
+                    "name": "PyMongo",
+                    "version": "4.1.1"
+                },
+                "os": {
+                    "type": "Linux",
+                    "name": "Linux",
+                    "architecture": "x86_64",
+                    "version": "5.15.0-39-generic"
+                },
+                "platform": "CPython 3.10.4.final.0"
+            },
+            "active": true,
+            "currentOpTime": "2022-06-30T07:24:28.635+05:30",
+            "threaded": true,
+            "opid": 73619,
+            "secs_running": 6,
+            "microsecs_running": 6148688,
+            "op": "command",
+            "ns": "admin.$cmd",
+            "command": {
+                "hello": 1,
+                "topologyVersion": {
+                    "processId": {
+                        "$oid": "62bcfa3467f1b0b20f3e12ad"
+                    },
+                    "counter": 0
+                },
+                "maxAwaitTimeMS": 10000,
+                "$db": "admin"
+            },
+            "numYields": 0,
+            "waitingForLatch": {
+                "timestamp": {
+                    "$date": "2022-06-30T01:54:22.586Z"
+                },
+                "captureName": "AnonymousLatch"
+            },
+            "locks": {},
+            "waitingForLock": false,
+            "lockStats": {},
+            "waitingForFlowControl": false,
+            "flowControlStats": {}
+        }
+    },
+    "77142": {
+        "threadId": "77142",
+        "threadName": "conn25501",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {}
+    },
+    "77143": {
+        "threadId": "77143",
+        "threadName": "conn25502",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {
+            "type": "op",
+            "host": "sahilchawla-HP-Pavilion:27017",
+            "desc": "conn25502",
+            "connectionId": 25502,
+            "client": "127.0.0.1:34526",
+            "clientMetadata": {
+                "driver": {
+                    "name": "PyMongo",
+                    "version": "4.1.1"
+                },
+                "os": {
+                    "type": "Linux",
+                    "name": "Linux",
+                    "architecture": "x86_64",
+                    "version": "5.15.0-39-generic"
+                },
+                "platform": "CPython 3.10.4.final.0"
+            },
+            "active": true,
+            "currentOpTime": "2022-06-30T07:24:28.634+05:30",
+            "threaded": true,
+            "opid": 73620,
+            "secs_running": 6,
+            "microsecs_running": 6144518,
+            "op": "command",
+            "ns": "admin.$cmd",
+            "command": {
+                "hello": 1,
+                "topologyVersion": {
+                    "processId": {
+                        "$oid": "62bcfa3467f1b0b20f3e12ad"
+                    },
+                    "counter": 0
+                },
+                "maxAwaitTimeMS": 10000,
+                "$db": "admin"
+            },
+            "numYields": 0,
+            "waitingForLatch": {
+                "timestamp": {
+                    "$date": "2022-06-30T01:54:22.590Z"
+                },
+                "captureName": "AnonymousLatch"
+            },
+            "locks": {},
+            "waitingForLock": false,
+            "lockStats": {},
+            "waitingForFlowControl": false,
+            "flowControlStats": {}
+        }
+    },
+    "77147": {
+        "threadId": "77147",
+        "threadName": "conn25503",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {}
+    },
+    "77148": {
+        "threadId": "77148",
+        "threadName": "conn25504",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {
+            "type": "op",
+            "host": "sahilchawla-HP-Pavilion:27017",
+            "desc": "conn25504",
+            "connectionId": 25504,
+            "client": "127.0.0.1:34530",
+            "clientMetadata": {
+                "driver": {
+                    "name": "PyMongo",
+                    "version": "4.1.1"
+                },
+                "os": {
+                    "type": "Linux",
+                    "name": "Linux",
+                    "architecture": "x86_64",
+                    "version": "5.15.0-39-generic"
+                },
+                "platform": "CPython 3.10.4.final.0"
+            },
+            "active": true,
+            "currentOpTime": "2022-06-30T07:24:28.635+05:30",
+            "threaded": true,
+            "opid": 73618,
+            "secs_running": 6,
+            "microsecs_running": 6152692,
+            "op": "command",
+            "ns": "admin.$cmd",
+            "command": {
+                "hello": 1,
+                "topologyVersion": {
+                    "processId": {
+                        "$oid": "62bcfa3467f1b0b20f3e12ad"
+                    },
+                    "counter": 0
+                },
+                "maxAwaitTimeMS": 10000,
+                "$db": "admin"
+            },
+            "numYields": 0,
+            "waitingForLatch": {
+                "timestamp": {
+                    "$date": "2022-06-30T01:54:22.582Z"
+                },
+                "captureName": "AnonymousLatch"
+            },
+            "locks": {},
+            "waitingForLock": false,
+            "lockStats": {},
+            "waitingForFlowControl": false,
+            "flowControlStats": {}
+        }
+    },
+    "77152": {
+        "threadId": "77152",
+        "threadName": "conn25505",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {}
+    },
+    "77153": {
+        "threadId": "77153",
+        "threadName": "conn25506",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {
+            "type": "op",
+            "host": "sahilchawla-HP-Pavilion:27017",
+            "desc": "conn25506",
+            "connectionId": 25506,
+            "client": "127.0.0.1:34534",
+            "clientMetadata": {
+                "driver": {
+                    "name": "PyMongo",
+                    "version": "4.1.1"
+                },
+                "os": {
+                    "type": "Linux",
+                    "name": "Linux",
+                    "architecture": "x86_64",
+                    "version": "5.15.0-39-generic"
+                },
+                "platform": "CPython 3.10.4.final.0"
+            },
+            "active": true,
+            "currentOpTime": "2022-06-30T07:24:28.634+05:30",
+            "threaded": true,
+            "opid": 73622,
+            "secs_running": 6,
+            "microsecs_running": 6132393,
+            "op": "command",
+            "ns": "admin.$cmd",
+            "command": {
+                "hello": 1,
+                "topologyVersion": {
+                    "processId": {
+                        "$oid": "62bcfa3467f1b0b20f3e12ad"
+                    },
+                    "counter": 0
+                },
+                "maxAwaitTimeMS": 10000,
+                "$db": "admin"
+            },
+            "numYields": 0,
+            "waitingForLatch": {
+                "timestamp": {
+                    "$date": "2022-06-30T01:54:22.602Z"
+                },
+                "captureName": "AnonymousLatch"
+            },
+            "locks": {},
+            "waitingForLock": false,
+            "lockStats": {},
+            "waitingForFlowControl": false,
+            "flowControlStats": {}
+        }
+    },
+    "77157": {
+        "threadId": "77157",
+        "threadName": "conn25507",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {
+            "type": "op",
+            "host": "sahilchawla-HP-Pavilion:27017",
+            "desc": "conn25507",
+            "connectionId": 25507,
+            "client": "127.0.0.1:34538",
+            "clientMetadata": {
+                "driver": {
+                    "name": "PyMongo",
+                    "version": "4.1.1"
+                },
+                "os": {
+                    "type": "Linux",
+                    "name": "Linux",
+                    "architecture": "x86_64",
+                    "version": "5.15.0-39-generic"
+                },
+                "platform": "CPython 3.10.4.final.0"
+            },
+            "active": true,
+            "currentOpTime": "2022-06-30T07:24:28.634+05:30",
+            "threaded": true,
+            "opid": 73623,
+            "secs_running": 6,
+            "microsecs_running": 6128542,
+            "op": "command",
+            "ns": "admin.$cmd",
+            "command": {
+                "hello": 1,
+                "topologyVersion": {
+                    "processId": {
+                        "$oid": "62bcfa3467f1b0b20f3e12ad"
+                    },
+                    "counter": 0
+                },
+                "maxAwaitTimeMS": 10000,
+                "$db": "admin"
+            },
+            "numYields": 0,
+            "waitingForLatch": {
+                "timestamp": {
+                    "$date": "2022-06-30T01:54:22.606Z"
+                },
+                "captureName": "AnonymousLatch"
+            },
+            "locks": {},
+            "waitingForLock": false,
+            "lockStats": {},
+            "waitingForFlowControl": false,
+            "flowControlStats": {}
+        }
+    },
+    "77161": {
+        "threadId": "77161",
+        "threadName": "conn25508",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {}
+    },
+    "77162": {
+        "threadId": "77162",
+        "threadName": "conn25509",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {
+            "type": "op",
+            "host": "sahilchawla-HP-Pavilion:27017",
+            "desc": "conn25509",
+            "connectionId": 25509,
+            "client": "127.0.0.1:34542",
+            "clientMetadata": {
+                "driver": {
+                    "name": "PyMongo",
+                    "version": "4.1.1"
+                },
+                "os": {
+                    "type": "Linux",
+                    "name": "Linux",
+                    "architecture": "x86_64",
+                    "version": "5.15.0-39-generic"
+                },
+                "platform": "CPython 3.10.4.final.0"
+            },
+            "active": true,
+            "currentOpTime": "2022-06-30T07:24:28.634+05:30",
+            "threaded": true,
+            "opid": 73625,
+            "secs_running": 6,
+            "microsecs_running": 6128169,
+            "op": "command",
+            "ns": "admin.$cmd",
+            "command": {
+                "hello": 1,
+                "topologyVersion": {
+                    "processId": {
+                        "$oid": "62bcfa3467f1b0b20f3e12ad"
+                    },
+                    "counter": 0
+                },
+                "maxAwaitTimeMS": 10000,
+                "$db": "admin"
+            },
+            "numYields": 0,
+            "waitingForLatch": {
+                "timestamp": {
+                    "$date": "2022-06-30T01:54:22.606Z"
+                },
+                "captureName": "AnonymousLatch"
+            },
+            "locks": {},
+            "waitingForLock": false,
+            "lockStats": {},
+            "waitingForFlowControl": false,
+            "flowControlStats": {}
+        }
+    },
+    "77163": {
+        "threadId": "77163",
+        "threadName": "conn25510",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {}
+    },
+    "77166": {
+        "threadId": "77166",
+        "threadName": "conn25511",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {}
+    },
+    "77168": {
+        "threadId": "77168",
+        "threadName": "conn25512",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {
+            "type": "op",
+            "host": "sahilchawla-HP-Pavilion:27017",
+            "desc": "conn25512",
+            "connectionId": 25512,
+            "client": "127.0.0.1:34548",
+            "clientMetadata": {
+                "driver": {
+                    "name": "PyMongo",
+                    "version": "4.1.1"
+                },
+                "os": {
+                    "type": "Linux",
+                    "name": "Linux",
+                    "architecture": "x86_64",
+                    "version": "5.15.0-39-generic"
+                },
+                "platform": "CPython 3.10.4.final.0"
+            },
+            "active": true,
+            "currentOpTime": "2022-06-30T07:24:28.634+05:30",
+            "threaded": true,
+            "opid": 73626,
+            "secs_running": 6,
+            "microsecs_running": 6127640,
+            "op": "command",
+            "ns": "admin.$cmd",
+            "command": {
+                "hello": 1,
+                "topologyVersion": {
+                    "processId": {
+                        "$oid": "62bcfa3467f1b0b20f3e12ad"
+                    },
+                    "counter": 0
+                },
+                "maxAwaitTimeMS": 10000,
+                "$db": "admin"
+            },
+            "numYields": 0,
+            "waitingForLatch": {
+                "timestamp": {
+                    "$date": "2022-06-30T01:54:22.607Z"
+                },
+                "captureName": "AnonymousLatch"
+            },
+            "locks": {},
+            "waitingForLock": false,
+            "lockStats": {},
+            "waitingForFlowControl": false,
+            "flowControlStats": {}
+        }
+    },
+    "77171": {
+        "threadId": "77171",
+        "threadName": "conn25513",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {
+            "type": "op",
+            "host": "sahilchawla-HP-Pavilion:27017",
+            "desc": "conn25513",
+            "connectionId": 25513,
+            "client": "127.0.0.1:34550",
+            "clientMetadata": {
+                "driver": {
+                    "name": "PyMongo",
+                    "version": "4.1.1"
+                },
+                "os": {
+                    "type": "Linux",
+                    "name": "Linux",
+                    "architecture": "x86_64",
+                    "version": "5.15.0-39-generic"
+                },
+                "platform": "CPython 3.10.4.final.0"
+            },
+            "active": true,
+            "currentOpTime": "2022-06-30T07:24:28.634+05:30",
+            "threaded": true,
+            "opid": 73628,
+            "secs_running": 6,
+            "microsecs_running": 6116598,
+            "op": "command",
+            "ns": "admin.$cmd",
+            "command": {
+                "hello": 1,
+                "topologyVersion": {
+                    "processId": {
+                        "$oid": "62bcfa3467f1b0b20f3e12ad"
+                    },
+                    "counter": 0
+                },
+                "maxAwaitTimeMS": 10000,
+                "$db": "admin"
+            },
+            "numYields": 0,
+            "waitingForLatch": {
+                "timestamp": {
+                    "$date": "2022-06-30T01:54:22.618Z"
+                },
+                "captureName": "AnonymousLatch"
+            },
+            "locks": {},
+            "waitingForLock": false,
+            "lockStats": {},
+            "waitingForFlowControl": false,
+            "flowControlStats": {}
+        }
+    },
+    "77176": {
+        "threadId": "77176",
+        "threadName": "conn25514",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {
+            "type": "op",
+            "host": "sahilchawla-HP-Pavilion:27017",
+            "desc": "conn25514",
+            "connectionId": 25514,
+            "client": "127.0.0.1:34552",
+            "clientMetadata": {
+                "driver": {
+                    "name": "PyMongo",
+                    "version": "4.1.1"
+                },
+                "os": {
+                    "type": "Linux",
+                    "name": "Linux",
+                    "architecture": "x86_64",
+                    "version": "5.15.0-39-generic"
+                },
+                "platform": "CPython 3.10.4.final.0"
+            },
+            "active": true,
+            "currentOpTime": "2022-06-30T07:24:28.634+05:30",
+            "threaded": true,
+            "opid": 73624,
+            "secs_running": 6,
+            "microsecs_running": 6128506,
+            "op": "command",
+            "ns": "admin.$cmd",
+            "command": {
+                "hello": 1,
+                "topologyVersion": {
+                    "processId": {
+                        "$oid": "62bcfa3467f1b0b20f3e12ad"
+                    },
+                    "counter": 0
+                },
+                "maxAwaitTimeMS": 10000,
+                "$db": "admin"
+            },
+            "numYields": 0,
+            "waitingForLatch": {
+                "timestamp": {
+                    "$date": "2022-06-30T01:54:22.606Z"
+                },
+                "captureName": "AnonymousLatch"
+            },
+            "locks": {},
+            "waitingForLock": false,
+            "lockStats": {},
+            "waitingForFlowControl": false,
+            "flowControlStats": {}
+        }
+    },
+    "77177": {
+        "threadId": "77177",
+        "threadName": "conn25515",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {}
+    },
+    "77178": {
+        "threadId": "77178",
+        "threadName": "conn25516",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {}
+    },
+    "77181": {
+        "threadId": "77181",
+        "threadName": "conn25517",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {
+            "type": "op",
+            "host": "sahilchawla-HP-Pavilion:27017",
+            "desc": "conn25517",
+            "connectionId": 25517,
+            "client": "127.0.0.1:34560",
+            "clientMetadata": {
+                "driver": {
+                    "name": "PyMongo",
+                    "version": "4.1.1"
+                },
+                "os": {
+                    "type": "Linux",
+                    "name": "Linux",
+                    "architecture": "x86_64",
+                    "version": "5.15.0-39-generic"
+                },
+                "platform": "CPython 3.10.4.final.0"
+            },
+            "active": true,
+            "currentOpTime": "2022-06-30T07:24:28.635+05:30",
+            "threaded": true,
+            "opid": 73627,
+            "secs_running": 6,
+            "microsecs_running": 6120660,
+            "op": "command",
+            "ns": "admin.$cmd",
+            "command": {
+                "hello": 1,
+                "topologyVersion": {
+                    "processId": {
+                        "$oid": "62bcfa3467f1b0b20f3e12ad"
+                    },
+                    "counter": 0
+                },
+                "maxAwaitTimeMS": 10000,
+                "$db": "admin"
+            },
+            "numYields": 0,
+            "waitingForLatch": {
+                "timestamp": {
+                    "$date": "2022-06-30T01:54:22.614Z"
+                },
+                "captureName": "AnonymousLatch"
+            },
+            "locks": {},
+            "waitingForLock": false,
+            "lockStats": {},
+            "waitingForFlowControl": false,
+            "flowControlStats": {}
+        }
+    },
+    "77185": {
+        "threadId": "77185",
+        "threadName": "conn25518",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {}
+    },
+    "77187": {
+        "threadId": "77187",
+        "threadName": "conn25519",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {
+            "type": "op",
+            "host": "sahilchawla-HP-Pavilion:27017",
+            "desc": "conn25519",
+            "connectionId": 25519,
+            "client": "127.0.0.1:34564",
+            "clientMetadata": {
+                "driver": {
+                    "name": "PyMongo",
+                    "version": "4.1.1"
+                },
+                "os": {
+                    "type": "Linux",
+                    "name": "Linux",
+                    "architecture": "x86_64",
+                    "version": "5.15.0-39-generic"
+                },
+                "platform": "CPython 3.10.4.final.0"
+            },
+            "active": true,
+            "currentOpTime": "2022-06-30T07:24:28.635+05:30",
+            "threaded": true,
+            "opid": 73633,
+            "secs_running": 6,
+            "microsecs_running": 6092614,
+            "op": "command",
+            "ns": "admin.$cmd",
+            "command": {
+                "hello": 1,
+                "topologyVersion": {
+                    "processId": {
+                        "$oid": "62bcfa3467f1b0b20f3e12ad"
+                    },
+                    "counter": 0
+                },
+                "maxAwaitTimeMS": 10000,
+                "$db": "admin"
+            },
+            "numYields": 0,
+            "waitingForLatch": {
+                "timestamp": {
+                    "$date": "2022-06-30T01:54:22.642Z"
+                },
+                "captureName": "AnonymousLatch"
+            },
+            "locks": {},
+            "waitingForLock": false,
+            "lockStats": {},
+            "waitingForFlowControl": false,
+            "flowControlStats": {}
+        }
+    },
+    "77188": {
+        "threadId": "77188",
+        "threadName": "conn25520",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {}
+    },
+    "77191": {
+        "threadId": "77191",
+        "threadName": "conn25521",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {
+            "type": "op",
+            "host": "sahilchawla-HP-Pavilion:27017",
+            "desc": "conn25521",
+            "connectionId": 25521,
+            "client": "127.0.0.1:34568",
+            "clientMetadata": {
+                "driver": {
+                    "name": "PyMongo",
+                    "version": "4.1.1"
+                },
+                "os": {
+                    "type": "Linux",
+                    "name": "Linux",
+                    "architecture": "x86_64",
+                    "version": "5.15.0-39-generic"
+                },
+                "platform": "CPython 3.10.4.final.0"
+            },
+            "active": true,
+            "currentOpTime": "2022-06-30T07:24:28.634+05:30",
+            "threaded": true,
+            "opid": 73635,
+            "secs_running": 5,
+            "microsecs_running": 5988480,
+            "op": "command",
+            "ns": "admin.$cmd",
+            "command": {
+                "hello": 1,
+                "topologyVersion": {
+                    "processId": {
+                        "$oid": "62bcfa3467f1b0b20f3e12ad"
+                    },
+                    "counter": 0
+                },
+                "maxAwaitTimeMS": 10000,
+                "$db": "admin"
+            },
+            "numYields": 0,
+            "waitingForLatch": {
+                "timestamp": {
+                    "$date": "2022-06-30T01:54:22.746Z"
+                },
+                "captureName": "AnonymousLatch"
+            },
+            "locks": {},
+            "waitingForLock": false,
+            "lockStats": {},
+            "waitingForFlowControl": false,
+            "flowControlStats": {}
+        }
+    },
+    "77193": {
+        "threadId": "77193",
+        "threadName": "conn25522",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {}
+    },
+    "77195": {
+        "threadId": "77195",
+        "threadName": "conn25523",
+        "threadCpu": 0.0,
+        "threadState": "S",
+        "currentOp": {}
+    }
+}

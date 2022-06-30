@@ -1,3 +1,5 @@
+
+// For "View More" text in function names in final output page
 $(document).ready(function() {
     var max = 200;
     $(".readMoreTextHide").each(function() {

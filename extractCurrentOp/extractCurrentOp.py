@@ -29,7 +29,7 @@ def runCurrentOpsCommand(currentOps):
 def runTopHCommand(threads):
     # Call top command in batch mode(-b) and limit it for 1 iteration (n1). 
     # Grep for clients with name starting as "conn.." as these are CLIENT threads for mongodb
-    p = subprocess.Popen("top -H -bn1 | grep 'conn'", stdout=subprocess.PIPE, shell=True)
+    p = subprocess.Popen("top -H -bn1 -w512 | grep 'conn'", stdout=subprocess.PIPE, shell=True)
     stdout, stderr = p.communicate()
     for client in stdout.splitlines():
         # have to decode as stdout would be in byte form
@@ -123,7 +123,6 @@ def parseOptions(argv):
     if CPU_THRESHOLD==-1:
         CPU_THRESHOLD=20.0
     print("Parameters used: ")
-    print("")
     print("CPU Threshold: " + str(CPU_THRESHOLD))
     print("")
 if __name__=="__main__":

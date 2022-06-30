@@ -1,12 +1,15 @@
 import os
+import time
 from flask import Flask, render_template, request
 import createStackReport
 app = Flask(__name__)
-
+app.config["TEMPLATES_AUTO_RELOAD"]=True
 # Home route, messages is empty right now, later would contain error message
 @app.route('/')
 def home():
-   return render_template('home.html',messages={})
+    if os.path.exists(os.path.join("templates", "StackTraceReport.html")):
+        os.remove(os.path.join("templates", "StackTraceReport.html"))
+    return render_template('home.html',messages={})
 
 
 # On pressing submit button, user is redirected here.
@@ -36,10 +39,14 @@ def upload_file():
         f.save(os.path.join(path, "data/stackFile.txt"))
         f = request.files['topFile']
         f.save(os.path.join(path, "data/topFile.txt"))
-
+        
         createStackReport.main()
-
         return render_template("StackTraceReport.html")
+
+@app.route('/uploader',methods=['GET'])
+def show_file():
+    return render_template("StackTraceReport.html")
 
 if __name__ == '__main__':
    app.run()
+

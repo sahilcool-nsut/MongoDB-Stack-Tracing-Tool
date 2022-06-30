@@ -46,7 +46,7 @@ It sets up a flask server which prompts to upload the necessary files, which are
  - **Single iteration of top command**
  > Sample Command
  >
- > top -H -bn1 | grep "conn" > topH.txt
+ > top -H -bn1 -w512 | grep "conn" > topH.txt
  > 
  > -b for batch mode, -n1 for limiting to 1 iteration. As it is aimed for MongoDB client queries, "conn" named threads are considered (these are MongoDB Clients)
 
@@ -100,7 +100,7 @@ This is a which returns a JSON file which contains details of the current High C
 
 This is achieved through the use of the top -H command and the db.currentOp() command feature provided by mongosh.
 
-> top -H -bn1 | grep "conn" > topH.txt
+> top -H -bn1 -w512 | grep "conn" > topH.txt
 >
 > mongosh localhost:27017 --eval 'EJSON.stringify(db.currentOp())' --quiet
 

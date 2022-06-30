@@ -9,22 +9,34 @@ import matplotlib.pyplot as plt
 
 path = os.getcwd()
 
+# Files used with their paths, incase any path is to be changed, can directly change variable here
 OUTPUT_FILE_PATH=os.path.join(path,"templates/StackTraceReport.html")
 
+# Data files uploaded by user
 TOP_COMMAND_FILE=os.path.join(path, "data/topFile.txt")
 STACK_TRACE_FILE=os.path.join(path, "data/stackFile.txt")
 
+# Graphs dynamically created by script
 FLAME_GRAPH_PATH=os.path.join(path, "static/graphs/flameGraph.pdf")
 STATE_GRAPH_PATH=os.path.join(path, "static/graphs/statePie.png")
 IDENTICAL_STACK_GRAPH_PATH=os.path.join(path, "static/graphs/identicalStackTraceGraph.png")
 
+# Graphs directory to be used in HTML code generated
 FLAME_GRAPH_HTML_PATH="{{ url_for('static', filename='graphs/flameGraph.pdf') }}"
 STATE_GRAPH_HTML_PATH="{{ url_for('static', filename='graphs/statePie.png') }}"
 IDENTICAL_STACK_GRAPH_HTML_PATH="{{ url_for('static', filename='graphs/identicalStackTraceGraph.png') }}"
 
+# Style/Script files 
+CUSTOM_JS_PATH="{{ url_for('static', filename='scripts/customScript.js') }}"
+JQUERY_PATH="{{ url_for('static', filename='scripts/jquery-3.6.0.min.js') }}"
+BOOTSTRAP_JS_PATH="{{url_for('static', filename='scripts/bootstrap.min.js')}}"
+BOOTSTRAP_CSS_PATH="{{ url_for('static', filename='styles/bootstrap.min.css') }}"
+CUSTOM_CSS_PATH="{{ url_for('static', filename='styles/customStyle.css') }}"
+
+
 # Class for an individual thread object with all its attribtues
 class Thread:
-    def __init__(self,tid,tname,tcpu,tstate,tstack=""):
+    def __init__(self,tid,tname,tcpu,tstate,tstack="noStackFound"):
         self.threadId=tid
         self.threadName=tname
         self.threadCpu=tcpu
@@ -433,7 +445,6 @@ def createIdenticalStackTracesGraph(threads):
     
 
     stackAnalysisDict=getStackTraceAnalysis(list(stackTraceCount.keys()))
-
     i=1
     barGraphX=[]
     barGraphY=[]
@@ -594,8 +605,8 @@ def main():
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <!-- Include Bootstrap and Custom CSS -->
-        <link rel="stylesheet" href="{{ url_for('static', filename='styles/bootstrap.min.css') }}">
-        <link rel="stylesheet" href="{{ url_for('static', filename='styles/customStyle.css') }}">
+        <link rel="stylesheet" href="'''+BOOTSTRAP_CSS_PATH+'''">
+        <link rel="stylesheet" href="'''+CUSTOM_CSS_PATH+'''">
         <title>Stack Trace Report</title>
     </head> 
     <body>
@@ -622,6 +633,7 @@ def main():
 
     print("Starting Python script at time: " + str(int(round(time.time() * 1000)))[-6:])
 
+    threads={}
     # Dictionary to access thread objects by threadId
     threads=extractInformation()
     print("Starting creation of state distribution graph at time: " + str(int(round(time.time() * 1000)))[-6:])
@@ -645,9 +657,9 @@ def main():
     # Finish the html data and save the file
     htmlData+='''
     </div>
-    <script src="{{ url_for('static', filename='scripts/bootstrap.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='scripts/jquery-3.6.0.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='scripts/customScript.js') }}"></script>
+    <script src="'''+BOOTSTRAP_JS_PATH+'''"></script>
+    <script src="'''+JQUERY_PATH+'''"></script>
+    <script src="'''+CUSTOM_JS_PATH+'''"></script>
     </body>
     </html>'''
     OUTPUT_FILE.write(htmlData)

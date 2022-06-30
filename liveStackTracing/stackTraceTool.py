@@ -49,7 +49,7 @@ def gatherThreadInformation(threads):
     # Also, use parameter TOP_N_THREADS to limit results
     # Sorting is done by threadId (-k1 = first field, -n = numeric). This is done so that relative order of sorting remains same, and we can achieve precision in intervals
     # Although the impact of sorting may be very less, but it can be useful in case of very slow running commands 
-    p = subprocess.Popen("top -H -bn1 | grep -m " + str(TOP_N_THREADS) + " 'conn' | sort -n -k1", stdout=subprocess.PIPE, shell=True)
+    p = subprocess.Popen("top -H -bn1 -w512 | grep -m " + str(TOP_N_THREADS) + " 'conn' | sort -n -k1", stdout=subprocess.PIPE, shell=True)
     stdout, stderr = p.communicate()
     
     
@@ -154,10 +154,10 @@ def performAnalysis(currentOps):
                     analysisObject["currentlyMatchingDocuments"]="Matching Path for expression (still deciding path)"
                 
                 if done == False and "InMatchExpression" in currStack:
-                    analysisObject["currentlyMatchingDocuments"]="Matching 'in' expression"
+                    analysisObject["currentlyMatchingDocuments"]="Matching 'IN' expression"
                 
                 if done == False and "RegexMatchExpression" in currStack:
-                    analysisObject["currentlyMatchingDocuments"]="Matching 'Regex' expression"
+                    analysisObject["currentlyMatchingDocuments"]="Matching 'REGEX' expression"
                 
                 if done == False and "ComparisonMatchExpression" in currStack:
                     analysisObject["currentlyComparingValues"]="True"
@@ -317,7 +317,7 @@ def parseOptions(argv):
 
 if __name__ == "__main__":
 
-    print("Starting script at " + str(int(round(time.time() * 1000)))[-6:][-6:])
+    print("Starting script at " + str(int(round(time.time() * 1000)))[-6:])
     print("")
     parseOptions(sys.argv[1:])
 
