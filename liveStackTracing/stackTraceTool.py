@@ -86,7 +86,7 @@ def gatherThreadInformation(threads):
 # Function to perform analysis on the stacks and save it in the JSON file
 def performAnalysis(currentOps):
     try:
-        mergedFile = open("OutputFiles/"+OUTPUT_FILE_NAME+".json", "r")
+        mergedFile = open(OUTPUT_FILE_NAME+".json", "r")
         jsonObject = json.load(mergedFile)
         mergedFile.close()
     except:
@@ -192,7 +192,7 @@ def performAnalysis(currentOps):
                 print("Something went wrong while parsing current operations")
 
     try:       
-        a_file = open("OutputFiles/"+OUTPUT_FILE_NAME+".json", "w")
+        a_file = open(OUTPUT_FILE_NAME+".json", "w")
         json.dump(jsonObject, a_file)
         a_file.close()
     except:
@@ -234,7 +234,7 @@ def createJsonFile(allIterationsThreads):
             print("Something went wrong while creating JSON File")
 
     try:
-        jsonFile = open("OutputFiles/"+OUTPUT_FILE_NAME+".json", "w")
+        jsonFile = open(OUTPUT_FILE_NAME+".json", "w")
         json.dump(entireJsonObject, jsonFile)
         jsonFile.close()
     except:

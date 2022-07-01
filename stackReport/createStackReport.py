@@ -1,3 +1,4 @@
+from datetime import date, datetime
 import math
 import os
 from queue import Queue
@@ -9,29 +10,23 @@ import matplotlib.pyplot as plt
 
 path = os.getcwd()
 
-# Files used with their paths, incase any path is to be changed, can directly change variable here
-OUTPUT_FILE_PATH=os.path.join(path,"templates/StackTraceReport.html")
+# ALL SET IN setGlobals() function as require dynamic timestamp
+# Files used with their paths, incase any path is to be changed, can directly change variable there
 
-# Data files uploaded by user
-TOP_COMMAND_FILE=os.path.join(path, "data/topFile.txt")
-STACK_TRACE_FILE=os.path.join(path, "data/stackFile.txt")
-
-# Graphs dynamically created by script
-FLAME_GRAPH_PATH=os.path.join(path, "static/graphs/flameGraph.pdf")
-STATE_GRAPH_PATH=os.path.join(path, "static/graphs/statePie.png")
-IDENTICAL_STACK_GRAPH_PATH=os.path.join(path, "static/graphs/identicalStackTraceGraph.png")
-
-# Graphs directory to be used in HTML code generated
-FLAME_GRAPH_HTML_PATH="{{ url_for('static', filename='graphs/flameGraph.pdf') }}"
-STATE_GRAPH_HTML_PATH="{{ url_for('static', filename='graphs/statePie.png') }}"
-IDENTICAL_STACK_GRAPH_HTML_PATH="{{ url_for('static', filename='graphs/identicalStackTraceGraph.png') }}"
-
-# Style/Script files 
-CUSTOM_JS_PATH="{{ url_for('static', filename='scripts/customScript.js') }}"
-JQUERY_PATH="{{ url_for('static', filename='scripts/jquery-3.6.0.min.js') }}"
-BOOTSTRAP_JS_PATH="{{url_for('static', filename='scripts/bootstrap.min.js')}}"
-BOOTSTRAP_CSS_PATH="{{ url_for('static', filename='styles/bootstrap.min.css') }}"
-CUSTOM_CSS_PATH="{{ url_for('static', filename='styles/customStyle.css') }}"
+OUTPUT_FILE_PATH=""
+TOP_COMMAND_FILE=""
+STACK_TRACE_FILE=""
+FLAME_GRAPH_PATH=""
+STATE_GRAPH_PATH=""
+IDENTICAL_STACK_GRAPH_PATH=""
+FLAME_GRAPH_HTML_PATH=""
+STATE_GRAPH_HTML_PATH=""
+IDENTICAL_STACK_GRAPH_HTML_PATH=""
+CUSTOM_JS_PATH=""
+JQUERY_PATH=""
+BOOTSTRAP_JS_PATH=""
+BOOTSTRAP_CSS_PATH=""
+CUSTOM_CSS_PATH=""
 
 
 # Class for an individual thread object with all its attribtues
@@ -590,7 +585,52 @@ def createConsumingThreadTable(threads):
     </section>
     '''
 
-def main():
+def setGlobals(TIMESTAMP):
+
+    global OUTPUT_FILE_PATH
+    global TOP_COMMAND_FILE
+    global STACK_TRACE_FILE
+    global FLAME_GRAPH_PATH
+    global STATE_GRAPH_PATH
+    global IDENTICAL_STACK_GRAPH_PATH
+    global FLAME_GRAPH_HTML_PATH
+    global STATE_GRAPH_HTML_PATH
+    global IDENTICAL_STACK_GRAPH_HTML_PATH
+    global CUSTOM_JS_PATH
+    global JQUERY_PATH
+    global BOOTSTRAP_JS_PATH
+    global BOOTSTRAP_CSS_PATH
+    global CUSTOM_CSS_PATH
+
+    # IMPORTANT
+    # FILE NAMES SHOULD NOT CONTAIN ANY '_' OTHER THAN THE ONE SEPERATING THE TIMESTAMP (used in delete logic in app.py)
+
+    OUTPUT_FILE_PATH=os.path.join(path,"templates/StackTraceReport_"+TIMESTAMP+".html")
+
+    # Data files uploaded by user
+    TOP_COMMAND_FILE=os.path.join(path, "data/topFile_"+TIMESTAMP+".txt")
+    STACK_TRACE_FILE=os.path.join(path, "data/stackFile_"+TIMESTAMP+".txt")
+
+    # Graphs dynamically created by script
+    FLAME_GRAPH_PATH=os.path.join(path, "static/graphs/flameGraph_"+TIMESTAMP+".pdf")
+    STATE_GRAPH_PATH=os.path.join(path, "static/graphs/statePie_"+TIMESTAMP+".png")
+    IDENTICAL_STACK_GRAPH_PATH=os.path.join(path, "static/graphs/identicalStackTraceGraph_"+TIMESTAMP+".png")
+
+    # Graphs directory to be used in HTML code generated
+    FLAME_GRAPH_HTML_PATH="{{ url_for('static', filename='graphs/flameGraph_"+TIMESTAMP+".pdf') }}"
+    STATE_GRAPH_HTML_PATH="{{ url_for('static', filename='graphs/statePie_"+TIMESTAMP+".png') }}"
+    IDENTICAL_STACK_GRAPH_HTML_PATH="{{ url_for('static', filename='graphs/identicalStackTraceGraph_"+TIMESTAMP+".png') }}"
+    # Style/Script files 
+    CUSTOM_JS_PATH="{{ url_for('static', filename='scripts/customScript.js') }}"
+    JQUERY_PATH="{{ url_for('static', filename='scripts/jquery-3.6.0.min.js') }}"
+    BOOTSTRAP_JS_PATH="{{url_for('static', filename='scripts/bootstrap.min.js')}}"
+    BOOTSTRAP_CSS_PATH="{{ url_for('static', filename='styles/bootstrap.min.css') }}"
+    CUSTOM_CSS_PATH="{{ url_for('static', filename='styles/customStyle.css') }}"
+
+
+def main(TIMESTAMP):
+    # Have to set globals using function as file names would be dynamic as they are using a timestamp
+    setGlobals(TIMESTAMP)
     global htmlData
     # Open the HTML file and create boilerplate HTML code
     OUTPUT_FILE = open(OUTPUT_FILE_PATH,"w")
@@ -666,7 +706,9 @@ def main():
     OUTPUT_FILE.close()
 
     print("completed")
+    return TIMESTAMP
 if __name__ == "__main__":
+
     main()
     
 
