@@ -6,6 +6,7 @@ import sys
 import time
 
 CPU_THRESHOLD=20.0
+PRINT_DEBUG=0
 OUTPUT_FILE_NAME="currentOpByThread.json"
 
 # Thread Class used to store thread objects
@@ -21,10 +22,11 @@ class Thread:
 # EJSON = Extended JSON to convert UUID, TimeStamps into json readable objects.
 # --quiet is to remove the connection information we get on a new connection
 def runCurrentOpsCommand(currentOps):
-    p = subprocess.Popen("mongosh localhost:27017 --eval 'EJSON.stringify(db.currentOp())' --quiet", stdout=subprocess.PIPE, shell=True)
+    p = subprocess.Popen("mongo localhost:27017 --eval 'JSON.stringify(db.currentOp())' --quiet", stdout=subprocess.PIPE, shell=True)
+    # p = subprocess.Popen("mongosh localhost:27017 --eval 'EJSON.stringify(db.currentOp())' --quiet", stdout=subprocess.PIPE, shell=True)
     stdout, stderr = p.communicate()
     # Key value has to be used as due to some reason, the currentOps object wasn't being updated
-    currentOps["value"]=dict(json.loads(stdout.decode('UTF-8')))
+    currentOps["value"]=json.loads(stdout.decode('UTF-8'))
 
 def runTopHCommand(threads):
     # Call top command in batch mode(-b) and limit it for 1 iteration (n1). 
@@ -53,7 +55,8 @@ def gatherThreadInformation(threads,currentOps):
     process.start()
     totalProcesses.append(process)
 
-    print("All processes were created, now waiting : " +str(int(round(time.time() * 1000)))[-6:])
+    if PRINT_DEBUG==1:
+        print("All processes were created, now waiting : " +str(int(round(time.time() * 1000)))[-6:])
     for p in totalProcesses:
         p.join()
     currentOps=currentOps["value"]
@@ -69,7 +72,8 @@ def gatherThreadInformation(threads,currentOps):
                         break
         except: 
             print("Something went wrong while parsing current operations")
-    print("Completed script at : " +str(int(round(time.time() * 1000)))[-6:])
+    if PRINT_DEBUG==1:
+        print("Completed script at : " +str(int(round(time.time() * 1000)))[-6:])
     
 def createJSON(threads):
     entireJSONObject={}
@@ -82,12 +86,7 @@ def createJSON(threads):
         threadObj["threadState"] = thread.threadState
         threadObj["currentOp"] = thread.currentOp
         entireJSONObject[threadId]=threadObj
-    try:
-        jsonFile = open(OUTPUT_FILE_NAME, "w")
-        json.dump(entireJSONObject, jsonFile)
-        jsonFile.close()
-    except:
-        print("Couldn't open file for creating JSON")
+    return entireJSONObject
 # Function to show help menu
 def showHelp():
     # Display Help
@@ -95,6 +94,7 @@ def showHelp():
     print("Syntax: python extractCurrentOp.py [-c 30]")
     print("options:")
     print("c or --cpu-threshold       Provide the CPU Usage Threshold for threads (0-100) (OPTIONAL) - Default = 20")
+    print("d or --debug               Set as 1 to print debug statements with timestamps of script operationos (Default = 0 (no debug info))")
     print("h or --help                Show the help menu")
     print("")
     exit
@@ -102,9 +102,10 @@ def showHelp():
 # Function to parse the command line options
 def parseOptions(argv):
     global CPU_THRESHOLD
+    global PRINT_DEBUG
     try:
     #   h requires no input, so no colon for it
-        opts, args = getopt.getopt(argv,"c:h",["cpu-threshold=","help"])
+        opts, args = getopt.getopt(argv,"c:D:h",["cpu-threshold=","debug=","help"])
     except getopt.GetoptError:
         showHelp()
         sys.exit(2)
@@ -120,11 +121,23 @@ def parseOptions(argv):
             except:
                 print("CPU Threshold should be an integer/float between 0 and 100. Value provided was: " + str(arg) + "\nExiting")
                 sys.exit(2)
+        elif opt in ("-d", "--debug"):
+            try:
+                PRINT_DEBUG = int(arg)
+                if PRINT_DEBUG!=0 and PRINT_DEBUG!=1:
+                    sys.exit(2)
+            except:
+                print("Value of debug parameter should be 0 or 1. Value provided was: " + str(arg) + "\nExiting")
+                sys.exit(2)
     if CPU_THRESHOLD==-1:
         CPU_THRESHOLD=20.0
-    print("Parameters used: ")
-    print("CPU Threshold: " + str(CPU_THRESHOLD))
-    print("")
+    if PRINT_DEBUG==-1:
+        PRINT_DEBUG=0
+    if PRINT_DEBUG==1:
+        print("Parameters used: ")
+        print("CPU Threshold: " + str(CPU_THRESHOLD))
+        print("")
+
 if __name__=="__main__":
     parseOptions(sys.argv[1:])
     manager = multiprocessing.Manager()
@@ -132,4 +145,11 @@ if __name__=="__main__":
     currentOps = manager.dict()
     gatherThreadInformation(threads,currentOps)
 
-    createJSON(threads)
+    entireJSONObject=createJSON(threads)
+    try:
+        jsonFile = open(OUTPUT_FILE_NAME, "w")
+        json.dump(entireJSONObject, jsonFile, indent=4)
+        jsonFile.close()
+    except:
+        print("Couldn't open file for creating JSON")
+    # print(json.dumps(entireJSONObject,indent=4))
