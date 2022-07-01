@@ -44,10 +44,10 @@ def runStackCommand(threadId,threads):
 # This function is multithreaded to collect current operations using mongosh command
 # EJSON = Extended JSON to convert UUID, TimeStamps into json readable objects.
 # --quiet is to remove the connection information we get on a new connection
-def runCurrentOpsCommand(currentOps,iteration):
-    p = subprocess.Popen("mongosh localhost:27017 --eval 'EJSON.stringify(db.currentOp())' --quiet", stdout=subprocess.PIPE, shell=True)
-    stdout, stderr = p.communicate()
-    currentOps[iteration]=json.loads(stdout.decode('UTF-8'))
+# def runCurrentOpsCommand(currentOps,iteration):
+#     p = subprocess.Popen("mongosh localhost:27017 --eval 'EJSON.stringify(db.currentOp())' --quiet", stdout=subprocess.PIPE, shell=True)
+#     stdout, stderr = p.communicate()
+#     currentOps[iteration]=json.loads(stdout.decode('UTF-8'))
 
 # Driver Function to gather thread information from top and eu-stack commands
 def gatherThreadInformation(threads):
@@ -179,17 +179,17 @@ def performAnalysis(currentOps):
             except: 
                 print("Something went wrong while performing analysis")
             # Find the current operation of the current thread (by thread name)
-            try:
-                currentOpObject = currentOps[currIteration]
-                if len(currentOpObject)!=0:
-                    myCurrentOpObject={}
-                    for item in currentOpObject["inprog"]:
-                        if item["desc"] == currName:
-                            myCurrentOpObject["command"] = item
-                            break
-                    jsonObject["threads"][threadId]["iterations"][i]["currentOp"]=myCurrentOpObject
-            except: 
-                print("Something went wrong while parsing current operations")
+            # try:
+            #     currentOpObject = currentOps[currIteration]
+            #     if len(currentOpObject)!=0:
+            #         myCurrentOpObject={}
+            #         for item in currentOpObject["inprog"]:
+            #             if item["desc"] == currName:
+            #                 myCurrentOpObject["command"] = item
+            #                 break
+            #         jsonObject["threads"][threadId]["iterations"][i]["currentOp"]=myCurrentOpObject
+            # except: 
+            #     print("Something went wrong while parsing current operations")
 
     try:       
         a_file = open(OUTPUT_FILE_NAME+".json", "w")
@@ -348,10 +348,10 @@ if __name__ == "__main__":
         # Dictionary used to store data for current iteration.
         threads=manager.dict()
 
-        # Start the currentOp process first seperately as it takes way longer than other operations.
-        currentOpProcess=multiprocessing.Process(target=runCurrentOpsCommand,args=(currentOps,i,))
-        currentOpProcess.start()
-        currentOpProcesses.append(currentOpProcess)
+        # # Start the currentOp process first seperately as it takes way longer than other operations.
+        # currentOpProcess=multiprocessing.Process(target=runCurrentOpsCommand,args=(currentOps,i,))
+        # currentOpProcess.start()
+        # currentOpProcesses.append(currentOpProcess)
         
         # Major information collection for this iteration starting
         gatherThreadInformation(threads)
@@ -372,9 +372,9 @@ if __name__ == "__main__":
         
     
     # We wait for current ops before creating JSON file
-    print("Now waiting for currentOps to complete: " + str(int(round(time.time() * 1000)))[-6:])
-    for process in currentOpProcesses:
-        process.join()
+    # print("Now waiting for currentOps to complete: " + str(int(round(time.time() * 1000)))[-6:])
+    # for process in currentOpProcesses:
+    #     process.join()
 
     print("Starting to create JSON file at time: " + str(int(round(time.time() * 1000)))[-6:])
     # Create JSON File
