@@ -1,9 +1,14 @@
+from collections import defaultdict
 import getopt
+from heapq import merge
 import json
 import multiprocessing
+import re
 import subprocess
 import sys
 import time
+
+from click import command
 
 # Arguments
 NUMCALLS=-1
@@ -13,7 +18,6 @@ CPU_THRESHOLD=-1
 TAKE_CURRENT_OPS=-1
 PRINT_DEBUG=-1
 ITERATIONS_FOUND_THRESHOLD=-1
-
 OUTPUT_FILE_NAME="collectedData.json"
 
 # Thread Class used to store thread objects
@@ -88,15 +92,14 @@ def runCurrentOpsCommand(currentOps,iteration):
 
 # Driver Function to gather thread information from top and eu-stack commands
 def gatherThreadInformation(threads):
-
     # Call top command in batch mode(-b) and limit it for 1 iteration (n1). 
     # Grep for clients with name starting as "conn.." as these are CLIENT threads for mongodb
     # Also, use parameter TOP_N_THREADS to limit results
     # Sorting is done by threadId (-k1 = first field, -n = numeric). This is done so that relative order of sorting remains same, and we can achieve precision in intervals
     # Although the impact of sorting may be very less, but it can be useful in case of very slow running commands 
+    
     p = subprocess.Popen("top -H -bn1 -w512 | grep -m " + str(TOP_N_THREADS) + " 'conn' | sort -n -k1", stdout=subprocess.PIPE,stderr=subprocess.PIPE, shell=True)
     stdout, stderr = p.communicate()
-
     if(stderr.decode('UTF-8')!=''):
         printOutput(error=stderr.decode('UTF-8'))
     
@@ -129,92 +132,157 @@ def performAnalysis(currentOps,finalJsonObject):
 
     # Iterate over each thread and each iteration of the thread
     for threadId in finalJsonObject["threads"]:
-        avgCpu=0.0
+        cpuCounts=[]
         currIterationsStacks=[]
+        analysisList=[]
         for i in range(0,len(finalJsonObject["threads"][threadId]["iterations"])):
             # Iteration Wise Analysis
             try:
                 analysisObject={}
                 currIteration=finalJsonObject["threads"][threadId]["iterations"][i]["iteration"]
                 currStack=finalJsonObject["threads"][threadId]["iterations"][i]["threadStack"]
+                currState=finalJsonObject["threads"][threadId]["iterations"][i]["threadState"]
                 currName=finalJsonObject["threads"][threadId]["iterations"][i]["threadName"]
-                currCpu = finalJsonObject["threads"][threadId]["iterations"][i]["threadCpu"]
-                avgCpu += currCpu
+                currCpu = float(finalJsonObject["threads"][threadId]["iterations"][i]["threadCpu"])
+                                
+                # Store for overall analysis
+                cpuCounts.append(currCpu)
+                currIterationsStacks.append(currStack)
                 # Corner case for bad stacks collected
                 # Stack would be something like TID 12314: (and nothing ahead)
-                currIterationsStacks.append(currStack)
                 if len(currStack.split('\n')) <=1:
+                    
+                    print(len(currStack.split('\n')))
                     continue
+
+                try:
+                    # Gets the stage/scan
+                    doWorkRegexResults = re.findall('::(.+?)::doWork',currStack)
+                    if len(doWorkRegexResults) > 0:
+                        analysisObject["StagesAndScans"]={"Description": "The following stages were found somewhere in the stack, and can give some idea about what type of scans are being made, what functions of these scans are called etc."}
+                        for function in doWorkRegexResults:
+                            # Create individual object for each stage/scan as they can contain more functions
+                            # Their individual functions are found using their namespace
+                            analysisObject["StagesAndScans"][function]={}
+                            analysisObject["StagesAndScans"][function]["FoundInStack"]="True"
+                            individualFunctionRegexResults = re.findall(function+'::(.+?)\(',currStack)
+                            if len(individualFunctionRegexResults) > 0:
+                                # No need to include doWork as we used it just for extraction of function
+                                if "doWork" in individualFunctionRegexResults:
+                                    individualFunctionRegexResults.remove("doWork")
+                                if len(individualFunctionRegexResults) > 0:
+                                    functionsList=[]
+                                    for indiFunction in individualFunctionRegexResults:
+                                        functionsList.append({indiFunction:"called"})
+                                    analysisObject["StagesAndScans"][function]["FunctionsCalled"]=functionsList
+                except: 
+                    pass
                 
-                done=False
-                if done == False and "recvmsg" in currStack:
-                    analysisObject["queryState"]="Idle"
-                    done=True
-                if done == False and "__poll" in currStack:
-                    analysisObject["queryState"]="Polling"
-                    done=True
+                try:
+                    # Find "matching" part if the query has any such part
+                    matchRegexResults = re.findall('::(.+?)::matches',currStack)
+                    if len(matchRegexResults) > 0:
+                        analysisObject["ExpressionMatching"]={"Description": "These elements can give idea about what type of expressions are being used to match the documents"}
+                        # Check for REGEX namespace and give special attention
+                        regexNamespaceRegexResults=re.findall('::RE::',currStack)
+                        if len(regexNamespaceRegexResults) > 0:
+                            analysisObject["ExpressionMatching"]["Contains RE Namespace"]={}
+                            analysisObject["ExpressionMatching"]["Contains RE Namespace"]["Contains REGEX Matching"]="True"
+                            individualFunctionRERegexResults = re.findall("RE"+'::(.+?)\(',currStack)
+                            if len(individualFunctionRegexResults) > 0:
+                                functionsList=[]
+                                for indiFunction in individualFunctionRERegexResults:
+                                    functionsList.append({indiFunction:"called"})
+                                analysisObject["ExpressionMatching"]["Contains RE Namespace"]["FunctionsCalled"]=functionsList
+
+                        # Basic "matches" namespaces, can give some idea about where thread is right now
+                        for function in matchRegexResults:
+                            analysisObject["ExpressionMatching"][function]={}
+                            if function=="PathMatchExpression":
+                                analysisObject["ExpressionMatching"][function]["Evaluating Execution Path"]="True"
+                            analysisObject["ExpressionMatching"][function]["FoundInStack"]="True"
+                            individualFunctionMatchingRegexResults = re.findall(function+'::(.+?)\(',currStack)
+                            if len(individualFunctionMatchingRegexResults) > 0:
+                                # Can remove matches, just like we removed doWork above.
+                                if "matches" in individualFunctionMatchingRegexResults:
+                                    individualFunctionMatchingRegexResults.remove("matches")
+                                if len(individualFunctionMatchingRegexResults) > 0:
+                                    functionsList=[]
+                                    for indiFunction in individualFunctionMatchingRegexResults:
+                                        functionsList.append({indiFunction:"called"})
+                                    analysisObject["ExpressionMatching"][function]["FunctionsCalled"]=functionsList
+                    
+                    # Similar to ExpressionMatching, we can use BSONElement namespace to find some very high level stack functions
+                    
+                    bsonElementRegexResults=re.findall('BSONElement::(.+?)\(',currStack)
+                    if len(bsonElementRegexResults) > 0:
+                        if "ExpressionMatching" not in analysisObject:
+                            analysisObject["ExpressionMatching"]={"Description": "These elements can give idea about what type of expressions are being used to match the documents"}
+                        
+                        for function in bsonElementRegexResults:
+                            analysisObject["ExpressionMatching"]["BSONElement::"+function]={}
+                            analysisObject["ExpressionMatching"]["BSONElement::"+function]["FoundInStack"]="True"
+                            
+                except:
+                    pass
                 
-                # Type of Scan present
-                if done == False and "CollectionScan" in currStack:
-                    analysisObject["includesCollectionScan"]="True"
-
-                if done == False and "CountScan" in currStack:
-                    analysisObject["includesCountScan"]="True"
-
-                # Type of Stage present
-                if done == False and "CountStage" in currStack:
-                    analysisObject["includesCountingStage"]="True"
-
-                if done == False and "SortStage" in currStack:
-                    analysisObject["includesSortingStag"]="True"
-
-                if done == False and "UpdateStage" in currStack:
-                    analysisObject["includesUpdationStage"]="True"
-
-                if done == False and "ProjectionStage" in currStack:
-                    analysisObject["includesProjectionStage"]="True"
-
-                # Query type if present
-                if done == False and "FindCmd" in currStack:
-                    analysisObject["queryType"]="Find"
-
-                if done == False and "CmdCount" in currStack:
-                    analysisObject["queryType"]="Count"
-
-                if done == False and "CmdFindAndModify" in currStack:
-                    analysisObject["queryType"]="FindAndModify"
+                # Find query command given using run()
+                try:
+                    commandRegexResults=re.findall('\(anonymous namespace\)::(.+?)::run\(mongo',currStack)
+                    if len(commandRegexResults) > 0:
+                        analysisObject["CommandFoundInStack"]={"Description":"This section includes the commands which may have been run on the current thread"}
+                        for function in commandRegexResults:
+                            # Most probably function would be found in line with typedRun() rather than run(). So, check that.
+                            # In case some issue in retriveing it from typedRun(), we keep the run() result
+                            if ">" in function:
+                                typedRunCommandRegexResults=re.findall('\(anonymous namespace\)::(.+?)::typedRun\(mongo',currStack)
+                                if len(typedRunCommandRegexResults) > 0:
+                                    for function2 in typedRunCommandRegexResults:
+                                        if ">" in function2:
+                                            analysisObject["CommandFoundInStack"][function]="True"
+                                        else:
+                                            analysisObject["CommandFoundInStack"][function2]="True"
+                                else:
+                                    analysisObject["CommandFoundInStack"][function]="True"
+                            else:
+                                analysisObject["CommandFoundInStack"][function]="True"
+                except:
+                    pass
                 
-                if done == False and "PipelineCommand" in currStack:
-                    analysisObject["queryType"]="Pipeline"
+                # Concurrency Related
+                try:
+                    lockRegexResults=re.findall('Mutex::(.+?)\(\)',currStack)
+                    if len(lockRegexResults) > 0:
+                        if "ConcurrencyRelated" not in analysisObject:
+                            analysisObject["ConcurrencyRelated"]={"Description":"This section includes the commands which may be related to concurrency operations etc."}
+                        for function in lockRegexResults:
+                            analysisObject["ConcurrencyRelated"][function]="Lock related operation found in stack"
+                    lockWaitRegexResults=re.findall('__lll_lock_wait',currStack)
+                    if len(lockWaitRegexResults) > 0:
+                        if "ConcurrencyRelated" not in analysisObject:
+                            analysisObject["ConcurrencyRelated"]={"Description":"This section includes the commands which may be related to concurrency operations etc."}
+                        for function in lockWaitRegexResults:
+                            analysisObject["ConcurrencyRelated"][function]="Lock waiting operation found in stack"
+                    yieldRegexResults=re.findall('__sched_yield',currStack)
+                    if len(yieldRegexResults) > 0:
+                        if "ConcurrencyRelated" not in analysisObject:
+                            analysisObject["ConcurrencyRelated"]={"Description":"This section includes the commands which may be related to concurrency operations etc."}
+                        for function in yieldRegexResults:
+                            analysisObject["ConcurrencyRelated"][function]="Yield related operation found in stack"
+                    
+                except:
+                    pass
 
-                if done == False and "runAggregate" in currStack:
-                    analysisObject["queryType"]="Aggregation"
+                # Ensure that currState is Sleeping if allocating any of these, as these don't make sense if state is Running, and can be misleading  
+                if "recvmsg" in currStack:
+                    if currState=="S":
+                        analysisObject["clientState"]="Client may be waiting for Query to be given"
+                if "__poll" in currStack:
+                    if currState=="S":
+                        analysisObject["clientState"]="Polling"
 
-                if done == False and "CmdInsert" in currStack:
-                    analysisObject["queryType"]="Insert"
-
-                # Higher positions in stack, interval should be precise to catch these.
-                if done == False and "ExprMatchExpression" in currStack:
-                    analysisObject["includesExpressionMatching"]="True"
-                
-                if done == False and "PathMatchExpression" in currStack:
-                    analysisObject["currentlyMatchingDocuments"]="Matching Path for expression (still deciding path)"
-                
-                if done == False and "InMatchExpression" in currStack:
-                    analysisObject["currentlyMatchingDocuments"]="Matching 'IN' expression"
-                
-                if done == False and "RegexMatchExpression" in currStack:
-                    analysisObject["currentlyMatchingDocuments"]="Matching 'REGEX' expression"
-                
-                if done == False and "ComparisonMatchExpression" in currStack:
-                    analysisObject["currentlyComparingValues"]="True"
-                
-                if done == False and "getNextDocument" in currStack:
-                    analysisObject["fetchingNextDocument"]="True"
-                
-                if done == False and "compareElementStringValues" in currStack:
-                    analysisObject["currentlyComparingStringValues"]="True"
                 finalJsonObject["threads"][threadId]["iterations"][i]["analysis"]=analysisObject
+                analysisList.append(analysisObject)
             except: 
                 print("Something went wrong while performing analysis")
             # Find the current operation of the current thread (by thread name)
@@ -232,17 +300,81 @@ def performAnalysis(currentOps,finalJsonObject):
                     print("Something went wrong while parsing current operations")
         
         # Overall Thread Analysis
-        avgCpu=float(avgCpu/len(finalJsonObject["threads"][threadId]["iterations"]))
-        finalJsonObject["threads"][threadId]["avgCpu"] = float("{:.2f}".format(avgCpu))
+        overallAnalysis={}
+
+        # Merge all individual iterations
+        # For this, we have assumed that major category is the first key (like ScanStage, ExpressionMatching)
+        # Inside them, the individual functions are appended in a list
+        # Only first level key is taken into consideration, inner nesting information is not taken here, as it is just a short cumulative summary
+
+        try:
+            dd = defaultdict(list)
+            for d in tuple(analysisList):
+                for key, value in d.items():
+                    if type(value) is dict:
+                        for stageName in value:
+                            # No need to add description here
+                            if stageName=="Description":
+                                continue
+                            dd[key].append(stageName)
+                        tempList = dd[key]
+                        dd[key] = list(set(tempList))
+        
+            overallAnalysis["mergedStackAnalysis"]=dd
+            # Can check for multiple commands to warn that combined stack analysis is of more than 1 query
+            if "CommandFoundInStack" in overallAnalysis["mergedStackAnalysis"]:
+                numCommands = len(overallAnalysis["mergedStackAnalysis"]["CommandFoundInStack"])
+                if numCommands>=2:
+                    overallAnalysis["numberOfQueries"]="Thread was captured making more than 1 different query over iterations"
+        except: 
+            pass
+
+        # CPU ANALYSIS
+        if len(cpuCounts)>0:
+            avgCpu=0
+            for i in range(0,len(cpuCounts)):
+                avgCpu+=cpuCounts[i]
+            avgCpu=float(avgCpu/len(cpuCounts))
+            overallAnalysis["avgCpu"]="{:.2f}".format(avgCpu)
+        else:
+            overallAnalysis["avgCpu"]=0
+        
+        if len(currIterationsStacks) >1:
+            increasingCpuTrend= all(i <= j for i, j in zip(cpuCounts, cpuCounts[1:]))
+            decreasingCpuTrend= all(i >= j for i, j in zip(cpuCounts, cpuCounts[1:]))
+            equalCpuTrend = all(i == j for i, j in zip(cpuCounts, cpuCounts[1:]))
+            if equalCpuTrend == True:
+                if avgCpu > CPU_THRESHOLD:
+                    overallAnalysis["cpuTrend"]="Thread has equal CPU for each iteration. Its Average CPU is greater than threshold. It may be problematic"
+                else:
+                    overallAnalysis["cpuTrend"]="Thread has equal CPU for each iteration, but its average CPU remains lower than threshold."
+            elif increasingCpuTrend == True:
+                if avgCpu > CPU_THRESHOLD:
+                    if abs(cpuCounts[0] - cpuCounts[len(cpuCounts)-1]) > CPU_THRESHOLD:
+                        overallAnalysis["cpuTrend"]="Thread has increasing cpu utilization over iterations. Its Average CPU is greater than threshold. Also, rise in CPU Usage has been large"
+                    else:
+                        overallAnalysis["cpuTrend"]="Thread has increasing cpu utilization over iterations. Its Average CPU is greater than threshold. Although, rise in CPU Usage has been small"
+                else:
+                    overallAnalysis["cpuTrend"]="Thread has increasing cpu utilization over iterations, but its average CPU remains lower than threshold."
+            elif decreasingCpuTrend == True:
+                if abs(cpuCounts[0] - cpuCounts[len(cpuCounts)-1]) < CPU_THRESHOLD:
+                    overallAnalysis["cpuTrend"]="Thread has decreasing cpu utilization over iterations, but the difference wasn't large"
+                else:
+                    overallAnalysis["cpuTrend"]="Thread has decreasing cpu utilization over iterations. The drop in CPU usage was large, and hence it may not be problematic"
+            else:
+                overallAnalysis["cpuTrend"]="No monotically increasing or decreasing trend seen for thread over iterations "
+        
+        # Stack Changing Analysis
         if len(currIterationsStacks) >1:
             res = all(ele == currIterationsStacks[0] for ele in currIterationsStacks)
             if(res):
-                finalJsonObject["threads"][threadId]["stacksOverIterations"] = "Stacks were same over all iterations"
+                overallAnalysis["stacksOverIterations"] = "Stacks were same over all iterations"
             else:
-                finalJsonObject["threads"][threadId]["stacksOverIterations"] = "Stacks changed over different iterations"
+                overallAnalysis["stacksOverIterations"] = "Stacks changed over different iterations"
+        finalJsonObject["threads"][threadId]["overallAnalysis"]=overallAnalysis
 
     
-    finalJsonObject["threads"]=dict(sorted(finalJsonObject["threads"].items(), key=lambda item: item[1]["avgCpu"],reverse=True))
+    finalJsonObject["threads"]=dict(sorted(finalJsonObject["threads"].items(), key=lambda item: item[1]["overallAnalysis"]["avgCpu"],reverse=True))
     return finalJsonObject
 
 # Function to create JSON Object from collected data
@@ -334,7 +466,7 @@ def parseOptions(argv):
     global ITERATIONS_FOUND_THRESHOLD
     try:
     #   h requires no input, so no colon for it
-        opts, args = getopt.getopt(argv,"n:I:c:N:t:C:d:h",["num-iterations=","interval=","cpu-threshold=","num-threads=","threshold-iterations=","current-ops=","debug=","help"])
+        opts, args = getopt.getopt(argv,"n:I:c:N:t:Cdwh",["num-iterations=","interval=","cpu-threshold=","num-threads=","threshold-iterations=","current-ops","debug","worker","help"])
     except getopt.GetoptError:
         showHelp()
         sys.exit(2)
@@ -383,21 +515,9 @@ def parseOptions(argv):
                 print("Iterations threshold should have value between 1 and Number of Iterations. Value provided was: " + str(arg) + "\nExiting")
                 sys.exit(2)
         elif opt in ("-C", "--current-ops"):
-            try:
-                TAKE_CURRENT_OPS = int(arg)
-                if TAKE_CURRENT_OPS!=0 and TAKE_CURRENT_OPS!=1:
-                    sys.exit(2)
-            except:
-                print("Value of current ops should be 0 or 1. Value provided was: " + str(arg) + "\nExiting")
-                sys.exit(2)
+            TAKE_CURRENT_OPS = 1
         elif opt in ("-d", "--debug"):
-            try:
-                PRINT_DEBUG = int(arg)
-                if PRINT_DEBUG!=0 and PRINT_DEBUG!=1:
-                    sys.exit(2)
-            except:
-                print("Value of debug parameter should be 0 or 1. Value provided was: " + str(arg) + "\nExiting")
-                sys.exit(2)
+            PRINT_DEBUG = 1
     if NUMCALLS==-1:
         print("Number of iterations is a required option. Refer to --help for further information")
         sys.exit(2)
@@ -425,10 +545,7 @@ def parseOptions(argv):
         print("Take Current Ops: " + str(TAKE_CURRENT_OPS))
         print("Print Debug: " + str(PRINT_DEBUG))
         print("")
-
-
-    
-
+   
 if __name__ == "__main__":
 
     if PRINT_DEBUG==1:
@@ -499,5 +616,14 @@ if __name__ == "__main__":
         print("Starting analysis at time:  " + str(int(round(time.time() * 1000)))[-6:])
 
     # Reads data from the file created and adds analysis and currentOps in it
+    # currentOps={}
+    # finalJsonObject={}
+    # try:
+    #     jsonFile = open("json.json", "r")
+    #     # dump to store in file
+    #     finalJsonObject=json.load(jsonFile)
+    #     jsonFile.close()
+    # except:
+    #     pass
     completeJsonObject=performAnalysis(currentOps,finalJsonObject)
     printOutput(threads=completeJsonObject)
