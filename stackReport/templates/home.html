@@ -19,6 +19,9 @@
         <h1>Stack Trace Report for the MongoDB server</h1>
         <p> Uses eu-stack to collect stack trace and top command for gathering thread details </p>
         <br>
+        <p> In case both of the files are provided, a collective report is generated containing information of threads with their stacks.
+            <br>
+            In case only the stack file is provided, a shorter report with only stack analysis would be provided</p>
         <hr class="solid">           
         <br>
         <form action = "http://localhost:5000/uploader" method = "POST" 
@@ -34,7 +37,7 @@
             <p> 
                 <label for="topFile">Top File</label>
                 <br>
-                <input id=topFile label="Top File" type = "file" name = "topFile" />
+                <input id=topFile label="Top File (Optional)" type = "file" name = "topFile" />
             </p>
             <br>
             <input type = "submit" onclick='document.getElementById("loading").style.display="block";'/>

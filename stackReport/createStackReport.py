@@ -1,4 +1,5 @@
 from datetime import date, datetime
+import json
 import math
 import os
 from queue import Queue
@@ -27,11 +28,12 @@ JQUERY_PATH=""
 BOOTSTRAP_JS_PATH=""
 BOOTSTRAP_CSS_PATH=""
 CUSTOM_CSS_PATH=""
-
+TOP_FILE_GIVEN=False
 
 # Class for an individual thread object with all its attribtues
 class Thread:
-    def __init__(self,tid,tname,tcpu,tstate,tstack="noStackFound"):
+    # threadCpu has to default as a number, as it would be used for sorting, and in case of dummy thread, 0 won't create much problem at such times
+    def __init__(self,tid="",tname="Not Found in TOP/Can be Worker Thread",tcpu=0,tstate="",tstack="noStackFound"):
         self.threadId=tid
         self.threadName=tname
         self.threadCpu=tcpu
@@ -56,7 +58,7 @@ class FlameGraph:
     def __init__(self):
         self.graph=pydot.Dot(graph_type='digraph')
         # Colors in decreasing order of intensity
-        self.colorsList=["#FFA500","#FFA50099","#FFA50075","#FFA50050","#FFA50040"]
+        self.colorsList=["#FFA500","#FFA50099","#FFA50075","#FFA50075","#FFA50075","#FFA50075","#FFA50075","#FFA50075","#FFA50050","#FFA50040"]
         # Stores count of each function in the call stack
         self.countsDictionary={}
         # Unique node number to identify each node
@@ -171,18 +173,21 @@ def extractInformation():
     threads={}
     # Gather individual thread details first
     try:
-        with open(TOP_COMMAND_FILE) as f:
-            while True:
-                individualThreadDetails = f.readline().strip()
-                if not individualThreadDetails: 
-                    break
-                fields=individualThreadDetails.split()
-                # Sample TOP output
-                # 61286 mongodb   20   0 3095132   1.5g  38440 S   0.0  20.3   0:00.00 conn37
-                currThread = Thread(tid=fields[0],tname=fields[11],tcpu=float(fields[8]),tstate=fields[7])
-                threads[fields[0]] = currThread
-
-
+        if TOP_FILE_GIVEN:
+            with open(TOP_COMMAND_FILE) as f:
+                while True:
+                    individualThreadDetails = f.readline().strip()
+                    if not individualThreadDetails: 
+                        break
+                    fields=individualThreadDetails.split()
+                    # Sample TOP output
+                    # 61286 mongodb   20   0 3095132   1.5g  38440 S   0.0  20.3   0:00.00 conn37
+                    currThread = Thread(tid=fields[0],tname=fields[11],tcpu=float(fields[8]),tstate=fields[7])
+                    threads[fields[0]] = currThread
+    except:
+        print("Some Error occurred while extracting top command information")
+        sys.exit(2)
+    try:
         # After individual details, have to read individual stacks
         # Start reading stack trace and split by "TID" for individual stack traces
         with open(STACK_TRACE_FILE, "r") as f:
@@ -200,13 +205,20 @@ def extractInformation():
                 continue
             # Extract threadID from left of ':'
             currThreadId=splitStackForTID[0].split(':')[0]
-            if currThreadId not in threads.keys():
-                continue
             currStack=splitStackForTID[1]
-            threads[currThreadId].threadStack = currStack
+            if TOP_FILE_GIVEN:
+                if currThreadId not in threads.keys():
+                    # Dummy Thread with TID and current Stack. NO other stats present as not found in top file
+                    threads[currThreadId]=Thread(tid=currThreadId,tstack=currStack)
+                else:
+                    currStack=splitStackForTID[1]
+                    threads[currThreadId].threadStack = currStack
+            else:
+                # Dummy Thread with TID and current Stack. NO other stats present
+                threads[currThreadId]=Thread(tid=currThreadId,tstack=currStack)
         threads=dict(sorted(threads.items(), key=lambda item: item[1].threadCpu,reverse=True))
     except:
-        print("Some Error occurred while extracting information. Please check if the files are present in the correct directory (/data folder)")
+        print("Some Error occurred while extracting and storing stack information. Please check if the files are present in the correct directory (/data folder)")
         sys.exit(2)
     return threads
 
@@ -228,9 +240,10 @@ def createFlameGraph(threads):
     # Insert the flame graph in the HTML. iframe is used to embed the pdf with zoom options
     htmlData+='''
         <section id="flameGraph">
-            <h2>II. Call Stack (Flame Graph)</h2>
+            <h2>Call Stack (Flame Graph)</h2>
             <p> Shows the call stack in the form of a tree </p>
             <p> Darker the node, more frequently it appeared in the call stack. Individual node counts are also appended in the label </p>
+            <p> <b> Methods that are executed by the most number of threads make up the critical code path of the application. </b> </p>
             <div class="chart-panel">
                 <iframe src="'''+FLAME_GRAPH_HTML_PATH+'''" title="Flame Graph" height="800px" width="100%" /></iframe>
             </div>
@@ -249,6 +262,9 @@ def createStateDistributionGraph(threads):
     stateCountMap={}
     for key,thread in threads.items():
         currState=thread.threadState
+        # For Dummy Thread
+        if currState=="":
+            continue
         if currState not in stateCountMap:
             stateCountMap[currState]=1
         else:
@@ -273,8 +289,26 @@ def createStateDistributionGraph(threads):
     # Left column is further divided into rows of state information
     htmlData+='''
     <section id="threadStateDistribution">
-    <h2>I. Thread State Distribution</h2>
-    <p> Pie graph to illustrate the different states of threads present </p>
+    <h2>Thread State Distribution</h2>
+    <p> Pie graph to illustrate the different states of threads present 
+        <br>
+        The various thread states possible are:
+        <ul>
+            <li> S: INTERRUPTABLE_SLEEP </li>
+            <li> R: RUNNING AND RUNNABLE </li>
+                <ul>
+                <li> <b>These are the threads, which may be the cause for high CPU for the majority of time</b></li>
+                </ul>
+            <li> D: UNINTERRUPTABLE_SLEEP </li>
+                <ul>
+                <li> Uninterruptable as they are usually waiting for/performing I/O operations</li>
+                </ul>
+            <li> T: STOPPED </li>
+            <li> Z: ZOMBIE </li>
+                <ul>
+                <li> Dead process, waiting to be cleaned by OS </li>
+                </ul>
+    </p>
     <div class="container">
         <div class="row align-items-center">
             <div class="col-sm">
@@ -314,112 +348,145 @@ def createStateDistributionGraph(threads):
 # Function to create the thread information table
 def createThreadTable(threads):
     global htmlData
-    htmlData+='''
-    <section id="individualThreadDetails">
-    <h2>VI. Individual Thread Details</h2>
-    <p> Shows details of each thread </p>
-    <table class="chart-panel">
-    <tr>
-        <th>Thread ID</th>
-        <th>Thread Name</th>
-        <th>Thread State</th>
-        <th>Thread CPU</th>
-    </tr>'''
-    # print(htmlData)
-    for threadID,thread in dict(sorted(threads.items(), key=lambda item: item[1].threadCpu,reverse=True)).items():
-        htmlData+="<tr>"
-        htmlData+="<td style='text-align:center'>" + threadID + "</td>"
-        htmlData+="<td style='text-align:center'>" + thread.threadName + "</td>"
-        htmlData+="<td style='text-align:center'>" + thread.threadState + "</td>"
-        htmlData+="<td style='text-align:center;font-weight:bold;'>" + str(thread.threadCpu)+ "</td>"
-        htmlData+="<tr>"
-    htmlData+='''
-    </table>
-    <hr class="solid">
-    </section>
-    '''
+    if TOP_FILE_GIVEN:
+        htmlData+='''
+        <section id="individualThreadDetails">
+        <h2>Individual Thread Details</h2>
+        <p> Shows details of each thread </p>
+        <table class="chart-panel">
+        <tr>
+            <th>Thread ID</th>
+            <th>Thread Name</th>
+            <th>Thread State</th>
+            <th>Thread CPU</th>
+        </tr>'''
+        # print(htmlData)
+        for threadID,thread in dict(sorted(threads.items(), key=lambda item: item[1].threadCpu,reverse=True)).items():
+            htmlData+="<tr>"
+            htmlData+="<td style='text-align:center'>" + threadID + "</td>"
+            htmlData+="<td style='text-align:center'>" + thread.threadName + "</td>"
+            htmlData+="<td style='text-align:center'>" + thread.threadState + "</td>"
+            htmlData+="<td style='text-align:center;font-weight:bold;'>" + str(thread.threadCpu)+ "</td>"
+            htmlData+="<tr>"
+        htmlData+='''
+        </table>
+        <hr class="solid">
+        </section>
+        '''
+    else:
+        htmlData+='''
+        <section id="individualThreadDetails">
+        <h2>Individual Thread Details</h2>
+        <p> Shows details of each thread </p>
+        <table class="chart-panel">
+        <tr>
+            <th>Thread ID</th>
+            <th>Thread Stack</th>
+        </tr>'''
+        # print(htmlData)
+        for threadID,thread in dict(sorted(threads.items(), key=lambda item: item[1].threadCpu,reverse=True)).items():
+            htmlData+="<tr>"
+            htmlData+="<td style='text-align:center'>" + threadID + "</td>"
+            htmlData+="<td class='readMoreTextHide' style='white-space: pre-line'>" + thread.threadStack + "</td>"
+            htmlData+="<tr>"
+        htmlData+='''
+        </table>
+        <hr class="solid">
+        </section>
+        '''
 
 # Takes input list of unique stacks present, and returns a dictionary of analysis objects of each stack
 def getStackTraceAnalysis(stackTracesList):
     stackTraceAnalysis={}
     # Iterate over unique stack traces
     for currStack in stackTracesList:
-        currAnalysisObject={}
+        analysisObject={}
         if len(currStack.split('\n')) <=1:
-                currAnalysisObject["invalid stack"]="true"
-                stackTraceAnalysis[currStack] = currAnalysisObject
+                analysisObject["invalid stack"]="true"
+                stackTraceAnalysis[currStack] = analysisObject
                 continue
 
-        done=False
-        # Incase any of these hit, no need to check further
-        if done == False and "recvmsg" in currStack:
-            currAnalysisObject["queryState"]="Idle"
-            done=True
-        if done == False and "__poll" in currStack:
-            currAnalysisObject["queryState"]="Polling"
-            done=True
-        
-        # Type of Scan present
-        if done == False and "CollectionScan" in currStack:
-            currAnalysisObject["includesCollectionScan"]="True"
+        try:
+            # Gets the stage/scan
+            doWorkRegexResults = re.findall('::(.+?)::doWork',currStack)
+            if len(doWorkRegexResults) > 0:
+                analysisObject["StagesAndScans"]={}
+                for function in doWorkRegexResults:
+                    analysisObject["StagesAndScans"][function]={}
+                    analysisObject["StagesAndScans"][function]["FoundInStack"]="True"
+                    individualFunctionRegexResults = re.findall(function+'::(.+?)\(',currStack)
+                    if len(individualFunctionRegexResults) > 0:
+                        if "doWork" in individualFunctionRegexResults:
+                            individualFunctionRegexResults.remove("doWork")
+                        if len(individualFunctionRegexResults) > 0:
+                            functionsList=[]
+                            for indiFunction in individualFunctionRegexResults:
+                                functionsList.append({indiFunction:"called"})
+                            analysisObject["StagesAndScans"][function]["FunctionsCalled"]=functionsList
+        except: 
+            pass
 
-        if done == False and "CountScan" in currStack:
-            currAnalysisObject["includesCountScan"]="True"
+        try:
 
-        # Type of Stage present
-        if done == False and "CountStage" in currStack:
-            currAnalysisObject["includesCountingStage"]="True"
+            matchRegexResults = re.findall('::(.+?)::matches',currStack)
+            if len(matchRegexResults) > 0:
+                analysisObject["ExpressionMatching"]={}
+                commandRegexResults=re.findall('::RE::',currStack)
+                if len(commandRegexResults) > 0:
+                    analysisObject["ExpressionMatching"]["Contains RE Namespace"]={}
+                    analysisObject["ExpressionMatching"]["Contains RE Namespace"]["Contains REGEX Matching"]="True"
+                    individualFunctionRERegexResults = re.findall("RE"+'::(.+?)\(',currStack)
+                    if len(individualFunctionRegexResults) > 0:
+                        functionsList=[]
+                        for indiFunction in individualFunctionRERegexResults:
+                            functionsList.append({indiFunction:"called"})
+                        analysisObject["ExpressionMatching"]["Contains RE Namespace"]["FunctionsCalled"]=functionsList
 
-        if done == False and "SortStage" in currStack:
-            currAnalysisObject["includesSortingStag"]="True"
+                for function in matchRegexResults:
+                    analysisObject["ExpressionMatching"][function]={}
+                    if function=="PathMatchExpression":
+                        analysisObject["ExpressionMatching"][function]["Evaluating Execution Path"]="True"
+                    analysisObject["ExpressionMatching"][function]["FoundInStack"]="True"
+                    individualFunctionMatchingRegexResults = re.findall(function+'::(.+?)\(',currStack)
+                    if len(individualFunctionMatchingRegexResults) > 0:
+                        if "matches" in individualFunctionMatchingRegexResults:
+                            individualFunctionMatchingRegexResults.remove("matches")
+                        if len(individualFunctionMatchingRegexResults) > 0:
+                            functionsList=[]
+                            for indiFunction in individualFunctionMatchingRegexResults:
+                                functionsList.append({indiFunction:"called"})
+                            analysisObject["ExpressionMatching"][function]["FunctionsCalled"]=functionsList
+        except:
+            pass
+            
+        try:
+            commandRegexResults=re.findall('\(anonymous namespace\)::(.+?)::run\(mongo',currStack)
+            if len(commandRegexResults) > 0:
+                analysisObject["CommandFoundInStack"]={}
+                for function in commandRegexResults:
+                    # Most probably function would be found in line with typedRun() rather than run(). So, check that.
+                    # In case some issue in retriveing it from typedRun(), we keep the run() result
+                    if ">" in function:
+                        typedRunCommandRegexResults=re.findall('\(anonymous namespace\)::(.+?)::typedRun\(mongo',currStack)
+                        if len(typedRunCommandRegexResults) > 0:
+                            for function2 in typedRunCommandRegexResults:
+                                if ">" in function2:
+                                    analysisObject["CommandFoundInStack"][function]="True"
+                                else:
+                                    analysisObject["CommandFoundInStack"][function2]="True"
+                        else:
+                            analysisObject["CommandFoundInStack"][function]="True"
+                    else:
+                        analysisObject["CommandFoundInStack"][function]="True"
+        except:
+            pass
 
-        if done == False and "UpdateStage" in currStack:
-            currAnalysisObject["includesUpdationStage"]="True"
+        if "recvmsg" in currStack:
+            analysisObject["clientState"]="Client may be waiting for Query to be given"
+        if "__poll" in currStack:
+            analysisObject["clientState"]="Polling"
 
-        if done == False and "ProjectionStage" in currStack:
-            currAnalysisObject["includesProjectionStage"]="True"
-
-        # Query type if present
-        if done == False and "FindCmd" in currStack:
-            currAnalysisObject["queryType"]="Find"
-
-        if done == False and "CmdCount" in currStack:
-            currAnalysisObject["queryType"]="Count"
-
-        if done == False and "CmdFindAndModify" in currStack:
-            currAnalysisObject["queryType"]="FindAndModify"
-        
-        if done == False and "PipelineCommand" in currStack:
-            currAnalysisObject["queryType"]="Pipeline"
-
-        if done == False and "runAggregate" in currStack:
-            currAnalysisObject["queryType"]="Aggregation"
-
-        if done == False and "CmdInsert" in currStack:
-            currAnalysisObject["queryType"]="Insert"
-
-        # Higher positions in stack, interval should be precise to catch these.
-        if done == False and "ExprMatchExpression" in currStack:
-            currAnalysisObject["includesExpressionMatching"]="True"
-        
-        if done == False and "PathMatchExpression" in currStack:
-            currAnalysisObject["currentlyMatchingDocuments"]="Matching Path for expression (still deciding path)"
-        
-        if done == False and "InMatchExpression" in currStack:
-            currAnalysisObject["currentlyMatchingDocuments"]="Matching 'in' expression"
-        
-        if done == False and "RegexMatchExpression" in currStack:
-            currAnalysisObject["currentlyMatchingDocuments"]="Matching 'Regex' expression"
-        
-        if done == False and "ComparisonMatchExpression" in currStack:
-            currAnalysisObject["currentlyComparingValues"]="True"
-        
-        if done == False and "getNextDocument" in currStack:
-            currAnalysisObject["fetchingNextDocument"]="True"
-        
-        if done == False and "compareElementStringValues" in currStack:
-            currAnalysisObject["currentlyComparingStringValues"]="True"
-        stackTraceAnalysis[currStack] = currAnalysisObject
+        stackTraceAnalysis[currStack] = analysisObject
     return stackTraceAnalysis
 
 
@@ -427,7 +494,7 @@ def getStackTraceAnalysis(stackTracesList):
 def createIdenticalStackTracesGraph(threads):
     global htmlData
     stackTraceCount={}
-    # Loop over threads and store stack counts in the map. Also, store thread ids which are having that stack trace (to be displayed later)
+    # Loop over threads and store stack counts in the map. Also, store thread ids which are having that stack trace (can be displayed later)
     for threadId,thread in threads.items():
         currStack = thread.threadStack
         currThreadId = threadId
@@ -435,11 +502,10 @@ def createIdenticalStackTracesGraph(threads):
             stackTraceCount[currStack] = [currThreadId]
         else:
             stackTraceCount[currStack].append(currThreadId)
-    # Sort by length of list of threadIds for each stack trace. (basically the stack trace with most count, comes first)
-    stackTraceCount=dict(sorted(stackTraceCount.items(), key=lambda item: len(item[1]),reverse=True))
-    
-
     stackAnalysisDict=getStackTraceAnalysis(list(stackTraceCount.keys()))
+    # Sort by length of list of threadIds for each stack trace. (basically the stack trace with most count, comes first)
+    stackTraceCount=dict(sorted(stackTraceCount.items(), key=lambda item: [len(item[1]),len(stackAnalysisDict[item[0]])],reverse=True))
+
     i=1
     barGraphX=[]
     barGraphY=[]
@@ -462,8 +528,20 @@ def createIdenticalStackTracesGraph(threads):
     # Create Graph and Table
     htmlData+='''
     <section id="stackTraceCount">
-        <h2>III. Identical Stack Traces Distribution</h2>
-        <p> Shows statistics related to frequency of stack traces amongst different threads. Refer to below table for actual stack values </p>
+        <h2>Identical Stack Traces Distribution</h2>
+        <p> Shows statistics related to frequency of stack traces amongst different threads. Refer to below table for actual stack values
+            <br>
+           <b> If a lot of threads start to exhibit identical stack traces, it might be a concern, and can be troubleshooted</b>
+        </p>
+        <p> Analysis fields:
+        <ul>
+            <li><b>StagesAndScans</b></li>
+                <ul><li>This collection contains stages that were found somewhere in the stack, and can give some idea about what type of scans are being made, what functions of these scans are called etc. </li></ul>
+            <li><b>ExpressionMatching</b></li>
+                <ul><li>Elements in this collection can give idea about what type of expressions are being used to match the documents </li></ul>
+            <li><b>CommandFoundInStack</b></li>
+                <ul><li>This section includes the commands which may have been run on the current thread </li></ul>
+        </ul
         <img class="chart-panel" src = "'''+IDENTICAL_STACK_GRAPH_HTML_PATH+'''" alt = "Identical Stack Traces Distribution" />
         <table class="chart-panel">
         <tr>
@@ -485,15 +563,13 @@ def createIdenticalStackTracesGraph(threads):
 
         # Analysis
         currAnalysisObject=stackAnalysisDict[stackTrace]
+        # Convert analysis object to json and dump it in html using PRE tag, for preformatted data
         htmlData+="<td>"
-        htmlData+="<ul>"
+        jsonAnalysis = json.dumps(currAnalysisObject,indent=3)
+        htmlData+="<b><pre id='json'>" + jsonAnalysis +"</pre></b>"
         for analysisKey,analysisValue in currAnalysisObject.items():
-            htmlData+="<li><b>" + analysisKey + "</b>: " + analysisValue +"</li>"
-        htmlData+="<ul>"
+            print(str(type(analysisKey)) + "  " + str(type(analysisValue)))
         htmlData+="</td>"
-        
-        # Thread List
-        # htmlData+="<td class = 'readMoreTextHide'>" + ' '.join(threadList) + "</td>"
         htmlData+="</tr>"
         i+=1
     htmlData+='''
@@ -502,6 +578,7 @@ def createIdenticalStackTracesGraph(threads):
     </section>
     '''
     plt.close()
+    return stackAnalysisDict
 
 # Function to calculate and create table for frequency of function calls in entire stack trace
 def createTotalFunctionCountsTable(threads):
@@ -529,8 +606,9 @@ def createTotalFunctionCountsTable(threads):
         totalCount=1
     htmlData+='''
     <section id="mostUsedFunctions">
-    <h2>V. Most Used Functions</h2>
+    <h2>Most Used Functions</h2>
     <p> Shows which functions have been most used across the entire stack trace </p>
+    <p> <b> In case many threads are calling/stuck on the same function, that function might be a concern/bottleneck for current/future problems </b> </p>
     <table class="chart-panel">
     <tr>
         <th>Thread Count</th>
@@ -551,12 +629,20 @@ def createTotalFunctionCountsTable(threads):
     '''
     return totalFunctionCounts
 
-# Function to create and display the most CPU consuming threads (top 5)
-def createConsumingThreadTable(threads):
+# Function to create and display the most CPU consuming threads
+# Shows all the running/runnable threads, and also shows any other thread with cpuUtilization > 5
+def createConsumingThreadTable(threads,stackAnalysisDict):
     global htmlData
     htmlData+='''
     <section id="cpuConsumingThreads">
-    <h2>IV. Top CPU Consuming Threads (Top 5)</h2>
+    <h2>Top CPU Consuming Threads</h2>
+    <p> 
+    <b>The threads in Running/Runnable states are usually the potential candidates for high CPU using threads.</b>
+    <br>
+    In the below table, you can see the threads in decreasing CPU Utilization, and what state they are in, with their stacks.
+    <br>
+    First, the Runnable/Running threads are shown, and then if any other thread has high CPU Utilization, it is also shown.
+    </p>
     <table class="chart-panel">
     <tr>
         <th>Thread ID</th>
@@ -564,12 +650,38 @@ def createConsumingThreadTable(threads):
         <th>Thread State</th>
         <th>Thread CPU</th>
         <th>Thread Stack</th>
+        <th>Thread Stack Analysis (similar as above)</th>
     </tr>'''
     i=0
+    # All the runnable threads have to be shown
     for threadID,thread in threads.items():
-        if i==5:
-            break
+        if thread.threadState != "R":
+            continue
         # currStack = thread.threadStack.replace("\n","<br>")
+        currStack = thread.threadStack
+        htmlData+="<tr>"
+        htmlData+="<td style='text-align:center'>" + threadID + "</td>"
+        htmlData+="<td style='text-align:center'>" + thread.threadName + "</td>"
+        htmlData+="<td style='text-align:center'>" + thread.threadState + "</td>"
+        htmlData+="<td style='text-align:center;font-weight:bold;'>" + str(thread.threadCpu)+ "</td>"
+        htmlData+='<td class="readMoreTextHide" style="white-space: pre-line">' + currStack + "</td>"
+        # Analysis
+        currAnalysisObject=stackAnalysisDict[currStack]
+        # Convert analysis object to json and dump it in html using PRE tag, for preformatted data
+        htmlData+="<td>"
+        jsonAnalysis = json.dumps(currAnalysisObject,indent=3)
+        htmlData+="<b><pre id='json'>" + jsonAnalysis +"</pre></b>"
+        for analysisKey,analysisValue in currAnalysisObject.items():
+            print(str(type(analysisKey)) + "  " + str(type(analysisValue)))
+        htmlData+="</td>"
+        htmlData+="</tr>"
+        i+=1
+    # Other than Runnable, but cpuUtilization > 5
+    for threadId,thread in threads.items():
+        if thread.threadState=="R":
+            continue
+        if thread.threadCpu < 5:
+            break
         currStack = thread.threadStack
         htmlData+="<tr>"
         htmlData+="<td style='text-align:center'>" + threadID + "</td>"
@@ -580,12 +692,13 @@ def createConsumingThreadTable(threads):
         htmlData+="<tr>"
         i+=1
     htmlData+='''
-    </table>
+    </table>'''
+    htmlData+='''
     <hr class="solid">
     </section>
     '''
 
-def setGlobals(TIMESTAMP):
+def setGlobals(TIMESTAMP,topFileGiven):
 
     global OUTPUT_FILE_PATH
     global TOP_COMMAND_FILE
@@ -601,6 +714,7 @@ def setGlobals(TIMESTAMP):
     global BOOTSTRAP_JS_PATH
     global BOOTSTRAP_CSS_PATH
     global CUSTOM_CSS_PATH
+    global TOP_FILE_GIVEN
 
     # IMPORTANT
     # FILE NAMES SHOULD NOT CONTAIN ANY '_' OTHER THAN THE ONE SEPERATING THE TIMESTAMP (used in delete logic in app.py)
@@ -627,10 +741,12 @@ def setGlobals(TIMESTAMP):
     BOOTSTRAP_CSS_PATH="{{ url_for('static', filename='styles/bootstrap.min.css') }}"
     CUSTOM_CSS_PATH="{{ url_for('static', filename='styles/customStyle.css') }}"
 
+    TOP_FILE_GIVEN=topFileGiven
 
-def main(TIMESTAMP):
+
+def main(TIMESTAMP,topFileGiven):
     # Have to set globals using function as file names would be dynamic as they are using a timestamp
-    setGlobals(TIMESTAMP)
+    setGlobals(TIMESTAMP,topFileGiven)
     global htmlData
     # Open the HTML file and create boilerplate HTML code
     OUTPUT_FILE = open(OUTPUT_FILE_PATH,"w")
@@ -652,44 +768,69 @@ def main(TIMESTAMP):
     <body>
         <div class="sidenav">
             <div class="sidenav-title"> Eu-Stack Analyzer </div>
-            <br>
+            <br>'''
+    if TOP_FILE_GIVEN:
+        htmlData+='''
             <a href="#threadStateDistribution"> - Thread State Distribution</a>
             <a href="#flameGraph"> - Call Stack (Flame Graph)</a>
             <a href="#stackTraceCount"> - Identical Stack Traces Distribution</a>
             <a href="#cpuConsumingThreads"> - Top CPU Consuming Threads </a>
             <a href="#mostUsedFunctions"> - Most Used Functions </a>
             <a href="#individualThreadDetails"> - Individual Thread Details</a>
+            '''
+    else:
+        htmlData+='''
+            <a href="#flameGraph"> - Call Stack (Flame Graph)</a>
+            <a href="#stackTraceCount"> - Identical Stack Traces Distribution</a>
+            <a href="#mostUsedFunctions"> - Most Used Functions </a>
+            <a href="#individualThreadDetails"> - Individual Thread Details</a>
+        '''
+    htmlData+='''
         </div>
         <div class="main">
 
         <h1>Stack Trace Report for the MongoDB server</h1>
-        <p> Uses eu-stack to collect stack trace and top command for gathering thread details </p>
-        <br>
+        <p>Uses eu-stack to collect stack trace and top command for gathering thread details </p>
+        <br>'''
+    if TOP_FILE_GIVEN == False:
+        htmlData+='''
+        <p> <b> Only stack file provided.</b> </p>
+        '''
+    else:
+        htmlData+='''
+        <p> <b> Both files provided.</b> </p>
+        '''
+    htmlData+='''
         <hr class="solid">           
         <br>
     '''
 
     # Actual driver code for creating the report    
 
-    print("Starting Python script at time: " + str(int(round(time.time() * 1000)))[-6:])
+    # print("Starting Python script at time: " + str(int(round(time.time() * 1000)))[-6:])
 
+    # Incase Top file is not given, then threads will just contain dummy threads with stacks
     threads={}
     # Dictionary to access thread objects by threadId
     threads=extractInformation()
-    print("Starting creation of state distribution graph at time: " + str(int(round(time.time() * 1000)))[-6:])
-    createStateDistributionGraph(threads)
-
-    print("Starting creation of flame graph at time: " + str(int(round(time.time() * 1000)))[-6:])
+    
+    if TOP_FILE_GIVEN:
+        # print("Starting creation of state distribution graph at time: " + str(int(round(time.time() * 1000)))[-6:])
+        createStateDistributionGraph(threads)
+    
+    # print("Starting creation of flame graph at time: " + str(int(round(time.time() * 1000)))[-6:])
     createFlameGraph(threads)
 
-    print("Starting creation of stack trace count graph at time: " + str(int(round(time.time() * 1000)))[-6:])
-    createIdenticalStackTracesGraph(threads)
+    # print("Starting creation of stack trace count graph at time: " + str(int(round(time.time() * 1000)))[-6:])
+    stackAnalysisDict=createIdenticalStackTracesGraph(threads)
 
-    print("Starting creation of Most CPU Consuming Threads: " + str(int(round(time.time() * 1000)))[-6:])
-    createConsumingThreadTable(threads)
+    if TOP_FILE_GIVEN:
+        # print("Starting creation of Most CPU Consuming Threads: " + str(int(round(time.time() * 1000)))[-6:])
+        createConsumingThreadTable(threads,stackAnalysisDict)
 
-    print("Starting creation of Function Count Table at time: " + str(int(round(time.time() * 1000)))[-6:])
+    # print("Starting creation of Function Count Table at time: " + str(int(round(time.time() * 1000)))[-6:])
     totalFunctionCounts=createTotalFunctionCountsTable(threads)
+
 
     createThreadTable(threads)
     
@@ -705,7 +846,6 @@ def main(TIMESTAMP):
     OUTPUT_FILE.write(htmlData)
     OUTPUT_FILE.close()
 
-    print("completed")
     return TIMESTAMP
 if __name__ == "__main__":
 
