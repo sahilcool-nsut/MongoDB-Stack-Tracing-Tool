@@ -410,12 +410,15 @@ def getStackTraceAnalysis(stackTracesList):
             # Gets the stage/scan
             doWorkRegexResults = re.findall('::(.+?)::doWork',currStack)
             if len(doWorkRegexResults) > 0:
-                analysisObject["StagesAndScans"]={}
+                analysisObject["StagesAndScans"]={"Description": "The following stages were found somewhere in the stack, and can give some idea about what type of scans are being made, what functions of these scans are called etc."}
                 for function in doWorkRegexResults:
+                    # Create individual object for each stage/scan as they can contain more functions
+                    # Their individual functions are found using their namespace
                     analysisObject["StagesAndScans"][function]={}
                     analysisObject["StagesAndScans"][function]["FoundInStack"]="True"
                     individualFunctionRegexResults = re.findall(function+'::(.+?)\(',currStack)
                     if len(individualFunctionRegexResults) > 0:
+                        # No need to include doWork as we used it just for extraction of function
                         if "doWork" in individualFunctionRegexResults:
                             individualFunctionRegexResults.remove("doWork")
                         if len(individualFunctionRegexResults) > 0:
@@ -425,14 +428,15 @@ def getStackTraceAnalysis(stackTracesList):
                             analysisObject["StagesAndScans"][function]["FunctionsCalled"]=functionsList
         except: 
             pass
-
+        
         try:
-
+            # Find "matching" part if the query has any such part
             matchRegexResults = re.findall('::(.+?)::matches',currStack)
             if len(matchRegexResults) > 0:
-                analysisObject["ExpressionMatching"]={}
-                commandRegexResults=re.findall('::RE::',currStack)
-                if len(commandRegexResults) > 0:
+                analysisObject["ExpressionMatching"]={"Description": "These elements can give idea about what type of expressions are being used to match the documents"}
+                # Check for REGEX namespace and give special attention
+                regexNamespaceRegexResults=re.findall('::RE::',currStack)
+                if len(regexNamespaceRegexResults) > 0:
                     analysisObject["ExpressionMatching"]["Contains RE Namespace"]={}
                     analysisObject["ExpressionMatching"]["Contains RE Namespace"]["Contains REGEX Matching"]="True"
                     individualFunctionRERegexResults = re.findall("RE"+'::(.+?)\(',currStack)
@@ -442,6 +446,7 @@ def getStackTraceAnalysis(stackTracesList):
                             functionsList.append({indiFunction:"called"})
                         analysisObject["ExpressionMatching"]["Contains RE Namespace"]["FunctionsCalled"]=functionsList
 
+                # Basic "matches" namespaces, can give some idea about where thread is right now
                 for function in matchRegexResults:
                     analysisObject["ExpressionMatching"][function]={}
                     if function=="PathMatchExpression":
@@ -449,6 +454,7 @@ def getStackTraceAnalysis(stackTracesList):
                     analysisObject["ExpressionMatching"][function]["FoundInStack"]="True"
                     individualFunctionMatchingRegexResults = re.findall(function+'::(.+?)\(',currStack)
                     if len(individualFunctionMatchingRegexResults) > 0:
+                        # Can remove matches, just like we removed doWork above.
                         if "matches" in individualFunctionMatchingRegexResults:
                             individualFunctionMatchingRegexResults.remove("matches")
                         if len(individualFunctionMatchingRegexResults) > 0:
@@ -456,13 +462,26 @@ def getStackTraceAnalysis(stackTracesList):
                             for indiFunction in individualFunctionMatchingRegexResults:
                                 functionsList.append({indiFunction:"called"})
                             analysisObject["ExpressionMatching"][function]["FunctionsCalled"]=functionsList
+            
+            # Similar to ExpressionMatching, we can use BSONElement namespace to find some very high level stack functions
+            
+            bsonElementRegexResults=re.findall('BSONElement::(.+?)\(',currStack)
+            if len(bsonElementRegexResults) > 0:
+                if "ExpressionMatching" not in analysisObject:
+                    analysisObject["ExpressionMatching"]={"Description": "These elements can give idea about what type of expressions are being used to match the documents"}
+                
+                for function in bsonElementRegexResults:
+                    analysisObject["ExpressionMatching"]["BSONElement::"+function]={}
+                    analysisObject["ExpressionMatching"]["BSONElement::"+function]["FoundInStack"]="True"
+                    
         except:
             pass
-            
+        
+        # Find query command given using run()
         try:
             commandRegexResults=re.findall('\(anonymous namespace\)::(.+?)::run\(mongo',currStack)
             if len(commandRegexResults) > 0:
-                analysisObject["CommandFoundInStack"]={}
+                analysisObject["CommandFoundInStack"]={"Description":"This section includes the commands which may have been run on the current thread"}
                 for function in commandRegexResults:
                     # Most probably function would be found in line with typedRun() rather than run(). So, check that.
                     # In case some issue in retriveing it from typedRun(), we keep the run() result
@@ -480,7 +499,32 @@ def getStackTraceAnalysis(stackTracesList):
                         analysisObject["CommandFoundInStack"][function]="True"
         except:
             pass
+        
+        # Concurrency Related
+        try:
+            lockRegexResults=re.findall('Mutex::(.+?)\(\)',currStack)
+            if len(lockRegexResults) > 0:
+                if "ConcurrencyRelated" not in analysisObject:
+                    analysisObject["ConcurrencyRelated"]={"Description":"This section includes the commands which may be related to concurrency operations etc."}
+                for function in lockRegexResults:
+                    analysisObject["ConcurrencyRelated"][function]="Lock related operation found in stack"
+            lockWaitRegexResults=re.findall('__lll_lock_wait',currStack)
+            if len(lockWaitRegexResults) > 0:
+                if "ConcurrencyRelated" not in analysisObject:
+                    analysisObject["ConcurrencyRelated"]={"Description":"This section includes the commands which may be related to concurrency operations etc."}
+                for function in lockWaitRegexResults:
+                    analysisObject["ConcurrencyRelated"][function]="Lock waiting operation found in stack"
+            yieldRegexResults=re.findall('__sched_yield',currStack)
+            if len(yieldRegexResults) > 0:
+                if "ConcurrencyRelated" not in analysisObject:
+                    analysisObject["ConcurrencyRelated"]={"Description":"This section includes the commands which may be related to concurrency operations etc."}
+                for function in yieldRegexResults:
+                    analysisObject["ConcurrencyRelated"][function]="Yield related operation found in stack"
+            
+        except:
+            pass
 
+        # Ensure that currState is Sleeping if allocating any of these, as these don't make sense if state is Running, and can be misleading  
         if "recvmsg" in currStack:
             analysisObject["clientState"]="Client may be waiting for Query to be given"
         if "__poll" in currStack:
