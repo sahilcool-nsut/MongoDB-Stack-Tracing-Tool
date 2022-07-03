@@ -5,8 +5,9 @@ import json
 import sys
 import time
 
-CPU_THRESHOLD=20.0
+CPU_THRESHOLD=-1
 PRINT_DEBUG=0
+SHORT=0
 OUTPUT_FILE_NAME="currentOpByThread.json"
 
 # Thread Class used to store thread objects
@@ -67,7 +68,17 @@ def gatherThreadInformation(threads,currentOps):
             if len(currentOps)!=0:
                 for item in currentOps["inprog"]:
                     if item["desc"] == currName:
-                        currThread.currentOp = item
+                        if SHORT==1:
+                            shortItem={}
+                            shortItem["client"]=item["client"]
+                            shortItem["secs_running"]=item["secs_running"]
+                            shortItem["microsecs_running"]=item["microsecs_running"]
+                            shortItem["ns"]=item["ns"]
+                            shortItem["command"]=item["command"]
+                            shortItem["waitingForLock"]=item["waitingForLock"]
+                            currThread.currentOp = shortItem
+                        else:
+                            currThread.currentOp = item
                         threads[threadId] = currThread
                         break
         except: 
@@ -93,8 +104,9 @@ def showHelp():
     print("")
     print("Syntax: python extractCurrentOp.py [-c 30]")
     print("options:")
-    print("c or --cpu-threshold       Provide the CPU Usage Threshold for threads (0-100) (OPTIONAL) - Default = 20")
+    print("c or --cpu-threshold       Provide the CPU Usage Threshold for threads (0-100) (OPTIONAL) - Default = 15")
     print("d or --debug               Set as 1 to print debug statements with timestamps of script operationos (Default = 0 (no debug info))")
+    print("s or --short               Ask for a shorter currentOps per client")
     print("h or --help                Show the help menu")
     print("")
     exit
@@ -103,9 +115,10 @@ def showHelp():
 def parseOptions(argv):
     global CPU_THRESHOLD
     global PRINT_DEBUG
+    global SHORT
     try:
     #   h requires no input, so no colon for it
-        opts, args = getopt.getopt(argv,"c:D:h",["cpu-threshold=","debug=","help"])
+        opts, args = getopt.getopt(argv,"c:d:sh",["cpu-threshold=","debug=","help","short"])
     except getopt.GetoptError:
         showHelp()
         sys.exit(2)
@@ -129,13 +142,16 @@ def parseOptions(argv):
             except:
                 print("Value of debug parameter should be 0 or 1. Value provided was: " + str(arg) + "\nExiting")
                 sys.exit(2)
+        elif opt in ("-s", "--short"):
+            SHORT=1
+
     if CPU_THRESHOLD==-1:
-        CPU_THRESHOLD=20.0
-    if PRINT_DEBUG==-1:
-        PRINT_DEBUG=0
+        CPU_THRESHOLD=15.0
+
     if PRINT_DEBUG==1:
         print("Parameters used: ")
         print("CPU Threshold: " + str(CPU_THRESHOLD))
+        print("Short: " + str(SHORT))
         print("")
 
 if __name__=="__main__":
@@ -146,10 +162,10 @@ if __name__=="__main__":
     gatherThreadInformation(threads,currentOps)
 
     entireJSONObject=createJSON(threads)
-    try:
-        jsonFile = open(OUTPUT_FILE_NAME, "w")
-        json.dump(entireJSONObject, jsonFile, indent=4)
-        jsonFile.close()
-    except:
-        print("Couldn't open file for creating JSON")
-    # print(json.dumps(entireJSONObject,indent=4))
+    # try:
+    #     jsonFile = open(OUTPUT_FILE_NAME, "w")
+    #     json.dump(entireJSONObject, jsonFile, indent=4)
+    #     jsonFile.close()
+    # except:
+    #     print("Couldn't open file for creating JSON")
+    print(json.dumps(entireJSONObject,indent=4))
