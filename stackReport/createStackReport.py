@@ -523,8 +523,20 @@ def getStackTraceAnalysis(stackTracesList):
             
         except:
             pass
+
+        # workerThread=False
+        # try:
+        #     workerThreadStrings=["execute_native_thread_routine","__tiered_server","__log_file_server","__log_wrlsn_server","__log_server","__thread_run","__thread_run","__sweep_server"]
+        #     if any(i in currStack for i in workerThreadStrings):
+        #         if "Misc" not in analysisObject:
+        #             analysisObject["Misc"]={}
+        #             analysisObject["Misc"]["worker"]="This looks like a worker thread, not a client query thread"
+        #             workerThread=True
+        # except:
+        #     pass
         # WiredTiger
         try:
+        
             wiredTigerRegexResults=re.findall('::WiredTiger(.+?)\(',currStack)
             if len(wiredTigerRegexResults) > 0:
                 if "WiredTiger" not in analysisObject:
@@ -532,7 +544,8 @@ def getStackTraceAnalysis(stackTracesList):
                 for function in wiredTigerRegexResults:
                     analysisObject["WiredTiger"]["WiredTiger"+function]="Found in stack"
         except:
-            pass
+            pass    
+        
         
         # Ensure that currState is Sleeping if allocating any of these, as these don't make sense if state is Running, and can be misleading  
         if "recvmsg" in currStack:
