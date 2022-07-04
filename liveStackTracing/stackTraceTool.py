@@ -58,7 +58,7 @@ def printOutput(error=None,threads=None):
         except:
             printOutput(error="Some Error while saving output to file")
         # dumps to just print
-        # print(json.dumps(jsonObject,indent=4))
+        print(json.dumps(jsonObject,indent=4))
         exit(1)
 
 # This function is multithreaded to collect stack information for a single thread
@@ -151,10 +151,7 @@ def performAnalysis(currentOps,finalJsonObject):
                 # Corner case for bad stacks collected
                 # Stack would be something like TID 12314: (and nothing ahead)
                 if len(currStack.split('\n')) <=1:
-                    
-                    print(len(currStack.split('\n')))
                     continue
-
                 try:
                     # Gets the stage/scan
                     doWorkRegexResults = re.findall('::(.+?)::doWork',currStack)
@@ -273,6 +270,16 @@ def performAnalysis(currentOps,finalJsonObject):
                 except:
                     pass
 
+                # WiredTiger
+                try:
+                    wiredTigerRegexResults=re.findall('::WiredTiger(.+?)\(',currStack)
+                    if len(wiredTigerRegexResults) > 0:
+                        if "WiredTiger" not in analysisObject:
+                            analysisObject["WiredTiger"]={"Description": "This section contains commands related to WiredTiger (the storage engine) that were called"}
+                        for function in wiredTigerRegexResults:
+                            analysisObject["WiredTiger"]["WiredTiger"+function]="Found in stack"
+                except:
+                    pass
                 # Ensure that currState is Sleeping if allocating any of these, as these don't make sense if state is Running, and can be misleading  
                 if "recvmsg" in currStack:
                     if currState=="S":
@@ -311,16 +318,29 @@ def performAnalysis(currentOps,finalJsonObject):
             dd = defaultdict(list)
             for d in tuple(analysisList):
                 for key, value in d.items():
+                    print(key)
+                    print(value)
                     if type(value) is dict:
                         for stageName in value:
                             # No need to add description here
                             if stageName=="Description":
                                 continue
                             dd[key].append(stageName)
-                        tempList = dd[key]
-                        dd[key] = list(set(tempList))
-        
+                        if len(dd[key])==0:
+                            dd[key]=[]
+                        else:
+                            tempList = dd[key]
+                            dd[key] = list(set(tempList))
+
             overallAnalysis["mergedStackAnalysis"]=dd
+            # For client waiting for query status
+            clientStateCount=0
+            for analysis in analysisList:
+                if "clientState" in analysis:
+                    if analysis["clientState"]=="Client may be waiting for Query to be given":
+                        clientStateCount+=1
+            if clientStateCount == len(analysisList):
+                overallAnalysis["mergedStackAnalysis"]["clientState"]="Client seems to have no query running throughout all iterations"
             # Can check for multiple commands to warn that combined stack analysis is of more than 1 query
             if "CommandFoundInStack" in overallAnalysis["mergedStackAnalysis"]:
                 numCommands = len(overallAnalysis["mergedStackAnalysis"]["CommandFoundInStack"])
@@ -340,30 +360,35 @@ def performAnalysis(currentOps,finalJsonObject):
             overallAnalysis["avgCpu"]=0
         
         if len(currIterationsStacks) >1:
+            overallAnalysis["cpuStats"]={}
             increasingCpuTrend= all(i <= j for i, j in zip(cpuCounts, cpuCounts[1:]))
             decreasingCpuTrend= all(i >= j for i, j in zip(cpuCounts, cpuCounts[1:]))
             equalCpuTrend = all(i == j for i, j in zip(cpuCounts, cpuCounts[1:]))
             if equalCpuTrend == True:
                 if avgCpu > CPU_THRESHOLD:
-                    overallAnalysis["cpuTrend"]="Thread has equal CPU for each iteration. Its Average CPU is greater than threshold. It may be problematic"
+                    overallAnalysis["cpuStats"]["cpuTrend"]="Thread has equal CPU for each iteration. Its Average CPU is greater than threshold. It may be problematic"
                 else:
-                    overallAnalysis["cpuTrend"]="Thread has equal CPU for each iteration, but its average CPU remains lower than threshold."
+                    overallAnalysis["cpuStats"]["cpuTrend"]="Thread has equal CPU for each iteration, but its average CPU remains lower than threshold."
             elif increasingCpuTrend == True:
                 if avgCpu > CPU_THRESHOLD:
                     if abs(cpuCounts[0] - cpuCounts[len(cpuCounts)-1]) > CPU_THRESHOLD:
-                        overallAnalysis["cpuTrend"]="Thread has increasing cpu utilization over iterations. Its Average CPU is greater than threshold. Also, rise in CPU Usage has been large"
+                        overallAnalysis["cpuStats"]["cpuTrend"]="Thread has increasing cpu utilization over iterations. Its Average CPU is greater than threshold. Also, rise in CPU Usage has been large"
                     else:
-                        overallAnalysis["cpuTrend"]="Thread has increasing cpu utilization over iterations. Its Average CPU is greater than threshold. Although, rise in CPU Usage has been small"
+                        overallAnalysis["cpuStats"]["cpuTrend"]="Thread has increasing cpu utilization over iterations. Its Average CPU is greater than threshold. Although, rise in CPU Usage has been small"
                 else:
-                    overallAnalysis["cpuTrend"]="Thread has increasing cpu utilization over iterations, but its average CPU remains lower than threshold."
+                    overallAnalysis["cpuStats"]["cpuTrend"]="Thread has increasing cpu utilization over iterations, but its average CPU remains lower than threshold."
             elif decreasingCpuTrend == True:
                 if abs(cpuCounts[0] - cpuCounts[len(cpuCounts)-1]) < CPU_THRESHOLD:
-                    overallAnalysis["cpuTrend"]="Thread has decreasing cpu utilization over iterations, but the difference wasn't large"
+                    overallAnalysis["cpuStats"]["cpuTrend"]="Thread has decreasing cpu utilization over iterations, but the difference wasn't large"
                 else:
-                    overallAnalysis["cpuTrend"]="Thread has decreasing cpu utilization over iterations. The drop in CPU usage was large, and hence it may not be problematic"
+                    overallAnalysis["cpuStats"]["cpuTrend"]="Thread has decreasing cpu utilization over iterations. The drop in CPU usage was large, and hence it may not be problematic"
             else:
-                overallAnalysis["cpuTrend"]="No monotically increasing or decreasing trend seen for thread over iterations "
-        
+                overallAnalysis["cpuStats"]["cpuTrend"]="No monotically increasing or decreasing trend seen for thread over iterations "
+
+            if any(abs(i-j) > CPU_THRESHOLD for i, j in zip(cpuCounts, cpuCounts[1:])):
+                overallAnalysis["cpuStats"]["cpuDiff"]="Differences in CPU utilization were high over iterations"
+            else:
+                overallAnalysis["cpuStats"]["cpuDiff"]="Differences in CPU utilization were not much over iterations"
         # Stack Changing Analysis
         if len(currIterationsStacks) >1:
             res = all(ele == currIterationsStacks[0] for ele in currIterationsStacks)
@@ -427,7 +452,7 @@ def createJsonObject(allIterationsThreads):
 def showHelp():
     # Display Help
     print("")
-    print("Syntax: python stackTraceTool.py [-n 3 -I 0.5] [-c|N|h]")
+    print("Syntax: python stackTraceTool.py [-n 3 -I 0.5] [-c|N|t|C|d|h]")
     print("options:")
     print("n or --num-iterations")
     print("Provide number of iterations for stack (REQUIRED).")
@@ -436,19 +461,19 @@ def showHelp():
     print("Provide the INTERVAL between iterations (in seconds) (REQUIRED).")
     print("")
     print("c or --cpu-threshold")
-    print("Provide the CPU Usage Threshold for threads (0-100) (OPTIONAL) - Default = 20")
+    print("Provide the CPU Usage Threshold for threads (0-100) (OPTIONAL) - Default = 15")
     print("")
     print("N or --num-threads")
-    print("Provide the Number of Threads to be taken (>0) (OPTIONAL) - Default = 20")
+    print("Provide the Number of Threads to be taken (>0) (OPTIONAL) - Default = 40")
     print("")
     print("t or --threshold-iterations")
     print("Provide the number of iterations for which the thread has to be in High CPU Usage state to be considered for analysis (OPTIONAL) - Default = total number of iterations")
     print("")
     print("C or --current-ops")
-    print("Set as 1 if want current operations to be stored too (OPTIONAL) - Default = 0 (no current operations data provided)")
+    print("Use this option to capture current ops too (OPTIONAL) - Default = 0 (no current operations data provided)")
     print("")
     print("d or --debug")
-    print("Set as 1 to print debug statements with timestamps of script operations (OPTIONAL) - Default = 0 (no debug info)")
+    print("Use this option to print timestamps and debug information for this script (OPTIONAL) - Default = 0 (no debug info)")
     print("")
     print("h or --help")
     print("Show the help menu")
@@ -525,7 +550,7 @@ def parseOptions(argv):
         print("Interval is a required option. Refer to --help for further information")
         sys.exit(2)
     if CPU_THRESHOLD==-1:
-        CPU_THRESHOLD=20.0
+        CPU_THRESHOLD=15.0
     if TOP_N_THREADS == -1:
         TOP_N_THREADS = 40
     if TAKE_CURRENT_OPS==-1:
