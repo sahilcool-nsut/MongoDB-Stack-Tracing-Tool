@@ -116,7 +116,8 @@ def gatherThreadInformation(threads):
 
     totalProcesses=[]
     if PRINT_DEBUG==1:
-        print("Starting multiprocessing of eu-stack calls at time: " +str(int(round(time.time() * 1000)))[-6:])    
+        print("Starting multiprocessing of eu-stack calls at time: " +str(int(round(time.time() * 1000)))[-6:]) 
+    # Collect stacks   
     for threadId,thread in threads.items():
         process=multiprocessing.Process(target=runStackCommand,args=(threadId,threads,))
         process.start()
@@ -132,6 +133,7 @@ def performAnalysis(currentOps,finalJsonObject):
 
     # Iterate over each thread and each iteration of the thread
     for threadId in finalJsonObject["threads"]:
+        # lists used to collect items for overall analysis
         cpuCounts=[]
         currIterationsStacks=[]
         analysisList=[]
@@ -306,6 +308,7 @@ def performAnalysis(currentOps,finalJsonObject):
                 except: 
                     print("Something went wrong while parsing current operations")
         
+
         # Overall Thread Analysis
         overallAnalysis={}
 
@@ -318,8 +321,6 @@ def performAnalysis(currentOps,finalJsonObject):
             dd = defaultdict(list)
             for d in tuple(analysisList):
                 for key, value in d.items():
-                    print(key)
-                    print(value)
                     if type(value) is dict:
                         for stageName in value:
                             # No need to add description here
@@ -372,14 +373,14 @@ def performAnalysis(currentOps,finalJsonObject):
             elif increasingCpuTrend == True:
                 if avgCpu > CPU_THRESHOLD:
                     if abs(cpuCounts[0] - cpuCounts[len(cpuCounts)-1]) > CPU_THRESHOLD:
-                        overallAnalysis["cpuStats"]["cpuTrend"]="Thread has increasing cpu utilization over iterations. Its Average CPU is greater than threshold. Also, rise in CPU Usage has been large"
+                        overallAnalysis["cpuStats"]["cpuTrend"]="Thread has increasing cpu utilization over iterations. Its Average CPU is greater than threshold."
                     else:
-                        overallAnalysis["cpuStats"]["cpuTrend"]="Thread has increasing cpu utilization over iterations. Its Average CPU is greater than threshold. Although, rise in CPU Usage has been small"
+                        overallAnalysis["cpuStats"]["cpuTrend"]="Thread has increasing cpu utilization over iterations. Its Average CPU is greater than threshold."
                 else:
                     overallAnalysis["cpuStats"]["cpuTrend"]="Thread has increasing cpu utilization over iterations, but its average CPU remains lower than threshold."
             elif decreasingCpuTrend == True:
                 if abs(cpuCounts[0] - cpuCounts[len(cpuCounts)-1]) < CPU_THRESHOLD:
-                    overallAnalysis["cpuStats"]["cpuTrend"]="Thread has decreasing cpu utilization over iterations, but the difference wasn't large"
+                    overallAnalysis["cpuStats"]["cpuTrend"]="Thread has decreasing cpu utilization over iterations."
                 else:
                     overallAnalysis["cpuStats"]["cpuTrend"]="Thread has decreasing cpu utilization over iterations. The drop in CPU usage was large, and hence it may not be problematic"
             else:
@@ -431,8 +432,7 @@ def createJsonObject(allIterationsThreads):
                 iterationObject["threadState"]=thread.threadState
                 iterationObject["threadStackTimeStamp"]=thread.threadStackTimeStamp
                 iterationObject["threadStack"]=thread.threadStack
-                # if len(thread.threadStack.split('\n')) <=1:
-                #     continue
+
                 currThreadObject["iterations"].append(iterationObject)
                 entireJsonObject["threads"][threadId]=currThreadObject
         except:
@@ -470,10 +470,10 @@ def showHelp():
     print("Provide the number of iterations for which the thread has to be in High CPU Usage state to be considered for analysis (OPTIONAL) - Default = total number of iterations")
     print("")
     print("C or --current-ops")
-    print("Use this option to capture current ops too (OPTIONAL) - Default = 0 (no current operations data provided)")
+    print("Use this option to capture current ops too (OPTIONAL) - Default = no current operations data provided")
     print("")
     print("d or --debug")
-    print("Use this option to print timestamps and debug information for this script (OPTIONAL) - Default = 0 (no debug info)")
+    print("Use this option to print timestamps and debug information for this script (OPTIONAL) - Default = no debug info")
     print("")
     print("h or --help")
     print("Show the help menu")
