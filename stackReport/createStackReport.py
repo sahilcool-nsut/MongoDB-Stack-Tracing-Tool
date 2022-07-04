@@ -410,7 +410,7 @@ def getStackTraceAnalysis(stackTracesList):
             # Gets the stage/scan
             doWorkRegexResults = re.findall('::(.+?)::doWork',currStack)
             if len(doWorkRegexResults) > 0:
-                analysisObject["StagesAndScans"]={"Description": "The following stages were found somewhere in the stack, and can give some idea about what type of scans are being made, what functions of these scans are called etc."}
+                analysisObject["StagesAndScans"]={}
                 for function in doWorkRegexResults:
                     # Create individual object for each stage/scan as they can contain more functions
                     # Their individual functions are found using their namespace
@@ -433,7 +433,7 @@ def getStackTraceAnalysis(stackTracesList):
             # Find "matching" part if the query has any such part
             matchRegexResults = re.findall('::(.+?)::matches',currStack)
             if len(matchRegexResults) > 0:
-                analysisObject["ExpressionMatching"]={"Description": "These elements can give idea about what type of expressions are being used to match the documents"}
+                analysisObject["ExpressionMatching"]={}
                 # Check for REGEX namespace and give special attention
                 regexNamespaceRegexResults=re.findall('::RE::',currStack)
                 if len(regexNamespaceRegexResults) > 0:
@@ -468,7 +468,7 @@ def getStackTraceAnalysis(stackTracesList):
             bsonElementRegexResults=re.findall('BSONElement::(.+?)\(',currStack)
             if len(bsonElementRegexResults) > 0:
                 if "ExpressionMatching" not in analysisObject:
-                    analysisObject["ExpressionMatching"]={"Description": "These elements can give idea about what type of expressions are being used to match the documents"}
+                    analysisObject["ExpressionMatching"]={}
                 
                 for function in bsonElementRegexResults:
                     analysisObject["ExpressionMatching"]["BSONElement::"+function]={}
@@ -481,7 +481,7 @@ def getStackTraceAnalysis(stackTracesList):
         try:
             commandRegexResults=re.findall('\(anonymous namespace\)::(.+?)::run\(mongo',currStack)
             if len(commandRegexResults) > 0:
-                analysisObject["CommandFoundInStack"]={"Description":"This section includes the commands which may have been run on the current thread"}
+                analysisObject["CommandFoundInStack"]={}
                 for function in commandRegexResults:
                     # Most probably function would be found in line with typedRun() rather than run(). So, check that.
                     # In case some issue in retriveing it from typedRun(), we keep the run() result
@@ -505,25 +505,35 @@ def getStackTraceAnalysis(stackTracesList):
             lockRegexResults=re.findall('Mutex::(.+?)\(\)',currStack)
             if len(lockRegexResults) > 0:
                 if "ConcurrencyRelated" not in analysisObject:
-                    analysisObject["ConcurrencyRelated"]={"Description":"This section includes the commands which may be related to concurrency operations etc."}
+                    analysisObject["ConcurrencyRelated"]={}
                 for function in lockRegexResults:
                     analysisObject["ConcurrencyRelated"][function]="Lock related operation found in stack"
             lockWaitRegexResults=re.findall('__lll_lock_wait',currStack)
             if len(lockWaitRegexResults) > 0:
                 if "ConcurrencyRelated" not in analysisObject:
-                    analysisObject["ConcurrencyRelated"]={"Description":"This section includes the commands which may be related to concurrency operations etc."}
+                    analysisObject["ConcurrencyRelated"]={}
                 for function in lockWaitRegexResults:
                     analysisObject["ConcurrencyRelated"][function]="Lock waiting operation found in stack"
             yieldRegexResults=re.findall('__sched_yield',currStack)
             if len(yieldRegexResults) > 0:
                 if "ConcurrencyRelated" not in analysisObject:
-                    analysisObject["ConcurrencyRelated"]={"Description":"This section includes the commands which may be related to concurrency operations etc."}
+                    analysisObject["ConcurrencyRelated"]={}
                 for function in yieldRegexResults:
                     analysisObject["ConcurrencyRelated"][function]="Yield related operation found in stack"
             
         except:
             pass
-
+        # WiredTiger
+        try:
+            wiredTigerRegexResults=re.findall('::WiredTiger(.+?)\(',currStack)
+            if len(wiredTigerRegexResults) > 0:
+                if "WiredTiger" not in analysisObject:
+                    analysisObject["WiredTiger"]={}
+                for function in wiredTigerRegexResults:
+                    analysisObject["WiredTiger"]["WiredTiger"+function]="Found in stack"
+        except:
+            pass
+        
         # Ensure that currState is Sleeping if allocating any of these, as these don't make sense if state is Running, and can be misleading  
         if "recvmsg" in currStack:
             analysisObject["clientState"]="Client may be waiting for Query to be given"
@@ -585,7 +595,11 @@ def createIdenticalStackTracesGraph(threads):
                 <ul><li>Elements in this collection can give idea about what type of expressions are being used to match the documents </li></ul>
             <li><b>CommandFoundInStack</b></li>
                 <ul><li>This section includes the commands which may have been run on the current thread </li></ul>
-        </ul
+            <li><b>ConcurrencyRelated</b></li>
+                <ul><li>This section includes the commands which may be related to concurrency operations </li></ul>
+            <li><b>WiredTiger</b></li>
+                <ul><li>This section contains commands related to WiredTiger (the storage engine) that were called</li></ul>
+        </ul>
         <img class="chart-panel" src = "'''+IDENTICAL_STACK_GRAPH_HTML_PATH+'''" alt = "Identical Stack Traces Distribution" />
         <table class="chart-panel">
         <tr>
@@ -611,8 +625,6 @@ def createIdenticalStackTracesGraph(threads):
         htmlData+="<td>"
         jsonAnalysis = json.dumps(currAnalysisObject,indent=3)
         htmlData+="<b><pre id='json'>" + jsonAnalysis +"</pre></b>"
-        for analysisKey,analysisValue in currAnalysisObject.items():
-            print(str(type(analysisKey)) + "  " + str(type(analysisValue)))
         htmlData+="</td>"
         htmlData+="</tr>"
         i+=1
@@ -715,8 +727,6 @@ def createConsumingThreadTable(threads,stackAnalysisDict):
         htmlData+="<td>"
         jsonAnalysis = json.dumps(currAnalysisObject,indent=3)
         htmlData+="<b><pre id='json'>" + jsonAnalysis +"</pre></b>"
-        for analysisKey,analysisValue in currAnalysisObject.items():
-            print(str(type(analysisKey)) + "  " + str(type(analysisValue)))
         htmlData+="</td>"
         htmlData+="</tr>"
         i+=1

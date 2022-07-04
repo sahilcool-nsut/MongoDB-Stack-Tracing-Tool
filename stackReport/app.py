@@ -92,26 +92,6 @@ def upload_file():
             
         return render_template("StackTraceReport_"+TIMESTAMP+".html")
         
-    return "Deleted Successfully"
+    return "Invalid Request"
 if __name__ == '__main__':
    app.run()
-
-
-
-
-
-
-
-# 
-# @app.route('/delete1day')
-# def delete():
-#     graphDirectory=os.path.join(os.getcwd(),"static/graphs")
-#     onlyfiles = [f for f in os.listdir(graphDirectory) if isfile(join(graphDirectory, f))]
-#     print(onlyfiles)
-#     for file in onlyfiles:
-#         # Example file name: flameGraph_2022-07 01 ......
-#         fileWithoutExtension=(file[::-1].split('.',1)[1])[::-1]
-#         fileDateTime=fileWithoutExtension.split('_')[1]
-#         deltatime=datetime.datetime.now()-datetime.datetime.strptime(fileDateTime,"%Y-%m-%d %H:%M:%S.%f")
-#         if deltatime.days>=1:
-#             os.remove(join(graphDirectory, file))
