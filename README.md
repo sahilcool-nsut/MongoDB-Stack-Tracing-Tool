@@ -106,7 +106,7 @@ This is achieved through the use of the top -H command and the db.currentOp() co
 
 > top -H -bn1 -w512 | grep "conn" 
 >
-> mongo localhost:27017 --eval 'EJSON.stringify(db.currentOp())' --quiet
+> mongo localhost:27017 --eval 'JSON.stringify(db.currentOp())' --quiet
 
 
 ## Usage
@@ -122,3 +122,6 @@ Options
  - **h** or **--help**  :    Show the help menu
 
 The output is returned in JSON format and is also stored in **currentOpByThread.json**
+
+>Potential Issues: 
+The script requires the correct IP (localhost is fit in the script) and the correct port with it, else the command might not work.
