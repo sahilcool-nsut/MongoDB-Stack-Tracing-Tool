@@ -4,7 +4,7 @@ This utility can be useful in **debugging** issues in **real-time** when the ser
 
 ## Features
 
-The python script is built to run on linux based systems, utilising the **eu-stack** utility of **elfutils** package. and some system commands like **top** 
+The python script is built to run on linux based systems with a running mongodb server, utilising the **eu-stack** utility of **elfutils** package. and some system commands like **top** 
 It further refines the results and can provide:
   1) Individual Stack Trace Reports in **JSON** format
   2) Information regarding individual **thread states, CPU usage, client names etc.**
@@ -14,17 +14,20 @@ It further refines the results and can provide:
 To run the script, provide 2 required parameters as shown below
 
 **Syntax**: 
-> python stackTraceTool.py [-n 3 -I 0.5] [-c | -N | -h ]
+> python stackTraceTool.py [-n 3 -I 0.5] [-c | -N | -t | -C | -d | -h ]
 
 Options:
 
  - **n** or **--num-iterations**  : Provide number of iterations for stack (REQUIRED).
  - **I** or **--interval**    :  Provide the INTERVAL between iterations (in seconds) (REQUIRED).
- - **c** or **--cpu-threshold** :     Provide the CPU Usage Threshold for threads (0-100) (OPTIONAL) - Default = 20
- - **N** or **--num-threads** :    Provide the Number of Threads to be taken (>0) (OPTIONAL) - Default = 20
+ - **c** or **--cpu-threshold** :     Provide the CPU Usage Threshold for threads (0-100) (OPTIONAL) - Default = 15
+ - **N** or **--num-threads** :    Provide the Number of Threads to be taken (>0) (OPTIONAL) - Default = 40
+ - **t** or **--threshold-iterations** :     Provide the number of iterations for which the thread has to be in High CPU Usage state to be considered for analysis (OPTIONAL) - Default = total number of iterations
+ - **C** or **--current-ops** :    Use this option to capture current ops too (OPTIONAL) - Default = no current operations data provided"
+ - **D** or **--debug** :    Use this option to print timestamps and debug information for this script (OPTIONAL) - Default = no debug info"
  - **h** or **--help**  :   Show the help menu
 
-The output is stored in **OutputFiles/collectedData.json**
+The output is returned in JSON format and is also stored in **collectedData.json**
 
 >Potential Issues: 
 While running the script without sudo permission, it might ask for sudo password while running the script. After entering it, the results of that iteration may not be meaningful, so it may be required to restart the script.
