@@ -1,14 +1,11 @@
 from collections import defaultdict
 import getopt
-from heapq import merge
 import json
 import multiprocessing
 import re
 import subprocess
 import sys
 import time
-
-from click import command
 
 # Arguments
 NUMCALLS=-1
@@ -58,7 +55,7 @@ def printOutput(error=None,threads=None):
         except:
             printOutput(error="Some Error while saving output to file")
         # dumps to just print
-        print(json.dumps(jsonObject,indent=4))
+        # print(json.dumps(jsonObject,indent=4))
         exit(1)
 
 # This function is multithreaded to collect stack information for a single thread
