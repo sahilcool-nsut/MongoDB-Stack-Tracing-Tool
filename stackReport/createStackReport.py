@@ -874,28 +874,21 @@ def main(TIMESTAMP,topFileGiven):
 
     # Actual driver code for creating the report    
 
-    # print("Starting Python script at time: " + str(int(round(time.time() * 1000)))[-6:])
-
     # Incase Top file is not given, then threads will just contain dummy threads with stacks
     threads={}
     # Dictionary to access thread objects by threadId
     threads=extractInformation()
     
     if TOP_FILE_GIVEN:
-        # print("Starting creation of state distribution graph at time: " + str(int(round(time.time() * 1000)))[-6:])
         createStateDistributionGraph(threads)
     
-    # print("Starting creation of flame graph at time: " + str(int(round(time.time() * 1000)))[-6:])
     createFlameGraph(threads)
 
-    # print("Starting creation of stack trace count graph at time: " + str(int(round(time.time() * 1000)))[-6:])
     stackAnalysisDict=createIdenticalStackTracesGraph(threads)
 
     if TOP_FILE_GIVEN:
-        # print("Starting creation of Most CPU Consuming Threads: " + str(int(round(time.time() * 1000)))[-6:])
         createConsumingThreadTable(threads,stackAnalysisDict)
 
-    # print("Starting creation of Function Count Table at time: " + str(int(round(time.time() * 1000)))[-6:])
     totalFunctionCounts=createTotalFunctionCountsTable(threads)
 
 

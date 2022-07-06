@@ -76,12 +76,11 @@ def runStackCommand(threadId,threads):
         currThread.threadStackTimeStamp=str(int(round(time.time() * 1000)))[-6:]
         threads[threadId] = currThread
 
-# This function is multithreaded to collect current operations using mongosh command
+# This function is multithreaded to collect current operations using mongo command
 # JSON.stringify() to convert BSON to JSON
 # --quiet is to remove the connection information we get on a new connection
 def runCurrentOpsCommand(currentOps,iteration):
     p = subprocess.Popen("mongo localhost:27017 --eval 'JSON.stringify(db.currentOp())' --quiet", stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-    # p = subprocess.Popen("mongosh localhost:27017 --eval 'EJSON.stringify(db.currentOp())' --quiet", stdout=subprocess.PIPE, shell=True)
     stdout, stderr = p.communicate()
     if(stderr.decode('UTF-8')!=''):
         currentOps[iteration]={}
@@ -439,7 +438,6 @@ def createJsonObject(allIterationsThreads):
     afterThresholdingJsonObject={}
     afterThresholdingJsonObject["threads"]={}
     for threadId,currentThreadObject in entireJsonObject["threads"].items():
-
         if(len(currentThreadObject["iterations"])>=ITERATIONS_FOUND_THRESHOLD):
             afterThresholdingJsonObject["threads"][threadId]=currentThreadObject
     return afterThresholdingJsonObject
@@ -487,8 +485,8 @@ def parseOptions(argv):
     global PRINT_DEBUG
     global ITERATIONS_FOUND_THRESHOLD
     try:
-    #   h requires no input, so no colon for it
-        opts, args = getopt.getopt(argv,"n:I:c:N:t:Cdwh",["num-iterations=","interval=","cpu-threshold=","num-threads=","threshold-iterations=","current-ops","debug","worker","help"])
+    #   C,d,h require no input, so no colon for them
+        opts, args = getopt.getopt(argv,"n:I:c:N:t:Cdh",["num-iterations=","interval=","cpu-threshold=","num-threads=","threshold-iterations=","current-ops","debug","help"])
     except getopt.GetoptError:
         showHelp()
         sys.exit(2)
@@ -637,15 +635,5 @@ if __name__ == "__main__":
     # Performed Analysis seperately, and not while collection, so that time between thread stacks is precise
         print("Starting analysis at time:  " + str(int(round(time.time() * 1000)))[-6:])
 
-    # Reads data from the file created and adds analysis and currentOps in it
-    # currentOps={}
-    # finalJsonObject={}
-    # try:
-    #     jsonFile = open("json.json", "r")
-    #     # dump to store in file
-    #     finalJsonObject=json.load(jsonFile)
-    #     jsonFile.close()
-    # except:
-    #     pass
     completeJsonObject=performAnalysis(currentOps,finalJsonObject)
     printOutput(threads=completeJsonObject)

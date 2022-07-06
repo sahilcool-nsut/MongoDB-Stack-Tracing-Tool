@@ -7,7 +7,7 @@ import createStackReport
 from hashlib import sha512
 import base64
 app = Flask(__name__)
-# To ensure that templates get reloaded (the dynamic html file being craeted wasnt getting updated on back buttons, so this was the fix)
+# To ensure that templates get reloaded (the dynamic html file being created wasnt getting updated on back buttons, so this was the fix)
 app.config["TEMPLATES_AUTO_RELOAD"]=True
 # Home route, messages is empty right now, later would contain error message
 @app.route('/')
@@ -19,7 +19,7 @@ def home():
 # Availability of both the submitted files is checked first
 # If there are missing files, user is redirected to home page with an error
 # If no error, the python script is called which generates a HTML template to which the user is then redirected
-@app.route('/uploader', methods = ['GET', 'POST'])
+@app.route('/uploader', methods = ['POST'])
 def upload_file():
     if request.method == 'POST':
         TOP_GIVEN = False

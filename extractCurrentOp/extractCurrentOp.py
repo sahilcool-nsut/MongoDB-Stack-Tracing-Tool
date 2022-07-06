@@ -21,11 +21,9 @@ class Thread:
         self.currentOp={}
 
 
-# EJSON = Extended JSON to convert UUID, TimeStamps into json readable objects.
 # --quiet is to remove the connection information we get on a new connection
 def runCurrentOpsCommand(currentOps):
     p = subprocess.Popen("mongo localhost:27017 --eval 'JSON.stringify(db.currentOp())' --quiet", stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-    # p = subprocess.Popen("mongosh localhost:27017 --eval 'EJSON.stringify(db.currentOp())' --quiet", stdout=subprocess.PIPE, shell=True)
     stdout, stderr = p.communicate()
     try:
         if stderr.decode('UTF-8') !='':
@@ -78,7 +76,7 @@ def gatherThreadInformation(threads,currentOps,mongostat):
     process=multiprocessing.Process(target=runCurrentOpsCommand,args=(currentOps,))
     process.start()
     totalProcesses.append(process)
-
+    
     if EXTRA_MONGO_INFO==1:
         process=multiprocessing.Process(target=runMongoStatCommand,args=(mongostat,))
         process.start()
@@ -156,9 +154,9 @@ def showHelp():
     print("Syntax: python extractCurrentOp.py")
     print("options:")
     print("c or --cpu-threshold       Provide the CPU Usage Threshold for threads (0-100) (OPTIONAL) - Default = 15")
-    print("d or --debug               Set as 1 to print debug statements with timestamps of script operationos (Default = 0 (no debug info))")
+    print("d or --debug               Toggle to print debug statements with timestamps of script operations (Default = 0 (no debug info))")
     print("s or --short               Ask for a shorter currentOps per client")
-    print("e or --extra               Toggle this option to get extra mongo information from mongostat and mongotop (Default = 0)")
+    print("e or --extra               Toggle this option to get extra mongo information from mongostat (Default = 0)")
     print("h or --help                Show the help menu")
     print("")
     exit
