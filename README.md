@@ -16,7 +16,7 @@ It further refines the results and can provide:
 To run the script, provide 2 required parameters as shown below
 
 **Syntax**: 
-> python stackTraceTool.py [-n 3 -I 0.5] [-c | -N | -t | -C | -d | -h ]
+> python stackTraceTool.py [-n 3 -I 0.5] [-c | -N | -t | -C | -s | -d | -h ]
 
 Options:
 
@@ -26,6 +26,7 @@ Options:
  - **N** or **--num-threads** :    Provide the Number of Threads to be taken (>0) (OPTIONAL) - Default = 40
  - **t** or **--threshold-iterations** :     Provide the number of iterations for which the thread has to be in High CPU Usage state to be considered for analysis (OPTIONAL) - Default = total number of iterations
  - **C** or **--current-ops** :    Use this option to capture current ops too (OPTIONAL) - Default = no current operations data provided"
+ - **s** or **--save** :    Use this option to make the script save the results in a combined form for each iteration. Can be used in a stack analyzer utility (OPTIONAL) - Default = no seperate files are created
  - **D** or **--debug** :    Use this option to print timestamps and debug information for this script (OPTIONAL) - Default = no debug info"
  - **h** or **--help**  :   Show the help menu
 

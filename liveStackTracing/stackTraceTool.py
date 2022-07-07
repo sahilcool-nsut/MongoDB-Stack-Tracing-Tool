@@ -1,3 +1,4 @@
+from calendar import c
 from collections import defaultdict
 import getopt
 import json
@@ -15,6 +16,7 @@ CPU_THRESHOLD=-1
 TAKE_CURRENT_OPS=-1
 PRINT_DEBUG=-1
 ITERATIONS_FOUND_THRESHOLD=-1
+SAVE_COMBINED_FILES=-1
 OUTPUT_FILE_NAME="collectedData.json"
 
 # Thread Class used to store thread objects
@@ -65,14 +67,16 @@ def runStackCommand(threadId,threads):
     stdout, stderr = p.communicate()
     if stderr.decode('UTF-8')!='':
         currThread = threads[threadId]
-        currThread.threadStack = "Error while collecting Stack (Most probably thread dissapeared)"
+        # Included TID as the web analyzer splits stacks on TID. So, maintaining the same format
+        currThread.threadStack = "TID "+str(threadId)+" Error while collecting Stack (Most probably thread dissapeared)\n"
         currThread.threadStackTimeStamp=str(int(round(time.time() * 1000)))[-6:]
         threads[threadId] = currThread
     else:
         currThread = threads[threadId]
         currThread.threadStack = stdout.decode('UTF-8')
         if currThread.threadStack=="":
-            currThread.threadStack="Error while collecting Stack (Most probably thread dissapeared)"
+            # Included TID as the web analyzer splits stacks on TID. So, maintaining the same format
+            currThread.threadStack="TID "+str(threadId)+" Error while collecting Stack (Most probably thread dissapeared)\n"
         currThread.threadStackTimeStamp=str(int(round(time.time() * 1000)))[-6:]
         threads[threadId] = currThread
 
@@ -443,6 +447,36 @@ def createJsonObject(allIterationsThreads):
     return afterThresholdingJsonObject
 
 
+def createCombinedFiles(completeJsonObject):
+    euStacks={}
+    topFiles={}
+    try:
+        for threadId,thread in completeJsonObject["threads"].items():
+            for j in range(0,len(finalJsonObject["threads"][threadId]["iterations"])):
+                currIterationObject=finalJsonObject["threads"][threadId]["iterations"][j]
+                currIterationNum = currIterationObject["iteration"]
+                if currIterationNum not in euStacks:
+                    euStacks[currIterationNum]=""
+                euStacks[currIterationNum]+=currIterationObject["threadStack"]
+                #   22865 mongodb   20   0 2098744 455476  52788 R  27.8   5.7   0:02.19 conn719
+                if currIterationNum not in topFiles:
+                    topFiles[currIterationNum]=""
+                topString=str(threadId) + " - " + "- " + "- " + "- " + "- " + "- " + currIterationObject["threadState"] + " " + str(currIterationObject["threadCpu"]) + " - " + "- " + currIterationObject["threadName"] + "\n"
+                topFiles[currIterationNum]+=topString
+    except:
+        print("Problem in creating combined files")
+    for i in range(0,NUMCALLS):
+        fileName = "eustack_"+str(i)+".txt"
+        if i in euStacks:
+            textFile = open(fileName, "w")
+            textFile.write(euStacks[i])
+            textFile.close()
+        fileName = "topH_"+str(i)+".txt"
+        if i in topFiles:
+            textFile = open(fileName, "w")
+            textFile.write(topFiles[i])
+            textFile.close()
+
 # Function to show help menu
 def showHelp():
     # Display Help
@@ -467,6 +501,9 @@ def showHelp():
     print("C or --current-ops")
     print("Use this option to capture current ops too (OPTIONAL) - Default = no current operations data provided")
     print("")
+    print("s or --save")
+    print("Use this option to save the combined files of each iteration - Default = no combined file is made")
+    print("")
     print("d or --debug")
     print("Use this option to print timestamps and debug information for this script (OPTIONAL) - Default = no debug info")
     print("")
@@ -482,11 +519,12 @@ def parseOptions(argv):
     global CPU_THRESHOLD
     global TOP_N_THREADS
     global TAKE_CURRENT_OPS
+    global SAVE_COMBINED_FILES
     global PRINT_DEBUG
     global ITERATIONS_FOUND_THRESHOLD
     try:
     #   C,d,h require no input, so no colon for them
-        opts, args = getopt.getopt(argv,"n:I:c:N:t:Cdh",["num-iterations=","interval=","cpu-threshold=","num-threads=","threshold-iterations=","current-ops","debug","help"])
+        opts, args = getopt.getopt(argv,"n:I:c:N:t:Csdh",["num-iterations=","interval=","cpu-threshold=","num-threads=","threshold-iterations=","current-ops","save","debug","help"])
     except getopt.GetoptError:
         showHelp()
         sys.exit(2)
@@ -536,6 +574,8 @@ def parseOptions(argv):
                 sys.exit(2)
         elif opt in ("-C", "--current-ops"):
             TAKE_CURRENT_OPS = 1
+        elif opt in ("-s", "--save"):
+            SAVE_COMBINED_FILES=1
         elif opt in ("-d", "--debug"):
             PRINT_DEBUG = 1
     if NUMCALLS==-1:
@@ -550,6 +590,8 @@ def parseOptions(argv):
         TOP_N_THREADS = 40
     if TAKE_CURRENT_OPS==-1:
         TAKE_CURRENT_OPS=0
+    if SAVE_COMBINED_FILES==-1:
+        SAVE_COMBINED_FILES=0
     if PRINT_DEBUG == -1:
         PRINT_DEBUG=0
     if ITERATIONS_FOUND_THRESHOLD==-1:
@@ -563,6 +605,7 @@ def parseOptions(argv):
         print("Number of Iterations: " + str(NUMCALLS)) 
         print("Iterations Threshold used: " + str(ITERATIONS_FOUND_THRESHOLD))
         print("Take Current Ops: " + str(TAKE_CURRENT_OPS))
+        print("Save Combined Files: " + str(SAVE_COMBINED_FILES))
         print("Print Debug: " + str(PRINT_DEBUG))
         print("")
    
@@ -636,4 +679,8 @@ if __name__ == "__main__":
         print("Starting analysis at time:  " + str(int(round(time.time() * 1000)))[-6:])
 
     completeJsonObject=performAnalysis(currentOps,finalJsonObject)
+
+    if SAVE_COMBINED_FILES==1:
+        createCombinedFiles(completeJsonObject)
+
     printOutput(threads=completeJsonObject)
