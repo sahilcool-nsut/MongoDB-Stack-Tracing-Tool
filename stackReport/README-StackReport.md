@@ -64,3 +64,4 @@ Repository which is hosted live: https://github.com/sahilcool-nsut/EuStack-Analy
 Live host website: https://eustack-analyzer.herokuapp.com/
 
 > For hosting, the only special requirement was to add the graphviz buildpack in heroku for it to work properly
+> Further, change in form action (in home.html) to the live URL was also required
