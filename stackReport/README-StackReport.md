@@ -8,7 +8,9 @@ It sets up a flask server which prompts to upload the necessary files, which are
  > Sample Command
  >
  > sudo eu-stack -p PID > stack.txt
+ >
  > Can also use the output of the live stack tracing script in this repository (run it in -s mode)
+ >
  - **Single iteration of top command**  (Optional)
  > Sample Command
  >
