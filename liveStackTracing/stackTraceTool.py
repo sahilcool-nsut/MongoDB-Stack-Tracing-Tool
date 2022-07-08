@@ -481,7 +481,7 @@ def createCombinedFiles(completeJsonObject):
 def showHelp():
     # Display Help
     print("")
-    print("Syntax: python stackTraceTool.py [-n 3 -I 0.5] [-c|N|t|C|d|h]")
+    print("Syntax: python stackTraceTool.py [-n 3 -I 0.5] [-c|N|t|C|s|d|h]")
     print("options:")
     print("n or --num-iterations")
     print("Provide number of iterations for stack (REQUIRED).")
