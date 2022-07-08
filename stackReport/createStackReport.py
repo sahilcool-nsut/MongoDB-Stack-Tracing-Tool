@@ -789,18 +789,18 @@ def setGlobals(TIMESTAMP,topFileGiven):
     OUTPUT_FILE_PATH=os.path.join(path,"templates/StackTraceReport_"+TIMESTAMP+".html")
 
     # Data files uploaded by user
-    TOP_COMMAND_FILE=os.path.join(path, "data/topFile_"+TIMESTAMP+".txt")
-    STACK_TRACE_FILE=os.path.join(path, "data/stackFile_"+TIMESTAMP+".txt")
+    TOP_COMMAND_FILE=os.path.join(path, "topFile_"+TIMESTAMP+".txt")
+    STACK_TRACE_FILE=os.path.join(path, "stackFile_"+TIMESTAMP+".txt")
 
     # Graphs dynamically created by script
-    FLAME_GRAPH_PATH=os.path.join(path, "static/graphs/flameGraph_"+TIMESTAMP+".pdf")
-    STATE_GRAPH_PATH=os.path.join(path, "static/graphs/statePie_"+TIMESTAMP+".png")
-    IDENTICAL_STACK_GRAPH_PATH=os.path.join(path, "static/graphs/identicalStackTraceGraph_"+TIMESTAMP+".png")
+    FLAME_GRAPH_PATH=os.path.join(path, "static/flameGraph_"+TIMESTAMP+".pdf")
+    STATE_GRAPH_PATH=os.path.join(path, "static/statePie_"+TIMESTAMP+".png")
+    IDENTICAL_STACK_GRAPH_PATH=os.path.join(path, "static/identicalStackTraceGraph_"+TIMESTAMP+".png")
 
     # Graphs directory to be used in HTML code generated
-    FLAME_GRAPH_HTML_PATH="{{ url_for('static', filename='graphs/flameGraph_"+TIMESTAMP+".pdf') }}"
-    STATE_GRAPH_HTML_PATH="{{ url_for('static', filename='graphs/statePie_"+TIMESTAMP+".png') }}"
-    IDENTICAL_STACK_GRAPH_HTML_PATH="{{ url_for('static', filename='graphs/identicalStackTraceGraph_"+TIMESTAMP+".png') }}"
+    FLAME_GRAPH_HTML_PATH="{{ url_for('static', filename='flameGraph_"+TIMESTAMP+".pdf') }}"
+    STATE_GRAPH_HTML_PATH="{{ url_for('static', filename='statePie_"+TIMESTAMP+".png') }}"
+    IDENTICAL_STACK_GRAPH_HTML_PATH="{{ url_for('static', filename='identicalStackTraceGraph_"+TIMESTAMP+".png') }}"
     # Style/Script files 
     CUSTOM_JS_PATH="{{ url_for('static', filename='scripts/customScript.js') }}"
     JQUERY_PATH="{{ url_for('static', filename='scripts/jquery-3.6.0.min.js') }}"

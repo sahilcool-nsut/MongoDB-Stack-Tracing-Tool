@@ -38,7 +38,8 @@ def upload_file():
             return render_template('home.html',messages={'error':error})
         else:
             f = request.files['stackFile']
-            f.save(os.path.join(path, "data/stackFile_"+TIMESTAMP+".txt"))
+            f.save(os.path.join(path, "stackFile_"+TIMESTAMP+".txt"))
+            # f.save(os.path.join(path, "data/stackFile_"+TIMESTAMP+".txt"))
 
         if 'topFile' not in request.files:
             TOP_GIVEN = False
@@ -47,7 +48,7 @@ def upload_file():
         else:
             TOP_GIVEN = True
             f = request.files['topFile']
-            f.save(os.path.join(path, "data/topFile_"+TIMESTAMP+".txt"))
+            f.save(os.path.join(path, "topFile_"+TIMESTAMP+".txt"))
         
 
         
